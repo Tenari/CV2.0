@@ -90,4 +90,41 @@ public void sendMessage(String msg) {
     out.println(msg);
 }
 
+/*
+ * The 'get' Accessor method for the CombatWorker
+ */
+public CombatWorker getCombat() {
+    return combatCanvas;
+}
+/*
+ * The 'get' Accessor method for the Inventory
+ */
+public Inventory getInven() {
+    return inven;
+}
+/*
+ * The 'get' Accessor method for the OtherTrade
+ */
+public OtherTrade getOtherTrade() {
+    return otrader;
+}
+/*
+ * The 'get' Accessor method for the Resources
+ */
+public Resources getResources() {
+    return res;
+}
+/*
+ * The 'get' Accessor method for the Trade
+ */
+public Trade getTrade() {
+    return trader;
+}
+/*
+ * The 'get' Accessor method for the StatusCanvas
+ */
+public StatusCanvas getChar() {
+    return status;
+}
+
 }
