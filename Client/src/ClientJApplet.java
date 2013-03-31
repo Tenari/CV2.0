@@ -13,6 +13,10 @@
  */
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -22,6 +26,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import javax.swing.JApplet;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -32,14 +37,22 @@ private Socket socket;                      // The primary connector which the P
 private BufferedReader in;                  // The primary data stream along which messages are read from the server.
 
 private CombatCanvas combatCanvas;          // The instantiation of the class for combat information feedback/message sending.
-private Inventory inven;                    // The instantiation of the class for inventory display.
+private InventoryCanvas inven;              // The instantiation of the class for inventory display.
 private StatusCanvas status;                // The instantiation of the class for health/stats display.
-private Resources res;                      // The instantiation of the class for carried resource.
+private ResourcesCanvas res;                // The instantiation of the class for carried resource.
+private TradeCanvas trader;
+private TradeActionsPanel bottomTradePanel;
+
+private MainWorldCanvas theGameWorld;           // The global instantiation of the main world viewport canvas class.
 
 private int leftStatusTabsTopLeftX = 1;         // Top Left Bound X-coord for status tabs.
 private int leftStatusTabsTopLeftY = 1;         // Top Left Bound Y-coord for status tabs.
 private int leftStatusTabsBottomRightX = 230;   // Bottom Right Bound X-coord for status tabs.
 private int leftStatusTabsBottomRightY = 400;   // Bottom Right Bound Y-coord for status tabs.
+
+private Image[] statusCanvasImageArray;         // Used to hold the images needed for the statusCanvas (health body parts)
+private Image[] inventoryImageArray;            // Holds the images needed for the inventoryCanvas (item images)
+private Image[] worldImageArray;                // Hold the images for the MainWorldViewCanvas thing. (backgrounds, player sprites, enemy sprites)
     
 /*
  * The required interface override to make CLientJApplet implement ActionListener
@@ -62,45 +75,45 @@ public void actionPerformed(ActionEvent e) {
     }
 }
 
-/*
+/**
  * The 'get' Accessor method for the StatusCanvas
  */
 public StatusCanvas getChar() {
     return status;
 }
-/*
+/**
  * The 'get' Accessor method for the CombatCanvas
  */
 public CombatCanvas getCombat() {
     return combatCanvas;
 }
-/*
- * The 'get' Accessor method for the Inventory
+/**
+ * The 'get' Accessor method for the InventoryCanvas
  */
-public Inventory getInven() {
+public InventoryCanvas getInven() {
     return inven;
 }
-/*
- * The 'get' Accessor method for the OtherTrade
+/**
+ * The 'get' Accessor method for the TradeActionsPanel
  */
-public OtherTrade getOtherTrade() {
-    return otrader;
+public TradeActionsPanel getOtherTrade() {
+    return bottomTradePanel;
 }
-/*
- * The 'get' Accessor method for the Resources
+/**
+ * The 'get' Accessor method for the ResourcesCanvas
  */
-public Resources getResources() {
+public ResourcesCanvas getResources() {
     return res;
 }
-/*
- * The 'get' Accessor method for the Trade
+/**
+ * The 'get' Accessor method for the TradeCanvas
  */
-public Trade getTrade() {
+public TradeCanvas getTrade() {
     return trader;
 }
 
-/*
- * The method that is called at the beginning of the life of every applet.
+/**
+ * The method that is called at the beginning of the life of every JApplet.
  * Serves as the constructor:
  *      Sets up communication channels to the Server.
  */
@@ -133,14 +146,14 @@ public void init() {
     // adds said JTabbedPane to the JApplet's contentPane.
     {
         JTabbedPane leftStatusTabs = new JTabbedPane();     // 'leftStatusTabs' is the JTabbedPane which holds the left sidebar of the game's 3 main components
-        // JPanel declarations                                                                                   (StatusCanvas, Inventory, Resources)
+        // JPanel declarations                                                                                   (StatusCanvas, InventoryCanvas, ResourcesCanvas)
         JPanel statusPanel = new JPanel();                  // The container panel for the StatusCanvas. Is added to 'leftStatusTabs' from above.
-        JPanel inventoryPanel = new JPanel();               // The container panel for the Inventory.
-        JPanel resourcesPanel = new JPanel();               // The container panel for the Resources.
+        JPanel inventoryPanel = new JPanel();               // The container panel for the InventoryCanvas.
+        JPanel resourcesPanel = new JPanel();               // The container panel for the ResourcesCanvas.
 
         // JPanels initialization. 
         {    
-            status = new StatusCanvas(arr,this);            // 'status' declared as a Field. Construct it with the image array 'arr'(which contains health images) and a pointer to this JApplet.
+            status = new StatusCanvas(statusCanvasImageArray,this); // 'status' declared as a Field. Construct it with the image array 'arr'(which contains health images) and a pointer to this JApplet.
             ((Component)status).setFocusable(true);         // Cast 'status' as a Component so that we can call setFocusable(true), to make it visible.
             status.setBounds(leftStatusTabsTopLeftX,
                              leftStatusTabsTopLeftY,
@@ -148,20 +161,20 @@ public void init() {
                              leftStatusTabsBottomRightY);   // Set the size of the statusCanvas. Uses an inherited Canvas method.
             statusPanel.add(status);                        // Add the canvas to the statusPanel, which will then be added to the JTabbedPane 'leftStatusTabs'
 
-            inven = new Inventory(armor,weapon,sheild,belt,boot,this);// 'inven' declared as a Field. Construct it with the images necessary and a pointer to this JApplet.
+            inven = new InventoryCanvas(inventoryImageArray,this);// 'inven' declared as a Field. Construct it with the images necessary and a pointer to this JApplet.
             ((Component)inven).setFocusable(true);          // Cast 'inven' as a Component so that we can call setFocusable(true), to make it visible.
             inven.setBounds(leftStatusTabsTopLeftX,
                             leftStatusTabsTopLeftY,
                             leftStatusTabsBottomRightX,
-                            leftStatusTabsBottomRightY);    // Set the size of the Inventory. Uses an inherited Canvas method.
+                            leftStatusTabsBottomRightY);    // Set the size of the InventoryCanvas. Uses an inherited Canvas method.
             inventoryPanel.add(inven);                      // Add the 'inven'tory to the 'inventoryPanel'
 
-            res = new Resources();
+            res = new ResourcesCanvas();
             ((Component)res).setFocusable(true);
             res.setBounds(leftStatusTabsTopLeftX,
                           leftStatusTabsTopLeftY,
                           leftStatusTabsBottomRightX,
-                          leftStatusTabsBottomRightY);      // Set the size of the Resources. Uses an inherited Canvas method.		
+                          leftStatusTabsBottomRightY);      // Set the size of the ResourcesCanvas. Uses an inherited Canvas method.		
             resourcesPanel.add(res);                        // Add the 'res'ources to the 'resourcesPanel'
         }
 
@@ -177,73 +190,74 @@ public void init() {
         getContentPane().add("West",leftStatusTabs);
     }
     
-    Worker theGame = new Worker(socket,workerarr,this);
-    ((Component)theGame).setFocusable(true);
-    theGame.setBounds(230,1,320,320);			
-    getContentPane().add(theGame);
+    //----- MainWorldCanvas Setup ----\\
+        // 'theGameWorld' is a canvas that goes in the JApplet, and lets the player see the world.
+        theGameWorld = new MainWorldCanvas(socket,worldImageArray,this);      // Construct it with the array of images it needs.
+        ((Component)theGameWorld).setFocusable(true);                   // Make it visible.
+        theGameWorld.setBounds(230,1,320,320);                          // Set it's bounds with the Canvas-inhereited method.
+        getContentPane().add(theGameWorld);                             // Add it to the JApplet.
+//  \\---MainWorldCanvas Setup Done---//
+    
+    //------- JButtons Setup ---------\\ 
+        // The setup for the JButton which starts fights.
+        JButton fightJButton=new JButton("Fight");                      // Make the button with the name/Label "Fight"
+        fightJButton.setActionCommand("f");                             // Message code "f" = tryToStartFight()
+        fightJButton.addActionListener(this);                           // Make the JApplet ActionListener listen to events fired by this button.
+        fightJButton.setToolTipText("Click this button to begin combat.");
 
+        // The setup for the JButton which makes the player attempt to run away from fights.
+        JButton runJButton=new JButton("Run Away");                     // Make the button with the name/Label "Run Away"
+        runJButton.setActionCommand("r");                               // Message code "r" = runFromFight()
+        runJButton.addActionListener(this);                             // Make the JApplet ActionListener listen to events fired by this button.
+        runJButton.setToolTipText("Click this button to run from combat.");
 
-    b=new JButton("Fight");
-    //b.setBounds(250,350,40,40);
-    b.setActionCommand("fight");
-    b.addActionListener(this);
-    b.setToolTipText("Click this button to begin combat.");
-    //getContentPane().add(b);
+        // The setup for the JButton which makes the player attempt to trade with players on the same tile as him.
+        JButton tradeJButton=new JButton("Trade");                      // Make the button with the name/Label "TradeCanvas"
+        tradeJButton.setActionCommand("t");                             // Message code "t" = tryToTrade()
+        tradeJButton.addActionListener(this);                           // Make the JApplet ActionListener listen to events fired by this button.
+        tradeJButton.setToolTipText("Click this button to begin trade.");
+//  \\---- JButton Setup Complete ----//
+    
+    //------ RightStatusTabs Setup ----\\
+        JTabbedPane rightStatusTabs = new JTabbedPane();            // 'rightStatusTabs' is the JTabbedPane which holds the right sidebar of the game's 3 main components
+                                                                        // It contains the TradeCanvas and Combat components.
+        JPanel tradePanel = new JPanel();                           // JPanel container for the two tradeCanvases
 
-    b1=new JButton("Run");
-    //b1.setBounds(250,400,40,40);
-    b1.setActionCommand("run");
-    b1.addActionListener(this);
-    b1.setToolTipText("Click this button to run from combat.");
-    //getContentPane().add(b1);
+        trader = new TradeCanvas();
+        ((Component)trader).setFocusable(true);
+        trader.setSize(new Dimension(230,200));
 
-    b2=new JButton("Trade");
-    //b.setBounds(250,350,40,40);
-    b2.setActionCommand("trade");
-    b2.addActionListener(this);
-    b2.setToolTipText("Click this button to begin trade.");
+        bottomTradePanel = new TradeActionsPanel(this);
+        ((Component)bottomTradePanel).setFocusable(true);
+        bottomTradePanel.setSize(new Dimension(230,200));
 
+        tradePanel.add(trader);
+        tradePanel.add(bottomTradePanel);
 
+        combatCanvas = new CombatCanvas(statusCanvasImageArray,this);   // Uses same images as statusCanvas.
+        ((Component)combatCanvas).setFocusable(true);
+        combatCanvas.setSize(new Dimension(230,400));
 
-    JTabbedPane tabs2 = new JTabbedPane();
+        rightStatusTabs.addTab("Combat",combatCanvas);
+        rightStatusTabs.addTab("Trade",tradePanel);
 
-    JPanel pane = new JPanel();
-    JPanel pane1 = new JPanel();
+        ((Component)rightStatusTabs).setFocusable(true);
+        rightStatusTabs.setPreferredSize(new Dimension(230,400));
+        rightStatusTabs.setOpaque(true);
+        getContentPane().add("East",rightStatusTabs);
+//  \\--- RightStatusTabs Setup Done---//
 
-    combatCanvas = new CombatWorker(arr,this);
-    ((Component)combatCanvas).setFocusable(true);
-    combatCanvas.setSize(new Dimension(230,400));			
-    //pane.add(combatCanvas);
+    //--------- BottomPanel Setup ---------\\
+        Panel bottomPanel = new Panel();            // A Panel to hold the control buttons.
+        bottomPanel.setLayout(new GridLayout(1,3)); // Deine the layout to be 1 row with 3 columns.
+        bottomPanel.add(fightJButton);              // Throw the buttons in the panel.
+        bottomPanel.add(runJButton);
+        bottomPanel.add(tradeJButton);
 
-    trader = new Trade();
-    ((Component)trader).setFocusable(true);
-    trader.setSize(new Dimension(230,200));
+        getContentPane().add("South",bottomPanel);  // Add the panel (now containing the buttons) to the JApplet's contentPane.
+//  \\------ BottomPanel Steup Done -------//
 
-    otrader = new OtherTrade(this);
-    ((Component)otrader).setFocusable(true);
-    otrader.setSize(new Dimension(230,200));
-
-    pane.add(trader);
-    pane.add(otrader);
-
-    tabs2.addTab("Combat",combatCanvas);
-    tabs2.addTab("Trade",pane);
-
-    ((Component)tabs2).setFocusable(true);
-    tabs2.setPreferredSize(new Dimension(230,400));
-    tabs2.setOpaque(true);
-    getContentPane().add("East",tabs2);
-
-    Panel bottom = new Panel();   // a Panel to hold the control buttons
-    bottom.setLayout(new GridLayout(1,3));
-    bottom.add(b);
-    bottom.add(b1);
-    bottom.add(b2);
-
-
-    getContentPane().add("South",bottom);
-
-    setVisible(true);
+    setVisible(true);       // Set the whole applet visible.
 }
 
 /* 
