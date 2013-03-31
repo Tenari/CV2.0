@@ -9,12 +9,16 @@
  */
 
 import java.awt.Canvas;
+import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 
 class CombatCanvas extends Canvas implements MouseListener{
 
+public CombatCanvas (Image[] arr, ClientJApplet c){
+    
+}
     
 /*
  * Necessary override.

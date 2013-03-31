@@ -1,23 +1,24 @@
 /**
- * StatusCanvas is a Canvas, on which the basic health, energy, and stats are
- * displayed.
+ * MainWorldCanvas is a stand-alone Canvas, on which the game world is displayed.
  * 
- * It implements KeyListener so that the player can change preferences.
+ * This handles player movement, updating to draw enemies movement, and 
+ * background rendering.
  * 
  * 
  * @author Daniel Zapata | djz24
  */
-
 import java.awt.Canvas;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.net.Socket;
 
-class StatusCanvas extends Canvas implements KeyListener {
-
-    public StatusCanvas (Image[] arr, ClientJApplet c) {
-    }
+class MainWorldCanvas extends Canvas implements KeyListener{
     
+    // The constructor
+    public MainWorldCanvas (Socket socket,Image[] arr,ClientJApplet c) {
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {
         throw new UnsupportedOperationException("Not supported yet.");
