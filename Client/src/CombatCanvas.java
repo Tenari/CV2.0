@@ -45,5 +45,13 @@ public void mouseEntered(MouseEvent e) {
 @Override
 public void mouseExited(MouseEvent e) {
 }
+
+void goBlank(boolean b) {
+    throw new UnsupportedOperationException("Not yet implemented");
+}
+
+void setHeadHp(int a) {
+    throw new UnsupportedOperationException("Not yet implemented");
+}
     
 }

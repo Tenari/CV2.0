@@ -25,6 +25,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -113,9 +116,121 @@ public TradeCanvas getTrade() {
 }
 
 /**
+ * Listens on the BufferedReader 'in' and acts based on parses of the messages 
+ * it receives.
+ * @throws IOException 
+ */
+public void infiniteLoop() throws IOException {
+    boolean exiting = false;
+    long currentTime=System.currentTimeMillis();
+    try {
+        while(!exiting){
+            if (in.ready()) {       // If the server sent a message...
+                
+                String fullServerMessage = in.readLine();                       // Read in the full server message.
+                String fullServerMessageCopy = fullServerMessage;               // Copy the server message so we can make a scanner of it, and still retain the server message.
+                Scanner serverMessageScanner = new Scanner(fullServerMessageCopy);// Make the Scanner of the copy of the message.
+                String firstWordOfMessage = serverMessageScanner.next();        // Get the first word, an indicator of what action the Client needs to perform.
+                switch (firstWordOfMessage) {
+                    case "n":
+                    case "s":
+                    case "e":
+                    case "w":
+                        theGameWorld.setText(fullServerMessage);    // If it's a basic movement message, send the whole message to the MainWorldCanvas.
+                        break;
+                    case "fighting":                                // If it's a combat-hp message.
+                        int a = serverMessageScanner.nextInt();     
+                        if(a==12345) {                              // Check the first number for the death code '12345'
+                            getCombat().goBlank(true);
+                        }
+                        else
+                        {
+                                getCombat().setHeadHp(a);
+                                getCombat().setArmsHp(serverMessageScanner.nextInt());
+                                getCombat().setTorsoHp(serverMessageScanner.nextInt());
+                                getCombat().setLegsHp(serverMessageScanner.nextInt());
+                                getCombat().setAimText(serverMessageScanner.nextLine());
+                        }
+                        break;
+                    case "fightstatus":
+                        getCombat().setFightTextA(serverMessageScanner.nextLine());
+                        break;
+                    case "opponentoffer":
+                        getTrade().addOppOffer(serverMessageScanner.nextLine());
+                        break;
+                    case "charstatus":
+                        getChar().setHeadHp(serverMessageScanner.nextInt());
+                        getChar().setArmsHp(serverMessageScanner.nextInt());
+                        getChar().setTorsoHp(serverMessageScanner.nextInt());
+                        getChar().setLegsHp(serverMessageScanner.nextInt());
+                        getChar().setCostToMove(serverMessageScanner.nextInt());
+                        getChar().setWeight(serverMessageScanner.nextInt());
+                        getChar().setEnergy(serverMessageScanner.nextInt());
+                        getChar().setMoney(serverMessageScanner.nextInt());
+                        getChar().setStrength(serverMessageScanner.nextDouble());
+                        getChar().setAgility(serverMessageScanner.nextDouble());
+                        getChar().setHandToHand(serverMessageScanner.nextDouble());
+                        getChar().setSmallBlade(serverMessageScanner.nextDouble());
+                        getChar().setLargeBlade(serverMessageScanner.nextDouble());
+                        getChar().setAxe(serverMessageScanner.nextDouble());
+                        getChar().setPolearm(serverMessageScanner.nextDouble());
+                        getChar().setBow(serverMessageScanner.nextDouble());
+                        getChar().setThrowing(serverMessageScanner.nextDouble());
+                        getChar().setIntimidation(serverMessageScanner.nextDouble());
+                        getChar().setDiplomacy(serverMessageScanner.nextDouble());
+                        getChar().setEndurance(serverMessageScanner.nextDouble());
+                        getChar().setHiding(serverMessageScanner.nextDouble());
+                        break;
+                    case "addItem":
+                        inven.update(fullServerMessage);
+                        break;
+                    case "resou":
+                        res.setCloth(serverMessageScanner.nextInt());
+                        res.setTools(serverMessageScanner.nextInt());
+                        res.setWheat(serverMessageScanner.nextInt());
+                        res.setWater(serverMessageScanner.nextInt());
+                        res.setMeat(serverMessageScanner.nextInt());
+                        res.setStone(serverMessageScanner.nextInt());
+                        res.setWood(serverMessageScanner.nextInt());
+                        res.setMetal(serverMessageScanner.nextInt());
+                        res.setBuildingMaterial(serverMessageScanner.nextInt());
+                        break;
+                    case "tradeUpdate":
+                        getTrade().addOppOffer(serverMessageScanner.nextLine());
+                        getOtherTrade().setMyStuff();
+                        break;
+                }  	 
+            }
+            else
+            {
+                if (System.currentTimeMillis() >= currentTime+33)
+                {
+                    currentTime = System.currentTimeMillis();
+                    sendMessage("howdy");           // "howdy" is a ping to the server requesting an update on the information relevant to the painted image of the player.
+                    /*THIS IS STUPID, SHOULD JUST LET SERVER SEND OUT UPDATES 
+                     * WHEN SOMETHING CHANGES! NO NEED TO PING ALL THE TIME! 
+                     * WASTES PROCESSING.*/
+                }
+            }
+         }           // Exit while loop.
+        // Close all the server connections.
+        out.close();
+        in.close();
+        socket.close();
+    }
+    catch(IOException e)
+    {
+          System.out.println("Client failed in infinite loop.");
+    }
+}
+
+/**
  * The method that is called at the beginning of the life of every JApplet.
  * Serves as the constructor:
  *      Sets up communication channels to the Server.
+ *      Sets up the various Canvases of the Client inside of their tabs and containers
+ * 
+ * Then calls the client-side infinite loop. (infiniteLoop())
  */
 @Override
 public void init() {
@@ -139,6 +254,9 @@ public void init() {
         System.out.println("I/O error");
         e.printStackTrace();
     }
+    
+    // Load all the game images.
+    loadImagesIntoArrays();
     
 //--------------- Component compilation/setup --------------------------------\\
     // The following block creates a JTabbedPane, which contains 3 Panels, which
@@ -192,7 +310,7 @@ public void init() {
     
     //----- MainWorldCanvas Setup ----\\
         // 'theGameWorld' is a canvas that goes in the JApplet, and lets the player see the world.
-        theGameWorld = new MainWorldCanvas(socket,worldImageArray,this);      // Construct it with the array of images it needs.
+        theGameWorld = new MainWorldCanvas(worldImageArray,this);      // Construct it with the array of images it needs.
         ((Component)theGameWorld).setFocusable(true);                   // Make it visible.
         theGameWorld.setBounds(230,1,320,320);                          // Set it's bounds with the Canvas-inhereited method.
         getContentPane().add(theGameWorld);                             // Add it to the JApplet.
@@ -258,9 +376,65 @@ public void init() {
 //  \\------ BottomPanel Steup Done -------//
 
     setVisible(true);       // Set the whole applet visible.
+    
+    sendMessage(username);  // Tell the server that we've logged in.
+    
+    try {
+        infiniteLoop();         //Start waiting for input and responding.
+    } catch (IOException ex) {
+        Logger.getLogger(ClientJApplet.class.getName()).log(Level.SEVERE, null, ex);
+    }
 }
 
-/* 
+/**
+ * Loads hard-coded image names from the codeBase (requires them to be in the
+ * same folder as the .jar) and stores them in the more parameter-friendly 
+ * arrays, to be then passed to the various Canvases of this project.
+ */
+public void loadImagesIntoArrays(){
+    
+    // Load the necessary images for the worldImageArray, in order. ORDER IS FIXED.
+    worldImageArray = new Image[13];
+    worldImageArray[0] = getImage(getCodeBase(), "rmlfront.png");
+    worldImageArray[1] = getImage(getCodeBase(), "alien.jpg");
+    worldImageArray[2] = getImage(getCodeBase(), "alien2.jpg");
+    worldImageArray[3] = getImage(getCodeBase(), "bone.jpg");
+    worldImageArray[4] = getImage(getCodeBase(), "bar.jpg");
+    worldImageArray[5] = getImage(getCodeBase(), "monster.jpg");
+    worldImageArray[6] = getImage(getCodeBase(), "rmlback.png");
+    worldImageArray[7] = getImage(getCodeBase(), "rmlright.png");
+    worldImageArray[8] = getImage(getCodeBase(), "rmlleft.png");
+    worldImageArray[9] = getImage(getCodeBase(), "cmlback.png");
+    worldImageArray[10] = getImage(getCodeBase(), "cmlfront.png");
+    worldImageArray[11] = getImage(getCodeBase(), "cmlright.png");
+    worldImageArray[12] = getImage(getCodeBase(), "cmlleft.png");
+
+    // Load the necessary images for the statusCanvasImageArray, in order. ORDER IS FIXED.
+    statusCanvasImageArray = new Image[13];
+    statusCanvasImageArray[0] = getImage(getCodeBase(), "head.png");
+    statusCanvasImageArray[1] = getImage(getCodeBase(), "head1.png");
+    statusCanvasImageArray[2] = getImage(getCodeBase(), "head2.png");
+    statusCanvasImageArray[3] = getImage(getCodeBase(), "arms.png");
+    statusCanvasImageArray[4] = getImage(getCodeBase(), "arms1.png");
+    statusCanvasImageArray[5] = getImage(getCodeBase(), "arms2.png");
+    statusCanvasImageArray[6] = getImage(getCodeBase(), "torso.png");
+    statusCanvasImageArray[7] = getImage(getCodeBase(), "torso1.png");
+    statusCanvasImageArray[8] = getImage(getCodeBase(), "torso2.png");
+    statusCanvasImageArray[9] = getImage(getCodeBase(), "legs.png");
+    statusCanvasImageArray[10] = getImage(getCodeBase(), "legs1.png");
+    statusCanvasImageArray[11] = getImage(getCodeBase(), "legs2.png");
+    statusCanvasImageArray[12] = getImage(getCodeBase(), "bang3.png");
+    
+    // Load the necessary images for the inventoryImageArray, in order. ORDER IS FIXED.
+    inventoryImageArray = new Image[5];
+    inventoryImageArray[0] = getImage(getCodeBase(), "armor.jpg");
+    inventoryImageArray[1] = getImage(getCodeBase(), "weapon.jpg");
+    inventoryImageArray[2] = getImage(getCodeBase(), "sheild.jpg");
+    inventoryImageArray[3] = getImage(getCodeBase(), "belt.jpg");
+    inventoryImageArray[4] = getImage(getCodeBase(), "boot.jpg");
+}
+
+/** 
    Sends a given string message (codes as follows) through the 'out' PrintWriter
    Which was initialized in init() and is a private global variable
    "f" = tryToStartFight()
