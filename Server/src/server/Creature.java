@@ -43,9 +43,11 @@ public class Creature extends Organism
         setAttStrBase(skill);
         setAttSkillBase(skill);
      }
+     
+     // deactivated.
      private void executeRoutine(int level)
      {
-         int moveValue =generator.nextInt(4) + 1;
+         /*int moveValue =generator.nextInt(4) + 1;
 		if(level==1)
 		{
 			if(getX()!=0 && getY()!=0 && getX()!=99 && getY()!=99)
@@ -159,7 +161,7 @@ public class Creature extends Organism
 				moveSouth(3);
 			else if(getY()==67)
 				moveNorth(3);
-		}
+		}*/
     }
     public void act()
     {

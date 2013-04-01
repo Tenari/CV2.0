@@ -26,7 +26,13 @@ class World extends Thread{
     private int levelThree;	
     private ArrayList<NumberPair> fights;
     
-    public World() {
+    private Server server;
+    
+    private boolean playerIsCreated = false;    //shitty stopgap measure
+    
+    public World(Server s) {
+        server=s;
+        
         world = new int[][] {
             {1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1},
             {1,3,3, 3,1,3,1,3, 3,1,4,4,4,1,4,4,1,4,4,4,4,1},
@@ -90,6 +96,7 @@ class World extends Thread{
     	Player asef=new Player(name,nextChar);
     	characters.add(asef);//putting our new character into our arrList, so it is actually in the game
     	nextChar++;
+        playerIsCreated = true;
     }
     public void addNPC(String name,int xNPC, int yNPC, String wname)
     {
@@ -151,6 +158,7 @@ class World extends Thread{
     	long startTimeEnergy=System.currentTimeMillis();
     	long startTimeNPC=System.currentTimeMillis();
     	long startTimeSpawn=System.currentTimeMillis();
+        long startTimeUpdate=System.currentTimeMillis();
     	while(true)
     	{
     		long newTime=System.currentTimeMillis();
@@ -202,7 +210,7 @@ class World extends Thread{
 				startTimeEnergy=System.currentTimeMillis();
 			}
 			//loop for acting NPCs
-			if((newTime-startTimeNPC)>=700)
+			if((newTime-startTimeNPC)>=700 && playerIsCreated)
 			{
 				for(int a=0;a<monsters.size();a++)
 				{
@@ -213,6 +221,7 @@ class World extends Thread{
 					humanNPCs.get(a).act();
 				}
 				startTimeNPC=System.currentTimeMillis();
+                                server.updateMoveScreensInAllClients();
 			}
 			if((newTime-startTimeSpawn)>=7200000)
 			{
@@ -238,6 +247,14 @@ class World extends Thread{
 					}
 				}
 				startTimeSpawn=System.currentTimeMillis();
+			}
+                        //loop for updating Trade information in clients
+			if((newTime-startTimeUpdate)>=35 && playerIsCreated)
+			{
+				server.updateInventoryInAllClients();
+                                server.updateResourcesInAllClients();
+                                server.updateTradeInAllClients();
+				startTimeUpdate=System.currentTimeMillis();
 			}
 			
     	}
@@ -289,7 +306,6 @@ class World extends Thread{
      */
     public void moveCharacter(int uid, String dir)
     {
-    	//r.delay(70);
     	if(dir.equals("north"))
     	{
 		if(characters.get(uid).getY()>0)
@@ -365,6 +381,8 @@ class World extends Thread{
 			}
 		}
     	}
+        server.updateCharacterStatsInAllClients();
+        server.updateMoveScreensInAllClients();
     }
     /**
      * This method starts a fight between two characters
@@ -552,6 +570,8 @@ class World extends Thread{
 	     }
     	}
     	
+        server.updateFightInAllClients();       // Because the state of at least one fight has changed.
+        server.updateCharacterStatsInAllClients();
     }
     
     /**

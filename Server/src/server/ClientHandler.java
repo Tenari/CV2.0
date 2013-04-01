@@ -176,11 +176,6 @@ class ClientHandler extends Thread{
             case "E":
                 break;
         }
-
-        updateMoveScreen();
-        updateResou();
-        updateInven();
-        updateTrade();updateFight();updateCharacter();
     }
 
     public void updateMoveScreen()

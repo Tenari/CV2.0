@@ -375,7 +375,7 @@ public class Organism
     
 	public void moveNorth(int w)
     {
-    	if(isFighting==false && isConcious && energy>0)
+    	if(!isFighting && isConcious && energy>0)
     	{
 	    	if(w==3)
 	    	{

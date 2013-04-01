@@ -26,7 +26,7 @@ public class Server {
     public Server(int port) {
         clientsMap = new HashMap<>();
         clientCount = 0;
-        staging = new World();      //the instance of the game world where everything happens
+        staging = new World(this);      //the instance of the game world where everything happens
         staging.start();
         try {
             System.out.print("Starting server on port " + port + "...");
@@ -60,6 +60,19 @@ public class Server {
         }
     }
 
+    /**
+     * Shutdown the server.
+     */
+    private void kill() {
+        try {
+            for (Object i : clientsMap.values()) {
+                ((ClientHandler)i).kill();
+            }
+        }
+        catch(Exception e) {
+            System.out.println("WARNING! Server could not be killed reliably");
+        }
+    }
     
     /**
      * Read in the port and either fail, or construct the server.
@@ -75,23 +88,44 @@ public class Server {
         }
     }
     
-    /**
-     * Shutdown the server.
-     */
-    private void kill() {
-        try {
-            for (Object i : clientsMap.values()) {
-                ((ClientHandler)i).kill();
-            }
-        }
-        catch(Exception e) {
-            System.out.println("WARNING! Server could not be killed reliably");
-        }
-    }
- 
     // Remove a client
     public void removeMplayClient(int cid) {
         System.out.println("Client " + ((ClientHandler)clientsMap.get(cid)).getUsername() + "(" + cid + ") removed");
         clientsMap.remove(cid);
+    }
+    
+    public void updateMoveScreensInAllClients(){
+        for (Object i : clientsMap.values()) {
+                ((ClientHandler)i).updateMoveScreen();
+            }
+    }
+    
+    public void updateTradeInAllClients(){
+        for (Object i : clientsMap.values()) {
+                ((ClientHandler)i).updateTrade();
+            }
+    }
+    
+    public void updateResourcesInAllClients(){
+        for (Object i : clientsMap.values()) {
+                ((ClientHandler)i).updateResou();
+            }
+    }
+    
+    public void updateInventoryInAllClients(){
+        for (Object i : clientsMap.values()) {
+                ((ClientHandler)i).updateInven();
+            }
+    }
+    
+    public void updateFightInAllClients(){
+        for (Object i : clientsMap.values()) {
+                ((ClientHandler)i).updateFight();
+            }
+    }
+    public void updateCharacterStatsInAllClients(){
+        for (Object i : clientsMap.values()) {
+                ((ClientHandler)i).updateCharacter();
+            }
     }
 }

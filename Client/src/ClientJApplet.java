@@ -201,17 +201,6 @@ public void infiniteLoop() throws IOException {
                         break;
                 }  	 
             }
-            else
-            {
-                if (System.currentTimeMillis() >= currentTime+33)
-                {
-                    currentTime = System.currentTimeMillis();
-                    sendMessage("howdy");           // "howdy" is a ping to the server requesting an update on the information relevant to the painted image of the player.
-                    /*THIS IS STUPID, SHOULD JUST LET SERVER SEND OUT UPDATES 
-                     * WHEN SOMETHING CHANGES! NO NEED TO PING ALL THE TIME! 
-                     * WASTES PROCESSING.*/
-                }
-            }
          }           // Exit while loop.
         // Close all the server connections.
         out.close();
