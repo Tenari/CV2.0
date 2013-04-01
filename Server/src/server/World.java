@@ -118,29 +118,30 @@ class World extends Thread{
         nextMonster++;
         
     }
-	//this method adds monsters to the wildi
-	public void populate()
-	{
-		if(levelOne<500)
-              {
-                  int xCord = (int)(Math.random()*100);
-                  int yCord = (int)(Math.random()*100);
-                  String name="squirel"+levelOne;
-                  addMonster(name,xCord,yCord,"wildi",1);
-              }
-              if(levelTwo<250)
-              {
-                  int xCord = (int)(Math.random()*67)+17;
-                  int yCord = (int)(Math.random()*67)+17;
-                  addMonster("wolf"+levelTwo+"",xCord,yCord,"wildi",2);
-              }
-              if(levelThree<100)
-              {
-                  int xCord = (int)(Math.random()*33)+33;
-                  int yCord = (int)(Math.random()*33)+33;
-                  addMonster("bear"+levelThree+"",xCord,yCord,"wildi",3);
-              }
-	}	
+    //this method adds monsters to the wildi
+    //deactivated
+    public void populate()
+    {
+        /*if(levelOne<500)
+        {
+            int xCord = (int)(Math.random()*100);
+            int yCord = (int)(Math.random()*100);
+            String name="squirel"+levelOne;
+            addMonster(name,xCord,yCord,"wildi",1);
+        }
+        if(levelTwo<250)
+        {
+            int xCord = (int)(Math.random()*67)+17;
+            int yCord = (int)(Math.random()*67)+17;
+            addMonster("wolf"+levelTwo+"",xCord,yCord,"wildi",2);
+        }
+        if(levelThree<100)
+        {
+            int xCord = (int)(Math.random()*33)+33;
+            int yCord = (int)(Math.random()*33)+33;
+            addMonster("bear"+levelThree+"",xCord,yCord,"wildi",3);
+        }*/
+    }	
     /**
      * This method is an infinite loop that is used to restrain the speed of fights. It is intended to cause computer controlled events to occur.
      */

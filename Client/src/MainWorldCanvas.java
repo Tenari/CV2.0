@@ -23,6 +23,9 @@ class MainWorldCanvas extends Canvas implements KeyListener{
     private String paintInformation;// The string containing the info about what to draw.
     private long waitSpeed = 222;   // The time (in milliseconds) it takes before another move can be sent to the server.
     
+    private final int worldImageWidth = 640;
+    private final int worldImageHeight= 320;
+    
     private ClientJApplet client;   // Pointer to Parent JApplet.
     
     // Image Feilds.
@@ -205,11 +208,11 @@ public void paint( Graphics bufferGraphics )
                     {
                             if(ey<4)
                             {
-                                    bufferGraphics.drawImage(temppic,0,0,3200,3200,null);
+                                    bufferGraphics.drawImage(temppic,32,32,worldImageWidth,worldImageHeight,null);
                                     bufferGraphics.drawImage(character,ex*32,ey*32,32,32,null);
                                     for(int h=0;h<others.size();h+=2)//drawing other chars
                                     {
-                                            bufferGraphics.drawImage(character,others.get(h)*32,others.get(h+1)*32,32,32,null);
+                                            bufferGraphics.drawImage(rmlnorth,others.get(h)*32,others.get(h+1)*32,32,32,null);
                                     }
                                     for(int h=0;h<monsters.size();h+=2)//drawing monsters
                                     {
@@ -218,11 +221,11 @@ public void paint( Graphics bufferGraphics )
                             }
                             else if(ey>=94)
                             {
-                                    bufferGraphics.drawImage(temppic,0,0-(32*90),3200,3200,null);
+                                    bufferGraphics.drawImage(temppic,32,32-(32*90),worldImageWidth,worldImageHeight,null);
                                     bufferGraphics.drawImage(character,ex*32,(ey-90)*32,32,32,null);
                                     for(int h=0;h<others.size();h+=2)//drawing other chars
                                     {
-                                            bufferGraphics.drawImage(character,others.get(h)*32,(others.get(h+1)-90)*32,32,32,null);
+                                            bufferGraphics.drawImage(rmlnorth,others.get(h)*32,(others.get(h+1)-90)*32,32,32,null);
                                     }
                                     for(int h=0;h<monsters.size();h+=2)//drawing monsters
                                     {
@@ -231,11 +234,11 @@ public void paint( Graphics bufferGraphics )
                             }
                             else
                             {
-                                    bufferGraphics.drawImage(temppic,0,0-((ey-4)*32),3200,3200,null);
+                                    bufferGraphics.drawImage(temppic,32,32-((ey-4)*32),worldImageWidth,worldImageHeight,null);
                                     bufferGraphics.drawImage(character,ex*32,(4)*32,32,32,null);
                                     for(int h=0;h<others.size();h+=2)//drawing other chars
                                     {
-                                            bufferGraphics.drawImage(character,others.get(h)*32,(others.get(h+1)-ey+4)*32,32,32,null);
+                                            bufferGraphics.drawImage(rmlnorth,others.get(h)*32,(others.get(h+1)-ey+4)*32,32,32,null);
                                     }
                                     for(int h=0;h<monsters.size();h+=2)//drawing monsters
                                     {
@@ -248,11 +251,11 @@ public void paint( Graphics bufferGraphics )
                     {
                             if(ey<4)
                             {
-                                    bufferGraphics.drawImage(temppic,(0-(32*90)),0,3200,3200,null);
+                                    bufferGraphics.drawImage(temppic,(32-(32*90)),32,worldImageWidth,worldImageHeight,null);
                                     bufferGraphics.drawImage(character,(ex-90)*32,ey*32,32,32,null);
                                     for(int h=0;h<others.size();h+=2)//drawing other chars
                                     {
-                                            bufferGraphics.drawImage(character,(others.get(h)-90)*32,others.get(h+1)*32,32,32,null);
+                                            bufferGraphics.drawImage(rmlnorth,(others.get(h)-90)*32,others.get(h+1)*32,32,32,null);
                                     }
                                     for(int h=0;h<monsters.size();h+=2)//drawing monsters
                                     {
@@ -261,11 +264,11 @@ public void paint( Graphics bufferGraphics )
                             }
                             else if(ey>=94)
                             {
-                                    bufferGraphics.drawImage(temppic,(0-(32*90)),0-(32*90),3200,3200,null);
+                                    bufferGraphics.drawImage(temppic,(32-(32*90)),32-(32*90),worldImageWidth,worldImageHeight,null);
                                     bufferGraphics.drawImage(character,(ex-90)*32,(ey-90)*32,32,32,null);
                                     for(int h=0;h<others.size();h+=2)//drawing other chars
                                     {
-                                            bufferGraphics.drawImage(character,(others.get(h)-90)*32,(others.get(h+1)-90)*32,32,32,null);
+                                            bufferGraphics.drawImage(rmlnorth,(others.get(h)-90)*32,(others.get(h+1)-90)*32,32,32,null);
                                     }
                                     for(int h=0;h<monsters.size();h+=2)//drawing monsters
                                     {
@@ -274,11 +277,11 @@ public void paint( Graphics bufferGraphics )
                             }
                             else
                             {
-                                    bufferGraphics.drawImage(temppic,(0-(32*90)),0-((ey-4)*32),3200,3200,null);
+                                    bufferGraphics.drawImage(temppic,(32-(32*90)),32-((ey-4)*32),worldImageWidth,worldImageHeight,null);
                                     bufferGraphics.drawImage(character,(ex-90)*32,(4)*32,32,32,null);
                                     for(int h=0;h<others.size();h+=2)//drawing other chars
                                     {
-                                            bufferGraphics.drawImage(character,(others.get(h)-90)*32,(others.get(h+1)-ey+4)*32,32,32,null);
+                                            bufferGraphics.drawImage(rmlnorth,(others.get(h)-90)*32,(others.get(h+1)-ey+4)*32,32,32,null);
                                     }
                                     for(int h=0;h<monsters.size();h+=2)//drawing monsters
                                     {
@@ -290,11 +293,11 @@ public void paint( Graphics bufferGraphics )
                     {
                             if(ey<4)
                             {
-                                    bufferGraphics.drawImage(temppic,0-((ex-4)*32),0,3200,3200,null);
+                                    bufferGraphics.drawImage(temppic,32-((ex-4)*32),32,worldImageWidth,worldImageHeight,null);
                                     bufferGraphics.drawImage(character,4*32,ey*32,32,32,null);
                                     for(int h=0;h<others.size();h+=2)//drawing other chars
                                     {
-                                            bufferGraphics.drawImage(character,(others.get(h)-ex+4)*32,others.get(h+1)*32,32,32,null);
+                                            bufferGraphics.drawImage(rmlnorth,(others.get(h)-ex+4)*32,others.get(h+1)*32,32,32,null);
                                     }
                                     for(int h=0;h<monsters.size();h+=2)//drawing monsters
                                     {
@@ -303,11 +306,11 @@ public void paint( Graphics bufferGraphics )
                             }
                             else if(ey>=94)
                             {
-                                    bufferGraphics.drawImage(temppic,0-((ex-4)*32),0-(32*90),3200,3200,null);
+                                    bufferGraphics.drawImage(temppic,32-((ex-4)*32),32-(32*90),worldImageWidth,worldImageHeight,null);
                                     bufferGraphics.drawImage(character,4*32,(ey-90)*32,32,32,null);
                                     for(int h=0;h<others.size();h+=2)//drawing other chars
                                     {
-                                            bufferGraphics.drawImage(character,(others.get(h)-ex+4)*32,(others.get(h+1)-90)*32,32,32,null);
+                                            bufferGraphics.drawImage(rmlnorth,(others.get(h)-ex+4)*32,(others.get(h+1)-90)*32,32,32,null);
                                     }
                                     for(int h=0;h<monsters.size();h+=2)//drawing monsters
                                     {
@@ -316,11 +319,11 @@ public void paint( Graphics bufferGraphics )
                             }
                             else
                             {
-                                    bufferGraphics.drawImage(temppic,0-((ex-4)*32),0-((ey-4)*32),3200,3200,null);
+                                    bufferGraphics.drawImage(temppic,32-((ex-4)*32),32-((ey-4)*32),worldImageWidth,worldImageHeight,null);
                                     bufferGraphics.drawImage(character,4*32,(4)*32,32,32,null);
                                     for(int h=0;h<others.size();h+=2)//drawing other chars
                                     {
-                                            bufferGraphics.drawImage(character,(others.get(h)-ex+4)*32,(others.get(h+1)-ey+4)*32,32,32,null);
+                                            bufferGraphics.drawImage(rmlnorth,(others.get(h)-ex+4)*32,(others.get(h+1)-ey+4)*32,32,32,null);
                                     }
                                     for(int h=0;h<monsters.size();h+=2)//drawing monsters
                                     {

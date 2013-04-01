@@ -396,9 +396,9 @@ public void loadImagesIntoArrays(){
     // Load the necessary images for the worldImageArray, in order. ORDER IS FIXED.
     worldImageArray = new Image[13];
     worldImageArray[0] = getImage(getCodeBase(), "rmlfront.png");
-    worldImageArray[1] = getImage(getCodeBase(), "alien.jpg");
-    worldImageArray[2] = getImage(getCodeBase(), "alien2.jpg");
-    worldImageArray[3] = getImage(getCodeBase(), "bone.jpg");
+    worldImageArray[1] = getImage(getCodeBase(), "smallcity.jpg");
+    worldImageArray[2] = getImage(getCodeBase(), "smallcity.jpg");
+    worldImageArray[3] = getImage(getCodeBase(), "smallcity.jpg");
     worldImageArray[4] = getImage(getCodeBase(), "bar.jpg");
     worldImageArray[5] = getImage(getCodeBase(), "monster.jpg");
     worldImageArray[6] = getImage(getCodeBase(), "rmlback.png");

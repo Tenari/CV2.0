@@ -332,7 +332,7 @@ public class homoSapien extends Organism
 	    	}
 	    	endurance+=0.005;
     	}
-    	setLastMoveDirection("north");
+    	setLastMoveDirection("n");
     }
     public void moveSouth(int w)
     {
@@ -365,7 +365,7 @@ public class homoSapien extends Organism
 	    	}
 	    	endurance+=0.005;
     	}
-    	setLastMoveDirection("south");
+    	setLastMoveDirection("s");
     }
     public void moveEast(int w)
     {
@@ -398,7 +398,7 @@ public class homoSapien extends Organism
 	    	}
 	    	endurance+=0.005;
     	}
-    	setLastMoveDirection("east");
+    	setLastMoveDirection("e");
     }
     public void moveWest(int w)
     {
@@ -430,6 +430,6 @@ public class homoSapien extends Organism
 	    	}
 	    	endurance+=0.005;
     	}
-    	setLastMoveDirection("west");
+    	setLastMoveDirection("w");
     }
 }
