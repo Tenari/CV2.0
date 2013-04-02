@@ -5,8 +5,16 @@
  */
 package server;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class World extends Thread{
     
@@ -15,6 +23,13 @@ class World extends Thread{
     private ArrayList<Creature> monsters;
     private String[][] fullWorld;
     private int[][] world;                  // main world map array defining the right side city
+    
+    private int smallCityYLength = 12;
+    private int smallCityXLength = 22;
+    
+    private int barYLength = 8;
+    private int barXLength = 8;
+    
     private int[][] world1;                 // wildi
     private int[][] wildi;                  // main world map array defining the left side city
     private int[][] bar;                    // bar map array defining the walls and such
@@ -26,38 +41,37 @@ class World extends Thread{
     private int levelThree;	
     private ArrayList<NumberPair> fights;
     
+    // SQL Database Feilds
+    String dbURL = "jdbc:mysql://localhost/game";   // URL of the database.
+    String dbUsername = "root";                     
+    String dbPassword = "";
+    Connection dbConnection;
+    Statement dbStmt;
+    ResultSet dbResultSet;
+        
     private Server server;
     
     private boolean playerIsCreated = false;    //shitty stopgap measure
     
     public World(Server s) {
-        server=s;
+        server=s;                   // Connect the pointer to the server thread
         
-        world = new int[][] {
-            {1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-            {1,3,3, 3,1,3,1,3, 3,1,4,4,4,1,4,4,1,4,4,4,4,1},
-            {1,3,3, 3,1,3,1,3, 3,1,4,4,4,1,4,4,1,4,4,4,4,1},
-            {1,3,3, 3,1,3,1,3, 3,1,4,4,4,1,4,4,1,4,4,4,4,1},
-            {1,1,10,1,1,3,1,11,1,1,4,4,4,1,1,1,1,4,4,4,4,1},
-            {1,3,3, 3,3,3,3,3, 3,3,3,3,3,3,3,3,3,3,4,4,4,1},
-            {1,4,4, 4,4,4,4,4, 4,4,4,4,4,4,4,4,4,4,4,4,4,1},
-            {1,4,4, 4,4,4,4,4, 4,4,4,4,4,4,4,4,4,4,4,4,4,1},
-            {1,4,4, 4,4,4,4,4, 4,4,4,4,4,4,4,4,4,4,4,4,4,1},
-            {1,4,1, 4,4,4,4,4, 4,4,4,4,4,4,4,4,4,4,4,4,4,1},
-            {1,4,4, 4,4,4,4,4, 4,4,4,4,4,4,4,4,4,4,4,4,4,1},
-            {1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1}            
-        };
+        // SQL Database Connection initialization
+        try {
+            // The driver is connected in the IDE build settings. FYI.
+            
+            Properties connectionProps = new Properties();
+            connectionProps.put("user", this.dbUsername);
+            connectionProps.put("password", this.dbPassword);
+            dbConnection = DriverManager.getConnection(dbURL, connectionProps);
+            dbStmt = dbConnection.createStatement();
+        } catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+        }        
         
-        world1=wildi=world;
         
-        bar = new int[][]  {{1,1,1,1,1,1,1,1},
-                            {1,3,3,3,3,3,3,1},							//5=door to main	this is the bar building
-                            {1,3,3,1,1,1,1,1},
-                            {1,3,3,3,3,3,3,1},
-                            {1,1,3,3,3,3,3,1},
-                            {1,3,3,3,3,3,3,1},
-                            {1,3,3,3,3,3,3,1},
-                            {1,1,1,5,5,1,1,1}};
         fullWorld= new String[][] {{"world","wildi","world1"}};
 		
         characters=new ArrayList<>();
@@ -125,8 +139,28 @@ class World extends Thread{
         nextMonster++;
         
     }
-    //this method adds monsters to the wildi
-    //deactivated
+    
+    /**
+     * This method checks to see that the specified charater actually exists
+     * @param name the name of the Human being checked
+     * @return boolean value indicating existence
+     */
+    public boolean charExist(Player name)
+    {
+    	if(characters.isEmpty())
+    	{return false;}
+    	else
+    	{
+	    	if(characters.contains(name))
+	    		return true;
+	    	else
+	    		return false;
+    	}
+    	
+    }
+    
+    // Keeps monster NPC population at appropriate levels
+    // deactivated
     public void populate()
     {
         /*if(levelOne<500)
@@ -149,8 +183,15 @@ class World extends Thread{
             addMonster("bear"+levelThree+"",xCord,yCord,"wildi",3);
         }*/
     }	
+    
     /**
-     * This method is an infinite loop that is used to restrain the speed of fights. It is intended to cause computer controlled events to occur.
+     * The primary infinite loop which updates the state of the game world.
+     * Handles:
+     *  Fights
+     *  Energy Regeneration
+     *  NPC AI actions
+     *  Monster NPC spawns
+     *  Trades
      */
     public void infiniteLoop()
     {
@@ -259,6 +300,7 @@ class World extends Thread{
 			
     	}
     }
+    
     /**
      * this is used to get the user id of a given human object
      * @param as the Human object that is beign identified
@@ -268,24 +310,7 @@ class World extends Thread{
     {
     	return characters.indexOf(as);
     }
-    /**
-     * This method checks to see that the specified charater actually exists
-     * @param name the name of the Human being checked
-     * @return boolean value indicating existence
-     */
-    public boolean charExist(Player name)
-    {
-    	if(characters.isEmpty())
-    	{return false;}
-    	else
-    	{
-	    	if(characters.contains(name))
-	    		return true;
-	    	else
-	    		return false;
-    	}
-    	
-    }
+    
     /**
      * This method is used to get the Human object of a specific uid
      * @param uid the int used to find a Human
@@ -299,6 +324,7 @@ class World extends Thread{
     {
     	return monsters.get(uid);
     }
+    
     /**
      * This method moves the specified character in the specified direction
      * @param uid the int user id for the character to be moved
@@ -326,12 +352,12 @@ class World extends Thread{
     	}
     	if(dir.equals("south"))
     	{
-    		if(characters.get(uid).getY()<world.length-1)
+    		if(characters.get(uid).getY()<smallCityYLength-1)
     		{
     			int w=nextSpotType(characters.get(uid).getX(),characters.get(uid).getY()+1,characters.get(uid).getWorld());
     			characters.get(uid).moveSouth(w);
     		}
-    		else if(characters.get(uid).getY()==world.length-1)
+    		else if(characters.get(uid).getY()==smallCityYLength-1)
 			{
 				String next=changeWorld("south",uid,characters.get(uid).getWorld());
 				if(next.equals(characters.get(uid).getWorld())==false)
@@ -345,12 +371,12 @@ class World extends Thread{
     	
     	if(dir.equals("east"))
     	{
-		if(characters.get(uid).getX()<world[0].length-1)
+		if(characters.get(uid).getX()<smallCityXLength-1)
 		{
 			int w=nextSpotType(characters.get(uid).getX()+1,characters.get(uid).getY(),characters.get(uid).getWorld());
 			characters.get(uid).moveEast(w);
 		}
-		else if(characters.get(uid).getX()==world[0].length-1)
+		else if(characters.get(uid).getX()==smallCityXLength-1)
 		{
 			String next=changeWorld("east",uid,characters.get(uid).getWorld());
 			System.out.print(next);
@@ -384,6 +410,7 @@ class World extends Thread{
         server.updateCharacterStatsInAllClients();
         server.updateMoveScreensInAllClients();
     }
+    
     /**
      * This method starts a fight between two characters
      * @param uid the user to start fighting
@@ -439,6 +466,7 @@ class World extends Thread{
 	    	}
     	}
     }
+    
     /**
      * This method ends a fight between two characters
      * @param uid the user to stop fighting
@@ -585,25 +613,42 @@ class World extends Thread{
     {
     	Scanner had = new Scanner(worldnam);
     	String worldname=had.next();
-    	if(worldname.equals("world"))
-    	{
-    		return world[y][x];//goes [row][col] so, y comes first--yes its weird
-    	} 
-    	else if(worldname.equals("bar"))
-    	{
-    		return bar[y][x];
-    	}
-    	else if(worldname.equals("world1"))
-    	{
-    		return world1[y][x];
-    	}
-    	else if(worldname.equals("wildi"))
-    	{
-    		return wildi[y][x];
-    	}
-    	
-    	else
-    		return 1;
+    	try {
+            if(worldname.equals("world")) {
+
+                if (dbStmt.execute("SELECT `terrainType` FROM `smallcity` WHERE `smallcity`.`x` = "+x+" AND`smallcity`.`y` = "+y)) {
+                    dbResultSet = dbStmt.getResultSet();
+                } else {
+                    System.err.println("select failed");
+                    return 1;
+                }
+
+                while (dbResultSet.next()) {
+                 return dbResultSet.getInt(1);
+             }
+
+            }
+            if(worldname.equals("bar")) {
+
+                if (dbStmt.execute("SELECT `terrainType` FROM `bar` WHERE `bar`.`x` = "+x+" AND`bar`.`y` = "+y)) {
+                    dbResultSet = dbStmt.getResultSet();
+                } else {
+                    System.err.println("select failed");
+                    return 1;
+                }
+
+                while (dbResultSet.next()) {
+                 return dbResultSet.getInt(1);
+             }
+
+            }
+        } catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+
+        }
+        return 1;
     }
     
     public String changeWorld(String dire, int uid, String current)
@@ -670,7 +715,6 @@ class World extends Thread{
     		
     }
     
-    //
     /**
      * this methodretuns the arrList of all the humans within the 10X10 whose origin is that of int x, int y
      * @param x an integer representing the x coordinate
@@ -746,7 +790,6 @@ class World extends Thread{
     	}
     	return end;
     }
-    
     
     public void startTrade(int uid)
     {

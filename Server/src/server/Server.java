@@ -14,10 +14,10 @@ import java.util.Map;
 
 public class Server {
 
-    private Map<Integer,ClientHandler> clientsMap;
-    private int clientCount;
-    private ServerSocket server;
-    private World staging;
+    private Map<Integer,ClientHandler> clientsMap;      // Records connected Clients and their IDs
+    private int clientCount;                            // Number of currently connected Clients
+    private ServerSocket server;                        // Connection to read/talk on some port
+    private World staging;                              // Pointer to thread which contains game world state.
     
     /**
      * The constructor
@@ -26,7 +26,7 @@ public class Server {
     public Server(int port) {
         clientsMap = new HashMap<>();
         clientCount = 0;
-        staging = new World(this);      //the instance of the game world where everything happens
+        staging = new World(this);          //the instance of the game world where everything happens
         staging.start();
         try {
             System.out.print("Starting server on port " + port + "...");
