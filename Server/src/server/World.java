@@ -13,16 +13,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 class World extends Thread{
     
-    private ArrayList<Player> characters;   // list that hold all of the characters in the game
-    private ArrayList<HumanNPC> humanNPCs;
-    private ArrayList<Creature> monsters;
+    private ArrayList<Organism> organisms;   // list that hold all of the characters in the game
     private String[][] fullWorld;
-    private int[][] world;                  // main world map array defining the right side city
     
     private int smallCityYLength = 12;
     private int smallCityXLength = 22;
@@ -30,12 +25,7 @@ class World extends Thread{
     private int barYLength = 8;
     private int barXLength = 8;
     
-    private int[][] world1;                 // wildi
-    private int[][] wildi;                  // main world map array defining the left side city
-    private int[][] bar;                    // bar map array defining the walls and such
-    private int nextChar;
-    private int nextNPCChar;
-    private int nextMonster;
+    private int nextOrganismID;
     private int levelOne;
     private int levelTwo;
     private int levelThree;	
@@ -74,13 +64,9 @@ class World extends Thread{
         
         fullWorld= new String[][] {{"world","wildi","world1"}};
 		
-        characters=new ArrayList<>();
-        humanNPCs=new ArrayList<>();
-        monsters=new ArrayList<>();
+        organisms=new ArrayList<>();
         
-        nextChar=0;
-        nextNPCChar=0;
-        nextMonster=0;
+        nextOrganismID=0;
         
         levelOne=0;
         levelTwo=0;
@@ -103,40 +89,42 @@ class World extends Thread{
     
     /**
      * This method adds a Character to the characters ArrayList
+     * Returns the uid of added character.
      * @param name the name of the character
      */
-    public void addCharacter(String name)
+    public int addCharacter(String name)
     {
-    	Player asef=new Player(name,nextChar);
-    	characters.add(asef);//putting our new character into our arrList, so it is actually in the game
-    	nextChar++;
+    	Player asef=new Player(name, nextOrganismID, dbConnection, dbStmt, dbResultSet);
+    	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
+    	nextOrganismID++;
         playerIsCreated = true;
+        return nextOrganismID-1; // return the uid of the character we just created.
     }
     public void addNPC(String name,int xNPC, int yNPC, String wname)
     {
-    	HumanNPC asef=new HumanNPC(name,nextNPCChar,xNPC,yNPC,wname);
-    	humanNPCs.add(asef);//putting our new character into our arrList, so it is actually in the game
-    	nextNPCChar++;
+    	HumanNPC asef=new HumanNPC(name,nextOrganismID,xNPC,yNPC,wname, dbConnection, dbStmt, dbResultSet);
+    	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
+    	nextOrganismID++;
     }
     public void addMonster(String name,int xNPC, int yNPC, String wname, int lvl)
     {
-    	Creature asef=new Creature(name,nextMonster,xNPC,yNPC,wname,lvl);
+    	Creature asef=new Creature(name,nextOrganismID,xNPC,yNPC,wname,lvl, dbConnection, dbStmt, dbResultSet);
     	if(lvl==1)
     	{
-    		monsters.add(asef);//putting our new character into our arrList, so it is actually in the game
+    		organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
     		levelOne++;
     	}
     	if(lvl==2)
     	{
-        	monsters.add(asef);//putting our new character into our arrList, so it is actually in the game
+        	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
         	levelTwo++;
     	}
      	if(lvl==3)
      	{
-     		monsters.add(asef);//putting our new character into our arrList, so it is actually in the game
+     		organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
      		levelThree++;
      	}
-        nextMonster++;
+        nextOrganismID++;
         
     }
     
@@ -145,16 +133,18 @@ class World extends Thread{
      * @param name the name of the Human being checked
      * @return boolean value indicating existence
      */
-    public boolean charExist(Player name)
+    public boolean charExist(String name)
     {
-    	if(characters.isEmpty())
+    	if(organisms.isEmpty())
     	{return false;}
     	else
     	{
-	    	if(characters.contains(name))
+	    	for (Organism i : organisms){
+                    if(i.getName().equals(name)){
 	    		return true;
-	    	else
-	    		return false;
+                    }
+                }
+	    	return false;
     	}
     	
     }
@@ -210,27 +200,27 @@ class World extends Thread{
 				{
 					if(fights.get(i).getBool())//if the fight is happening between two characters
 					{
-						characters.get(fights.get(i).getNumOne()).setFightStatus("");
-	    				characters.get(fights.get(i).getNumTwo()).setFightStatus("");
+						organisms.get(fights.get(i).getNumOne()).setFightStatus("");
+	    				organisms.get(fights.get(i).getNumTwo()).setFightStatus("");
 						fightOneRound(fights.get(i).getNumOne(),fights.get(i).getNumTwo(),true,true);
 				    	fightOneRound(fights.get(i).getNumTwo(),fights.get(i).getNumOne(),true,true);
-				    	if((characters.get(fights.get(i).getNumTwo()).isAbleToFight()==false)||(characters.get(fights.get(i).getNumOne()).isAbleToFight()==false))
+				    	if((organisms.get(fights.get(i).getNumTwo()).isAbleToFight()==false)||(organisms.get(fights.get(i).getNumOne()).isAbleToFight()==false))
 				    	{
-				    		characters.get(fights.get(i).getNumOne()).autorun();
-				    		characters.get(fights.get(i).getNumTwo()).autorun();
+				    		organisms.get(fights.get(i).getNumOne()).autorun();
+				    		organisms.get(fights.get(i).getNumTwo()).autorun();
 				    		fights.remove(new NumberPair(fights.get(i).getNumOne(),1,true));
 				    	}
 					}
 					else
 					{
-						characters.get(fights.get(i).getNumOne()).setFightStatus("");
-	    				monsters.get(fights.get(i).getNumTwo()).setFightStatus("");
+						organisms.get(fights.get(i).getNumOne()).setFightStatus("");
+	    				organisms.get(fights.get(i).getNumTwo()).setFightStatus("");
 						fightOneRound(fights.get(i).getNumOne(),fights.get(i).getNumTwo(),false,false);
 				    	fightOneRound(fights.get(i).getNumTwo(),fights.get(i).getNumOne(),false,true);
-				    	if((monsters.get(fights.get(i).getNumTwo()).isAbleToFight()==false)||(characters.get(fights.get(i).getNumOne()).isAbleToFight()==false))
+				    	if((organisms.get(fights.get(i).getNumTwo()).isAbleToFight()==false)||(organisms.get(fights.get(i).getNumOne()).isAbleToFight()==false))
 				    	{
-				    		characters.get(fights.get(i).getNumOne()).autorun();
-				    		monsters.get(fights.get(i).getNumTwo()).autorun();
+				    		organisms.get(fights.get(i).getNumOne()).autorun();
+				    		organisms.get(fights.get(i).getNumTwo()).autorun();
 				    		fights.remove(new NumberPair(fights.get(i).getNumOne(),1,true));
 				    	}
 					}
@@ -244,33 +234,29 @@ class World extends Thread{
 			//loop for adding energy
 			if((newTime-startTimeEnergy)>=60000)
 			{
-				for(int i=0; i<characters.size(); i++)
+				for(int i=0; i<organisms.size(); i++)
 				{
-					characters.get(i).setEnergy(characters.get(i).getEnergy()+7);
+					organisms.get(i).setEnergy(organisms.get(i).getEnergy()+7);
 				}
 				startTimeEnergy=System.currentTimeMillis();
 			}
 			//loop for acting NPCs
 			if((newTime-startTimeNPC)>=700 && playerIsCreated)
 			{
-				for(int a=0;a<monsters.size();a++)
+				for(int a=0;a<organisms.size();a++)
 				{
-					monsters.get(a).act();
-				}
-				for(int a=0;a<humanNPCs.size();a++)
-				{
-					humanNPCs.get(a).act();
+					organisms.get(a).act();
 				}
 				startTimeNPC=System.currentTimeMillis();
                                 server.updateMoveScreensInAllClients();
 			}
 			if((newTime-startTimeSpawn)>=7200000)
 			{
-				for(int a=0;a<monsters.size();a++)
+				for(int a=0;a<organisms.size();a++)
 				{
-					if(monsters.get(a).getWorld().equals("dead")||monsters.get(a).getWorld().equals("dead2"))
+					if(organisms.get(a).getWorld().equals("dead")||organisms.get(a).getWorld().equals("dead2"))
 					{
-						int b=monsters.get(a).getLevel();
+						int b=organisms.get(a).getLevel();
 						if(b==1)
 						{
 							levelOne--;
@@ -283,7 +269,7 @@ class World extends Thread{
 						{
 							levelThree--;
 						}
-						monsters.remove(a);
+						organisms.remove(a);
 						
 					}
 				}
@@ -306,23 +292,28 @@ class World extends Thread{
      * @param as the Human object that is beign identified
      * @return and int that represents the uid of the Human
      */
-    public int getUID(Player as)
+    public int getUID(String name)
     {
-    	return characters.indexOf(as);
+        for (Organism i : organisms){
+                    if(i.getName().equals(name)){
+	    		return organisms.indexOf(i);
+                    }
+                }
+    	return -1;   //failed
     }
     
     /**
-     * This method is used to get the Human object of a specific uid
-     * @param uid the int used to find a Human
-     * @return a Human object
+     * This method is used to get the Player object of a specific uid
+     * @param uid the int used to find a Player
+     * @return a Player object
      */
     public Player getCharacter(int uid)
     {
-    	return characters.get(uid);
+    	return (Player)organisms.get(uid);
     }
     public Creature getMonster(int uid)
     {
-    	return monsters.get(uid);
+    	return (Creature)organisms.get(uid);
     }
     
     /**
@@ -334,76 +325,76 @@ class World extends Thread{
     {
     	if(dir.equals("north"))
     	{
-		if(characters.get(uid).getY()>0)
+		if(organisms.get(uid).getY()>0)
 		{
-			int w=nextSpotType(characters.get(uid).getX(),characters.get(uid).getY()-1,characters.get(uid).getWorld());//a param to pass saying what type of spot we are trying to move to
-			characters.get(uid).moveNorth(w);//moves our actuall character North
+			int w=nextSpotType(organisms.get(uid).getX(),organisms.get(uid).getY()-1,organisms.get(uid).getWorld());//a param to pass saying what type of spot we are trying to move to
+			organisms.get(uid).moveNorth(w);//moves our actuall character North
 		}
-		else if(characters.get(uid).getY()==0)
+		else if(organisms.get(uid).getY()==0)
 		{
-			String next=changeWorld("north",uid,characters.get(uid).getWorld());
-			if(next.equals(characters.get(uid).getWorld())==false)
+			String next=changeWorld("north",uid,organisms.get(uid).getWorld());
+			if(next.equals(organisms.get(uid).getWorld())==false)
 			{
 				
-				characters.get(uid).setWorld(next);
-				characters.get(uid).setY(99);
+				organisms.get(uid).setWorld(next);
+				organisms.get(uid).setY(99);
 			}
 		}
     	}
     	if(dir.equals("south"))
     	{
-    		if(characters.get(uid).getY()<smallCityYLength-1)
+    		if(organisms.get(uid).getY()<smallCityYLength-1)
     		{
-    			int w=nextSpotType(characters.get(uid).getX(),characters.get(uid).getY()+1,characters.get(uid).getWorld());
-    			characters.get(uid).moveSouth(w);
+    			int w=nextSpotType(organisms.get(uid).getX(),organisms.get(uid).getY()+1,organisms.get(uid).getWorld());
+    			organisms.get(uid).moveSouth(w);
     		}
-    		else if(characters.get(uid).getY()==smallCityYLength-1)
+    		else if(organisms.get(uid).getY()==smallCityYLength-1)
 			{
-				String next=changeWorld("south",uid,characters.get(uid).getWorld());
-				if(next.equals(characters.get(uid).getWorld())==false)
+				String next=changeWorld("south",uid,organisms.get(uid).getWorld());
+				if(next.equals(organisms.get(uid).getWorld())==false)
 			{
 				
-				characters.get(uid).setWorld(next);
-				characters.get(uid).setY(0);
+				organisms.get(uid).setWorld(next);
+				organisms.get(uid).setY(0);
 			}
 			}
 	    	}
     	
     	if(dir.equals("east"))
     	{
-		if(characters.get(uid).getX()<smallCityXLength-1)
+		if(organisms.get(uid).getX()<smallCityXLength-1)
 		{
-			int w=nextSpotType(characters.get(uid).getX()+1,characters.get(uid).getY(),characters.get(uid).getWorld());
-			characters.get(uid).moveEast(w);
+			int w=nextSpotType(organisms.get(uid).getX()+1,organisms.get(uid).getY(),organisms.get(uid).getWorld());
+			organisms.get(uid).moveEast(w);
 		}
-		else if(characters.get(uid).getX()==smallCityXLength-1)
+		else if(organisms.get(uid).getX()==smallCityXLength-1)
 		{
-			String next=changeWorld("east",uid,characters.get(uid).getWorld());
+			String next=changeWorld("east",uid,organisms.get(uid).getWorld());
 			System.out.print(next);
-			if(next.equals(characters.get(uid).getWorld())==false)
+			if(next.equals(organisms.get(uid).getWorld())==false)
 			{
 				
-				characters.get(uid).setWorld(next);
-				characters.get(uid).setX(0);
+				organisms.get(uid).setWorld(next);
+				organisms.get(uid).setX(0);
 			}
 		}
     	}
     	
     	if(dir.equals("west"))
     	{
-		if(characters.get(uid).getX()>0)
+		if(organisms.get(uid).getX()>0)
 		{
-			int w=nextSpotType(characters.get(uid).getX()-1,characters.get(uid).getY(),characters.get(uid).getWorld());
-			characters.get(uid).moveWest(w);
+			int w=nextSpotType(organisms.get(uid).getX()-1,organisms.get(uid).getY(),organisms.get(uid).getWorld());
+			organisms.get(uid).moveWest(w);
 		}
-		else if(characters.get(uid).getX()==0)
+		else if(organisms.get(uid).getX()==0)
 		{
-			String next=changeWorld("west",uid,characters.get(uid).getWorld());
-			if(next.equals(characters.get(uid).getWorld())==false)
+			String next=changeWorld("west",uid,organisms.get(uid).getWorld());
+			if(next.equals(organisms.get(uid).getWorld())==false)
 			{
 				
-				characters.get(uid).setWorld(next);
-				characters.get(uid).setX(99);
+				organisms.get(uid).setWorld(next);
+				organisms.get(uid).setX(99);
 			}
 		}
     	}
@@ -417,22 +408,22 @@ class World extends Thread{
      */
     public void startFight(int uid)
     {
-    	for(int i=0;i<characters.size();i++)
+    	for(int i=0;i<organisms.size();i++)
     	{
-    		if(characters.get(i).getWorld().equals(characters.get(uid).getWorld()))
+    		if(organisms.get(i).getWorld().equals(organisms.get(uid).getWorld()))
     		{
-    			if(characters.get(i).getX()==characters.get(uid).getX())
+    			if(organisms.get(i).getX()==organisms.get(uid).getX())
 	    		{
-	    			if(characters.get(i).getY()==characters.get(uid).getY())
+	    			if(organisms.get(i).getY()==organisms.get(uid).getY())
 		    		{
-		    			if(characters.get(i).equals(characters.get(uid))==false)
+		    			if(organisms.get(i).equals(organisms.get(uid))==false)
 		    			{
-		    				if(characters.get(i).isAbleToFight())
+		    				if(organisms.get(i).isAbleToFight())
 		    				{
 		    					
 		    					fights.add(new NumberPair(uid,i,true));//lists these chars ids in a fights map so whe know who is currently fighting
-		    					characters.get(i).fight(uid,false);//alters some human side variables to initiate fighting.
-			    				characters.get(uid).fight(i,false);//alters some human side variables to initiate fighting.
+		    					organisms.get(i).fight(uid,false);//alters some human side variables to initiate fighting.
+			    				organisms.get(uid).fight(i,false);//alters some human side variables to initiate fighting.
 			    				break;
 		    				}
 		    			}
@@ -440,30 +431,30 @@ class World extends Thread{
 	    		}
     		}
     	}
-    	if(characters.get(uid).getOpponent()==uid)
+    	if(organisms.get(uid).getOpponent()==uid)
     	{
-    		for(int i=0;i<monsters.size();i++)
-	    	{
-	    		if(monsters.get(i).getWorld().equals(characters.get(uid).getWorld()))
-	    		{
-	    			if(monsters.get(i).getX()==characters.get(uid).getX())
-		    		{
-		    			if(monsters.get(i).getY()==characters.get(uid).getY())
-			    		{
-			    			if(monsters.get(i).equals(characters.get(uid))==false)
-			    			{
-			    				if(monsters.get(i).isAbleToFight())
-			    				{
-			    					fights.add(new NumberPair(uid,i,false));//lists these chars ids in a fights map so whe know who is currently fighting
-			    					monsters.get(i).fight(uid,false);//alters some human side variables to initiate fighting.
-				    				characters.get(uid).fight(i,true);//alters some human side variables to initiate fighting.
-				    				break;
-			    				}
-			    			}
-			    		}
-		    		}
-	    		}
-	    	}
+            for(int i=0;i<organisms.size();i++)
+            {
+                if(organisms.get(i).getWorld().equals(organisms.get(uid).getWorld()))
+                {
+                    if(organisms.get(i).getX()==organisms.get(uid).getX())      // same X check
+                    {
+                        if(organisms.get(i).getY()==organisms.get(uid).getY())  // same Y check
+                        {
+                            if(organisms.get(i).equals(organisms.get(uid).getName())==false)    // Different name check
+                            {
+                                if(organisms.get(i).isAbleToFight())
+                                {
+                                        fights.add(new NumberPair(uid,i,false));//lists these chars ids in a fights map so whe know who is currently fighting
+                                        organisms.get(i).fight(uid,false);//alters some human side variables to initiate fighting.
+                                        organisms.get(uid).fight(i,true);//alters some human side variables to initiate fighting.
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
     	}
     }
     
@@ -485,116 +476,116 @@ class World extends Thread{
     {
     	if(pvp)//if both are players
     	{
-    		String aimed=characters.get(uid).getAttackSpot(characters.get(uid2).getDefSkill(),characters.get(uid).getAim());
+    		String aimed=organisms.get(uid).getAttackSpot(organisms.get(uid2).getDefSkill(),organisms.get(uid).getAim());
 	    	if(aimed.equals("miss")==false)
 	    	{
-	    		int damage=characters.get(uid).getDamageDone(characters.get(uid2).getDefStr());
+	    		int damage=organisms.get(uid).getDamageDone(organisms.get(uid2).getDefStr());
 	    		if(aimed.equals("head"))
 	    		{
-	    			characters.get(uid2).setHead(characters.get(uid2).getHead()-damage);
+	    			organisms.get(uid2).setHead(organisms.get(uid2).getHead()-damage);
 	    		}
 	    		else if(aimed.equals("arms"))
 	    		{
-	    			characters.get(uid2).setArms(characters.get(uid2).getArms()-damage);
+	    			organisms.get(uid2).setArms(organisms.get(uid2).getArms()-damage);
 	    		}
 	    		else if(aimed.equals("torso"))
 	    		{
-	    			characters.get(uid2).setTorso(characters.get(uid2).getTorso()-damage);
+	    			organisms.get(uid2).setTorso(organisms.get(uid2).getTorso()-damage);
 	    		}
 	    		else if(aimed.equals("legs"))
 	    		{
-	    			characters.get(uid2).setLegs(characters.get(uid2).getLegs()-damage);
+	    			organisms.get(uid2).setLegs(organisms.get(uid2).getLegs()-damage);
 	    		}
-	    		characters.get(uid).setFightStatus(characters.get(uid).getFightStatus()+"|You did "
+	    		organisms.get(uid).setFightStatus(organisms.get(uid).getFightStatus()+"|You did "
 	    											+ damage+ " to your opponent's "+ aimed+"|");
-	    		characters.get(uid2).setFightStatus(characters.get(uid2).getFightStatus()
+	    		organisms.get(uid2).setFightStatus(organisms.get(uid2).getFightStatus()
 	    											+"|You were hit in the "+aimed+" for "+damage+"|");
-	    		characters.get(uid).setAttStrBase(characters.get(uid).getAttStrBase()+(.01*damage));
-	    		characters.get(uid2).setDefStrBase(characters.get(uid2).getDefStrBase()+(.01*damage));
+	    		organisms.get(uid).setAttStrBase(organisms.get(uid).getAttStrBase()+(.01*damage));
+	    		organisms.get(uid2).setDefStrBase(organisms.get(uid2).getDefStrBase()+(.01*damage));
 	    	}
 	    	else
 	    	{
-	    		characters.get(uid).setFightStatus(characters.get(uid).getFightStatus()+"|You missed your opponent|");
-	    		characters.get(uid2).setFightStatus(characters.get(uid2).getFightStatus()+"|Your opponent missed|");
+	    		organisms.get(uid).setFightStatus(organisms.get(uid).getFightStatus()+"|You missed your opponent|");
+	    		organisms.get(uid2).setFightStatus(organisms.get(uid2).getFightStatus()+"|Your opponent missed|");
 	    	}
-	    	characters.get(uid).setAttSkillBase(characters.get(uid).getAttSkillBase()+(.01));
-	    	characters.get(uid2).setDefSkillBase(characters.get(uid2).getDefSkillBase()+(.01));
+	    	organisms.get(uid).setAttSkillBase(organisms.get(uid).getAttSkillBase()+(.01));
+	    	organisms.get(uid2).setDefSkillBase(organisms.get(uid2).getDefSkillBase()+(.01));
     	}
     	else
     	{
 	     if(mthenp)//if monster=uid
 	     {
-	     	String aimed=monsters.get(uid).getAttackSpot(characters.get(uid2).getDefSkill(),monsters.get(uid).getAim());
+	     	String aimed=organisms.get(uid).getAttackSpot(organisms.get(uid2).getDefSkill(),organisms.get(uid).getAim());
 		    	if(aimed.equals("miss")==false)
 		    	{
-		    		int damage=monsters.get(uid).getDamageDone(characters.get(uid2).getDefStr());
+		    		int damage=organisms.get(uid).getDamageDone(organisms.get(uid2).getDefStr());
 		    		if(aimed.equals("head"))
 		    		{
-		    			characters.get(uid2).setHead(characters.get(uid2).getHead()-damage);
+		    			organisms.get(uid2).setHead(organisms.get(uid2).getHead()-damage);
 		    		}
 		    		else if(aimed.equals("arms"))
 		    		{
-		    			characters.get(uid2).setArms(characters.get(uid2).getArms()-damage);
+		    			organisms.get(uid2).setArms(organisms.get(uid2).getArms()-damage);
 		    		}
 		    		else if(aimed.equals("torso"))
 		    		{
-		    			characters.get(uid2).setTorso(characters.get(uid2).getTorso()-damage);
+		    			organisms.get(uid2).setTorso(organisms.get(uid2).getTorso()-damage);
 		    		}
 		    		else if(aimed.equals("legs"))
 		    		{
-		    			characters.get(uid2).setLegs(characters.get(uid2).getLegs()-damage);
+		    			organisms.get(uid2).setLegs(organisms.get(uid2).getLegs()-damage);
 		    		}
-		    		monsters.get(uid).setFightStatus(monsters.get(uid).getFightStatus()+"|You did "
+		    		organisms.get(uid).setFightStatus(organisms.get(uid).getFightStatus()+"|You did "
 		    											+ damage+ " to your opponent's "+ aimed+"|");
-		    		characters.get(uid2).setFightStatus(characters.get(uid2).getFightStatus()
+		    		organisms.get(uid2).setFightStatus(organisms.get(uid2).getFightStatus()
 		    											+"|You were hit in the "+aimed+" for "+damage+"|");
-		    		monsters.get(uid).setAttStrBase(monsters.get(uid).getAttStrBase()+(.01*damage));
-		    		characters.get(uid2).setDefStrBase(characters.get(uid2).getDefStrBase()+(.01*damage));
+		    		organisms.get(uid).setAttStrBase(organisms.get(uid).getAttStrBase()+(.01*damage));
+		    		organisms.get(uid2).setDefStrBase(organisms.get(uid2).getDefStrBase()+(.01*damage));
 		    	}
 		    	else
 		    	{
-		    		monsters.get(uid).setFightStatus(monsters.get(uid).getFightStatus()+"|You missed your opponent|");
-		    		characters.get(uid2).setFightStatus(characters.get(uid2).getFightStatus()+"|Your opponent missed|");
+		    		organisms.get(uid).setFightStatus(organisms.get(uid).getFightStatus()+"|You missed your opponent|");
+		    		organisms.get(uid2).setFightStatus(organisms.get(uid2).getFightStatus()+"|Your opponent missed|");
 		    	}
-		    	monsters.get(uid).setAttSkillBase(monsters.get(uid).getAttSkillBase()+(.01));
-		    	characters.get(uid2).setDefSkillBase(characters.get(uid2).getDefSkillBase()+(.01));
+		    	organisms.get(uid).setAttSkillBase(organisms.get(uid).getAttSkillBase()+(.01));
+		    	organisms.get(uid2).setDefSkillBase(organisms.get(uid2).getDefSkillBase()+(.01));
 	     }
 	     else//uid2=monster
 	     {
-	     	String aimed=characters.get(uid).getAttackSpot(monsters.get(uid2).getDefSkill(),characters.get(uid).getAim());
+	     	String aimed=organisms.get(uid).getAttackSpot(organisms.get(uid2).getDefSkill(),organisms.get(uid).getAim());
 	    	if(aimed.equals("miss")==false)
 	    	{
-	    		int damage=characters.get(uid).getDamageDone(monsters.get(uid2).getDefStr());
+	    		int damage=organisms.get(uid).getDamageDone(organisms.get(uid2).getDefStr());
 	    		if(aimed.equals("head"))
 	    		{
-	    			monsters.get(uid2).setHead(monsters.get(uid2).getHead()-damage);
+	    			organisms.get(uid2).setHead(organisms.get(uid2).getHead()-damage);
 	    		}
 	    		else if(aimed.equals("arms"))
 	    		{
-	    			monsters.get(uid2).setArms(monsters.get(uid2).getArms()-damage);
+	    			organisms.get(uid2).setArms(organisms.get(uid2).getArms()-damage);
 	    		}
 	    		else if(aimed.equals("torso"))
 	    		{
-	    			monsters.get(uid2).setTorso(monsters.get(uid2).getTorso()-damage);
+	    			organisms.get(uid2).setTorso(organisms.get(uid2).getTorso()-damage);
 	    		}
 	    		else if(aimed.equals("legs"))
 	    		{
-	    			monsters.get(uid2).setLegs(monsters.get(uid2).getLegs()-damage);
+	    			organisms.get(uid2).setLegs(organisms.get(uid2).getLegs()-damage);
 	    		}
-	    		characters.get(uid).setFightStatus(characters.get(uid).getFightStatus()+"|You did "
+	    		organisms.get(uid).setFightStatus(organisms.get(uid).getFightStatus()+"|You did "
 	    											+ damage+ " to your opponent's "+ aimed+"|");
-	    		monsters.get(uid2).setFightStatus(monsters.get(uid2).getFightStatus()
+	    		organisms.get(uid2).setFightStatus(organisms.get(uid2).getFightStatus()
 	    											+"|You were hit in the "+aimed+" for "+damage+"|");
-	    		characters.get(uid).setAttStrBase(characters.get(uid).getAttStrBase()+(.01*damage));
-	    		monsters.get(uid2).setDefStrBase(monsters.get(uid2).getDefStrBase()+(.01*damage));
+	    		organisms.get(uid).setAttStrBase(organisms.get(uid).getAttStrBase()+(.01*damage));
+	    		organisms.get(uid2).setDefStrBase(organisms.get(uid2).getDefStrBase()+(.01*damage));
 	    	}
 	    	else
 	    	{
-	    		characters.get(uid).setFightStatus(characters.get(uid).getFightStatus()+"|You missed your opponent|");
-	    		monsters.get(uid2).setFightStatus(monsters.get(uid2).getFightStatus()+"|Your opponent missed|");
+	    		organisms.get(uid).setFightStatus(organisms.get(uid).getFightStatus()+"|You missed your opponent|");
+	    		organisms.get(uid2).setFightStatus(organisms.get(uid2).getFightStatus()+"|Your opponent missed|");
 	    	}
-	    	characters.get(uid).setAttSkillBase(characters.get(uid).getAttSkillBase()+(.01));
-	    	monsters.get(uid2).setDefSkillBase(monsters.get(uid2).getDefSkillBase()+(.01));
+	    	organisms.get(uid).setAttSkillBase(organisms.get(uid).getAttSkillBase()+(.01));
+	    	organisms.get(uid2).setDefSkillBase(organisms.get(uid2).getDefSkillBase()+(.01));
 	     }
     	}
     	
@@ -702,11 +693,11 @@ class World extends Thread{
 	    		}
 	    	}
     	}
-    	if(yay.equals("world1")&&characters.get(uid).getTeam1())
+    	if(yay.equals("world1")&&organisms.get(uid).getTeam1())
     	{
     		return current;
     	}
-    	else if(yay.equals("world")&&(characters.get(uid).getTeam1()==false))
+    	else if(yay.equals("world")&&(organisms.get(uid).getTeam1()==false))
     	{
     		return current;
     	}
@@ -724,19 +715,19 @@ class World extends Thread{
     public ArrayList<Organism> getOthersWorld(int x,int y,String wor)
     {
     	ArrayList<Organism> end=new ArrayList<>();
-    	for(int i=0;i<characters.size();i++)
+    	for(int i=0;i<organisms.size();i++)
     	{
-    		if((characters.get(i).getX()<=x+8)&&(characters.get(i).getX()>=x-8))
+    		if((organisms.get(i).getX()<=x+8)&&(organisms.get(i).getX()>=x-8))
     		{
-    			if((characters.get(i).getY()<=y+8)&&(characters.get(i).getY()>=y-8))
+    			if((organisms.get(i).getY()<=y+8)&&(organisms.get(i).getY()>=y-8))
     			{
-	    			if((characters.get(i).getX()==x)&&(characters.get(i).getY()==y))
+	    			if((organisms.get(i).getX()==x)&&(organisms.get(i).getY()==y))
 	    			{}
 	    			else
 	    			{
-	    				if(characters.get(i).getWorld().equals(wor))
+	    				if(organisms.get(i).getWorld().equals(wor))
 	    				{
-	    					end.add(characters.get(i));
+	    					end.add(organisms.get(i));
 	    				}
 	    			}
     			}
@@ -747,19 +738,19 @@ class World extends Thread{
     public ArrayList<Organism> getOthersWorldNPC(int x,int y,String wor)
     {
     	ArrayList<Organism> end=new ArrayList<>();
-    	for(int i=0;i<humanNPCs.size();i++)
+    	for(int i=0;i<organisms.size();i++)
     	{
-    		if((humanNPCs.get(i).getX()<=x+8)&&(humanNPCs.get(i).getX()>=x-8))
+    		if((organisms.get(i).getX()<=x+8)&&(organisms.get(i).getX()>=x-8))
     		{
-    			if((humanNPCs.get(i).getY()<=y+8)&&(humanNPCs.get(i).getY()>=y-8))
+    			if((organisms.get(i).getY()<=y+8)&&(organisms.get(i).getY()>=y-8))
     			{
-	    			if((humanNPCs.get(i).getX()==x)&&(humanNPCs.get(i).getY()==y))
+	    			if((organisms.get(i).getX()==x)&&(organisms.get(i).getY()==y))
 	    			{}
 	    			else
 	    			{
-	    				if(humanNPCs.get(i).getWorld().equals(wor))
+	    				if(organisms.get(i).getWorld().equals(wor))
 	    				{
-	    					end.add(humanNPCs.get(i));
+	    					end.add(organisms.get(i));
 	    				}
 	    			}
     			}
@@ -770,19 +761,19 @@ class World extends Thread{
     public ArrayList<Organism> getOthersWorldMonster(int x,int y,String wor)
     {
     	ArrayList<Organism> end=new ArrayList<>();
-    	for(int i=0;i<monsters.size();i++)
+    	for(int i=0;i<organisms.size();i++)
     	{
-    		if((monsters.get(i).getX()<=x+8)&&(monsters.get(i).getX()>=x-8))
+    		if((organisms.get(i).getX()<=x+8)&&(organisms.get(i).getX()>=x-8))
     		{
-    			if((monsters.get(i).getY()<=y+8)&&(monsters.get(i).getY()>=y-8))
+    			if((organisms.get(i).getY()<=y+8)&&(organisms.get(i).getY()>=y-8))
     			{
-	    			if((monsters.get(i).getX()==x)&&(monsters.get(i).getY()==y))
+	    			if((organisms.get(i).getX()==x)&&(organisms.get(i).getY()==y))
 	    			{}
 	    			else
 	    			{
-	    				if(monsters.get(i).getWorld().equals(wor))
+	    				if(organisms.get(i).getWorld().equals(wor))
 	    				{
-	    					end.add(monsters.get(i));
+	    					end.add(organisms.get(i));
 	    				}
 	    			}
     			}
@@ -793,20 +784,20 @@ class World extends Thread{
     
     public void startTrade(int uid)
     {
-    	for(int i=0;i<characters.size();i++)
+    	for(int i=0;i<organisms.size();i++)
     	{
-    		if(characters.get(i).getWorld().equals(characters.get(uid).getWorld()))
+    		if(organisms.get(i).getWorld().equals(organisms.get(uid).getWorld()))
     		{
-    			if(characters.get(i).getX()==characters.get(uid).getX())
+    			if(organisms.get(i).getX()==organisms.get(uid).getX())
 	    		{
-	    			if(characters.get(i).getY()==characters.get(uid).getY())
+	    			if(organisms.get(i).getY()==organisms.get(uid).getY())
 		    		{
-		    			if(characters.get(i).equals(characters.get(uid))==false)
+		    			if(organisms.get(i).equals(organisms.get(uid))==false)
 		    			{
-		    				if(characters.get(i).isAbleToFight())
+		    				if(organisms.get(i).isAbleToFight())
 		    				{
-		    					characters.get(uid).setTrader(i);
-		    					characters.get(i).setTrader(uid);
+		    					organisms.get(uid).setTrader(i);
+		    					organisms.get(i).setTrader(uid);
 		    				}
 		    			}
 		    		}
@@ -817,8 +808,8 @@ class World extends Thread{
     //trades only take place between items. not money or resources
     public void finishTrade(int uid, int otherbro)
     {
-    	ArrayList<String> temp=characters.get(uid).getOffers();
-    	ArrayList<Items> temp2=characters.get(uid).getInventory().getItems();
+    	ArrayList<String> temp=organisms.get(uid).getOffers();
+    	ArrayList<Items> temp2=organisms.get(uid).getInventory().getItems();
     	for(int i=0;i<temp.size();i++)
     	{
     		for(int a=0;a<temp2.size();a++)
@@ -826,14 +817,14 @@ class World extends Thread{
     			if(temp.get(i).equals(temp2.get(a).getName()))
     			{
     				Items use =temp2.get(a);
-    				characters.get(uid).getInventory().removeItem(a);
-    				characters.get(otherbro).getInventory().addItems(use);
+    				organisms.get(uid).getInventory().removeItem(a);
+    				organisms.get(otherbro).getInventory().addItems(use);
     			}
     		}
     	}
     	
-    	temp=characters.get(otherbro).getOffers();
-    	temp2=characters.get(otherbro).getInventory().getItems();
+    	temp=organisms.get(otherbro).getOffers();
+    	temp2=organisms.get(otherbro).getInventory().getItems();
     	for(int i=0;i<temp.size();i++)
     	{
     		for(int a=0;a<temp2.size();a++)
@@ -841,12 +832,12 @@ class World extends Thread{
     			if(temp.get(i).equals(temp2.get(a).getName()))
     			{
     				Items use =temp2.get(a);
-    				characters.get(otherbro).getInventory().removeItem(a);
-    				characters.get(uid).getInventory().addItems(use);
+    				organisms.get(otherbro).getInventory().removeItem(a);
+    				organisms.get(uid).getInventory().addItems(use);
     			}
     		}
     	}
-    	characters.get(otherbro).setTrader(otherbro);
-    	characters.get(uid).setTrader(uid);
+    	organisms.get(otherbro).setTrader(otherbro);
+    	organisms.get(uid).setTrader(uid);
     }
 }
