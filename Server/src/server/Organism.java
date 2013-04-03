@@ -1,11 +1,4 @@
 package server;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-
 /**
  * @(#)Organism.java
  *
@@ -17,119 +10,86 @@ import java.util.ArrayList;
 
 public class Organism 
 {
-    // Variables to facilitate movement.
-    String name;            // Organism's name
-    int charUID;            // Organism's UID, used by ClientHandler
-    int x;                  // Organism's x coord
-    int y;                  // Organism's y coord
-    String oldWorld;        // The last world the Organism was in.
-    String worldname;       // The current world the Organism is in.
-    int leavespotX;         // The x coord of the position the Organism left the outisde world.
-    int leavespotY;         // The y coord of the position the Organism left the outisde world.
-    
-    // SQL variables
-    Connection dbConnection;
-    Statement dbStmt;
-    ResultSet dbResultSet;
-    
-    // Other variables.
-    int money;		//holds the amount of cash the character has on them.
-
-    double attStr;		//the actual attacking Strength of this character
-    double attSkill;	//the actual attacking Skill of this character
-    double defStr;		//the actual defending Strength of this character
-    double defSkill;	//the actual defending Skill of this character
-    double attStrBase;	//the base(wont go down) attacking Strength of this character
-    double attSkillBase;//the base(wont go down) attacking Skill of this character
-    double defStrBase;	//the base(wont go down) defending Strength of this character
-    double defSkillBase;//the base(wont go down) defending Skill of this character
-
-    int headHealth;
-    int armsHealth;
-    int legsHealth;
-    int torsoHealth;
-
-    String aim;	
-    boolean isFighting;
-    int opponent;
-
-    double handToHand;
-
-    String attackStyle;
-
-    boolean isConcious;
-    boolean isDead;
-
-    String fightStatus;
-
-    boolean isMonster;
-
-    String lastMoveDirection;
+	String oldWorld;
+	int x;				//char's x coord
+	int y;				//char's y coord
+	String name;		//char's name
+	String worldname;	//the name of which array chunk of land this character is in
+	int leavespotX;		//a memory spot that saves the x coord that the char left the main map array from
+	int leavespotY;		//a memory spot that saves the y coord that the char left the main map array from
+	int charUID;
+	int money;		//holds the amount of cash the character has on them.
+	int energy;
 	
-    public Organism(String n, int me, Connection dbConnection, Statement dbStmt, ResultSet dbResultSet) 
+	double attStr;		//the actual attacking Strength of this character
+	double attSkill;	//the actual attacking Skill of this character
+	double defStr;		//the actual defending Strength of this character
+	double defSkill;	//the actual defending Skill of this character
+	double attStrBase;	//the base(wont go down) attacking Strength of this character
+	double attSkillBase;//the base(wont go down) attacking Skill of this character
+	double defStrBase;	//the base(wont go down) defending Strength of this character
+	double defSkillBase;//the base(wont go down) defending Skill of this character
+	
+	int headHealth;
+	int armsHealth;
+	int legsHealth;
+	int torsoHealth;
+	
+	String aim;	
+	boolean isFighting;
+	int opponent;
+	
+	double handToHand;
+	
+	String attackStyle;
+	
+	boolean isConcious;
+	boolean isDead;
+	
+	String fightStatus;
+	
+	boolean isMonster;
+
+        String lastMoveDirection;
+	
+    public Organism(String n,int me) 
     {
-        // Connect SQL stuff.
-        this.dbConnection   =   dbConnection;
-        this.dbStmt         =   dbStmt;
-        this.dbResultSet    =   dbResultSet;
-        
-        try {
-            if (dbStmt.execute("INSERT INTO `organismsmovementinfo` VALUES ("
-                    +me+", "        // uid
-                    +"'"+n+"'"+", " // name
-                    +5+", "         // x
-                    +5+", "         // y
-                    +5+", "         // oldx
-                    +5+", "         // oldy
-                    +"'world', "    // world
-                    +"'world', "    // oldworld
-                    +10000+")")) {  // energy
-            } else {
-                //System.out.println("Probably inserted the character--no results so .execute returns false on success.");
-            }
-        }
-        catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
+    	money=10;
+    	energy=10000;
+	    	charUID=me;
+	    	x=95;y=5;		//initial starting spot(5,5)
+	    	name=n;
+	    	worldname="world";
+	    	oldWorld="world";
+	    	
+	    	attStr=3.0;
+		attSkill=3.0;
+		defStr=3.0;
+		defSkill=3.0;
+		attStrBase=3.0;
+		attSkillBase=3.0;
+		defStrBase=3.0;
+		defSkillBase=3.0;
+		headHealth=15;
+		armsHealth=15;
+		legsHealth=15;
+		torsoHealth=15;
+		
+		handToHand=10.0;
+		
+		attackStyle="handToHand";
+		
+		fightStatus="";
+		
+		isFighting=false;
+		aim="head";
+		
+		isMonster=false;
+		
+		isConcious=true;
+		isDead=false;
 
-        }
-        
-        money=10;
-        charUID=me;
-        x=5;y=5;		//initial starting spot(5,5)
-        name=n;
-        worldname="world";
-        oldWorld="world";
-
-        attStr=3.0;
-        attSkill=3.0;
-        defStr=3.0;
-        defSkill=3.0;
-        attStrBase=3.0;
-        attSkillBase=3.0;
-        defStrBase=3.0;
-        defSkillBase=3.0;
-        headHealth=15;
-        armsHealth=15;
-        legsHealth=15;
-        torsoHealth=15;
-
-        handToHand=10.0;
-
-        attackStyle="handToHand";
-
-        fightStatus="";
-
-        isFighting=false;
-        aim="head";
-
-        isMonster=false;
-
-        isConcious=true;
-        isDead=false;
-
-        lastMoveDirection="south";
+                lastMoveDirection="south";
     }
     
     //returns the name of the spot hit or "miss"--only uses handToHand proficency
@@ -244,14 +204,12 @@ public class Organism
     }
     public boolean run(double defendersAttSkill)
     {
-    	double bleh = (defSkill-defendersAttSkill)+(Math.random());
-    	if(bleh > 0.33)
+    	double bleh = (defSkill-defendersAttSkill)+(Math.random()*100);
+    	if(bleh>33)
     	{
-            isFighting  =   false;
-            fightStatus =   "";
-            opponent    =   charUID;
-            isMonster   =   false;
-            return true;
+    		isFighting=false;fightStatus="";opponent=charUID;isMonster=false;
+    		return true;
+    		
     	}
     	else
     	{
@@ -415,9 +373,9 @@ public class Organism
     	defStrBase=x;
     }
     
-    public void moveNorth(int w)
+	public void moveNorth(int w)
     {
-    	if(!isFighting && isConcious && getEnergy()>0)
+    	if(!isFighting && isConcious && energy>0)
     	{
 	    	if(w==3)
 	    	{
@@ -446,7 +404,7 @@ public class Organism
     }
     public void moveSouth(int w)
     {
-    	if(isFighting==false && isConcious && getEnergy()>0)
+    	if(isFighting==false && isConcious && energy>0)
     	{
 	    	if(w==3)
 	    	{
@@ -476,7 +434,7 @@ public class Organism
     }
     public void moveEast(int w)
     {
-    	if(isFighting==false && isConcious && getEnergy()>0)
+    	if(isFighting==false && isConcious && energy>0)
     	{
 	    	if(w==3)
 	    	{
@@ -506,7 +464,7 @@ public class Organism
     }
     public void moveWest(int w)
     {
-    	if(isFighting==false && isConcious && getEnergy()>0)
+    	if(isFighting==false && isConcious && energy>0)
     	{
     		if(w==3)
 	    	{
@@ -583,45 +541,15 @@ public class Organism
     }
     public int getEnergy()
     {
-        int energy = 0;
-        try {
-            if (dbStmt.execute("SELECT `energy` FROM `organismsmovementinfo` WHERE `organismsmovementinfo`.`uid` = "+charUID)) {  
-                dbResultSet = dbStmt.getResultSet();
-            } 
-            else {
-                System.err.println("organsim select energy failed");
-            }
-            
-            while (dbResultSet.next()) {
-                return dbResultSet.getInt(1);
-            }
-        }
-        catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-
-        }
     	return energy;
     }
     public void setEnergy(int e)
     {
-        int energy = e;
-        if (e >10000)
+    	energy=e;
+    	if (energy >10000)
     	{
     		energy=10000;
     	}
-        try {
-            if (dbStmt.execute("UPDATE `organismsmovementinfo` SET energy="+energy+" WHERE uid="+charUID)) {  
-                // Should return false, because there are no results to get on an update.
-            }
-        }
-        catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-
-        }
     }
     
     public boolean equals(Object obj)
@@ -658,32 +586,4 @@ public class Organism
 {
 	return handToHand;
 }
-
-    void act() {
-        
-    }
-
-    int getLevel() {
-        return 0;
-        
-    }
-
-    boolean getTeam1() {
-        return false;
-        
-    }
-
-    void setTrader(int i) {
-        
-    }
-
-    ArrayList<String> getOffers() {
-        return null;
-        
-    }
-
-    Inventory getInventory() {
-        return null;
-        
-    }
 }
