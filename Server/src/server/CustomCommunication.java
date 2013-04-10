@@ -40,6 +40,8 @@ public class CustomCommunication {
     /**
      * This method is used to insert data into a given table.
      * For real, though, make sure you put ' ' around varchar things. This doesn't do that for you.
+     * @param table
+     * @param vals 
      * @return true if worked, false otherwise
      */
     public boolean insert(String table, String[] vals) {
@@ -96,6 +98,33 @@ public class CustomCommunication {
             System.out.println("SQLState: " + ex.getSQLState()); 
             System.out.println("VendorError: " + ex.getErrorCode()); 
             return null;
+        }
+    }
+    
+    /**
+     * Does the SQL to set an int to a new value, based on a given uid key.
+     * @param table
+     * @param intName
+     * @param newValue
+     * @param uid
+     * @return true on success, false otherwise.
+     */
+    public boolean updateSingleIntByUID(String table, String intName, int newValue, int uid) {
+        // Make the statement string.
+        String stmt =   "UPDATE `"+table+
+                        "` SET "+intName+"="+newValue+
+                        " WHERE uid="+uid;
+        
+        // Do the statement.
+        try {
+            dbStmt.execute(stmt);
+            return true;
+        }
+        catch (SQLException ex) {   // Report errors.
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return false;
         }
     }
 }

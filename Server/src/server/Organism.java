@@ -36,6 +36,9 @@ public class Organism
     private final int startOldY =   5;
     private final int startEnergy=  10000;
     
+    // Maximum values
+    private final int maxEnergy =   10000;
+    
     // SQL variables
     Connection dbConnection;
     Statement dbStmt;
@@ -587,6 +590,12 @@ public class Organism
     {
     	return name;
     }
+    
+    /**
+     * Returns the integer value of the energy stat stored in the database for 
+     * a given organism, identified by unique uid int.
+     * @return The amount of energy available to the organism.
+     */
     public int getEnergy()
     {
         dbResultSet = communicate.selectSingleByUID("energy", movementTableName, charUID);
@@ -602,24 +611,20 @@ public class Organism
             return 0;
         }
     }
+    
+    /**
+     * Sets the energy stat in the database for a given organism, identified 
+     * by unique uid int to the listed parameter.
+     * @param e 
+     */
     public void setEnergy(int e)
     {
         int energy = e;
-        if (e >10000)
+        if (e > maxEnergy)
     	{
-    		energy=10000;
+    		energy = maxEnergy;
     	}
-        try {
-            if (dbStmt.execute("UPDATE `organismsmovementinfo` SET energy="+energy+" WHERE uid="+charUID)) {  
-                // Should return false, because there are no results to get on an update.
-            }
-        }
-        catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-
-        }
+        communicate.updateSingleIntByUID(movementTableName, "energy", energy, charUID);
     }
     
     public boolean equals(Object obj)
