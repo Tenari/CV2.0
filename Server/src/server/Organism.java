@@ -22,15 +22,25 @@ public class Organism
     int charUID;            // Organism's UID, used by ClientHandler
     int x;                  // Organism's x coord
     int y;                  // Organism's y coord
-    String oldWorld;        // The last world the Organism was in.
-    String worldname;       // The current world the Organism is in.
+    String oldWorld = "world";        // The last world the Organism was in.
+    String worldname = "world";       // The current world the Organism is in.
     int leavespotX;         // The x coord of the position the Organism left the outisde world.
     int leavespotY;         // The y coord of the position the Organism left the outisde world.
+    
+    // The initial values for the movement parameters.
+    private final int startX    =   5;
+    private final int startY    =   5;
+    private final int startOldX =   5;
+    private final int startOldY =   5;
+    private final int startEnergy=  10000;
     
     // SQL variables
     Connection dbConnection;
     Statement dbStmt;
     ResultSet dbResultSet;
+    CustomCommunication communicate;
+    // SQL Tables
+    String movementTableName = "organismsmovementinfo";
     
     // Other variables.
     int money;		//holds the amount of cash the character has on them.
@@ -65,7 +75,7 @@ public class Organism
     boolean isMonster;
 
     String lastMoveDirection;
-	
+    
     public Organism(String n, int me, Connection dbConnection, Statement dbStmt, ResultSet dbResultSet) 
     {
         // Connect SQL stuff.
@@ -73,27 +83,21 @@ public class Organism
         this.dbStmt         =   dbStmt;
         this.dbResultSet    =   dbResultSet;
         
-        try {
-            if (dbStmt.execute("INSERT INTO `organismsmovementinfo` VALUES ("
-                    +me+", "        // uid
-                    +"'"+n+"'"+", " // name
-                    +5+", "         // x
-                    +5+", "         // y
-                    +5+", "         // oldx
-                    +5+", "         // oldy
-                    +"'world', "    // world
-                    +"'world', "    // oldworld
-                    +10000+")")) {  // energy
-            } else {
-                //System.out.println("Probably inserted the character--no results so .execute returns false on success.");
-            }
-        }
-        catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-
-        }
+        // Create the communication
+        communicate = new CustomCommunication();
+        // Create the intial values array for the momevment table
+        String[] initialValues = {
+                                    ""+me,  // uid
+                                    "'"+n+"'",   // name requires "'" around it because it's a varchar
+                                    ""+startX,
+                                    ""+startY,
+                                    ""+startOldX,
+                                    ""+startOldY,
+                                    "'"+worldname+"'",
+                                    "'"+oldWorld+"'",
+                                    ""+startEnergy  };
+        // Insert values for the organism's location
+        communicate.insert(movementTableName, initialValues);
         
         money=10;
         charUID=me;
@@ -584,24 +588,24 @@ public class Organism
     public int getEnergy()
     {
         int energy = 0;
-        try {
-            if (dbStmt.execute("SELECT `energy` FROM `organismsmovementinfo` WHERE `organismsmovementinfo`.`uid` = "+charUID)) {  
-                dbResultSet = dbStmt.getResultSet();
-            } 
-            else {
-                System.err.println("organsim select energy failed");
-            }
-            
-            while (dbResultSet.next()) {
-                return dbResultSet.getInt(1);
-            }
-        }
-        catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-
-        }
+//        try {
+//            if (dbStmt.execute("SELECT `energy` FROM `organismsmovementinfo` WHERE `organismsmovementinfo`.`uid` = "+charUID)) {  
+//                dbResultSet = dbStmt.getResultSet();
+//            } 
+//            else {
+//                System.err.println("organsim select energy failed");
+//            }
+//            
+//            while (dbResultSet.next()) {
+//                return dbResultSet.getInt(1);
+//            }
+//        }
+//        catch (SQLException ex) {
+//            System.out.println("SQLException: " + ex.getMessage()); 
+//            System.out.println("SQLState: " + ex.getSQLState()); 
+//            System.out.println("VendorError: " + ex.getErrorCode()); 
+//
+//        }
     	return energy;
     }
     public void setEnergy(int e)
