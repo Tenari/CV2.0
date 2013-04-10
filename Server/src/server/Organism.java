@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @(#)Organism.java
@@ -587,26 +589,18 @@ public class Organism
     }
     public int getEnergy()
     {
-        int energy = 0;
-//        try {
-//            if (dbStmt.execute("SELECT `energy` FROM `organismsmovementinfo` WHERE `organismsmovementinfo`.`uid` = "+charUID)) {  
-//                dbResultSet = dbStmt.getResultSet();
-//            } 
-//            else {
-//                System.err.println("organsim select energy failed");
-//            }
-//            
-//            while (dbResultSet.next()) {
-//                return dbResultSet.getInt(1);
-//            }
-//        }
-//        catch (SQLException ex) {
-//            System.out.println("SQLException: " + ex.getMessage()); 
-//            System.out.println("SQLState: " + ex.getSQLState()); 
-//            System.out.println("VendorError: " + ex.getErrorCode()); 
-//
-//        }
-    	return energy;
+        dbResultSet = communicate.selectSingleByUID("energy", movementTableName, charUID);
+        try {
+            while (dbResultSet.next()) {
+                    return dbResultSet.getInt(1);
+            }
+            return 0;
+        } catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return 0;
+        }
     }
     public void setEnergy(int e)
     {

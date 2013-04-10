@@ -65,37 +65,37 @@ public class CustomCommunication {
     }
     
     /**
-     * This method is used to get data from a given table.
-     * For real, though, make sure you put ' ' around varchar things. This doesn't do that for you.
-     * @return true if worked, false otherwise
+     * Takes a columnName, a tableName and a userID, and does "SELECT colName FROM 
+     *      table WHERE table.`uid` = userID".
+     * 
+     * @param colName
+     * @param table
+     * @param uid
+     * @return The ResultSet of the query.
      */
-    public boolean selectFromWhere(String colName, String table, String[] vals) {
+    public ResultSet selectSingleByUID(String colName, String table, int uid) {
         // Make the statement.
-        String stmt = "SELECT `"+colName+"` FROM `"+table+"` WHERE `"+table+"`.";   // The intial part of the query
-        for (String s : vals) {
-            stmt = stmt + s + ", ";                          // The list of values to insert in the table
-        }
-        stmt = stmt.substring(0,stmt.length()-2);           // Pull the last comma off for syntax.
-        stmt = stmt + ")";                                  // Add the last parenthase for syntax.
+        String stmt = 
+                "SELECT `"+colName+
+                "` FROM `"+table+
+                "` WHERE `"+table+"`.`uid` = "+uid;   
                 
         // Do the query.
         try {
-            if (dbStmt.execute("SELECT `energy` FROM `organismsmovementinfo` WHERE `organismsmovementinfo`.`uid` = "+charUID)) {  
+            if (dbStmt.execute(stmt)) {  
                 dbResultSet = dbStmt.getResultSet();
             } 
             else {
-                System.err.println("organsim select energy failed");
+                System.err.println("CustomCommunication.selectSingleByUID fialed");
             }
             
-            while (dbResultSet.next()) {
-                return dbResultSet.getInt(1);
-            }
+            return dbResultSet;
         }
         catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage()); 
             System.out.println("SQLState: " + ex.getSQLState()); 
             System.out.println("VendorError: " + ex.getErrorCode()); 
-
+            return null;
         }
     }
 }
