@@ -1,7 +1,3 @@
-package server;
-
-import java.util.ArrayList;
-
 /**
  * @(#)Player.java
  *
@@ -10,15 +6,21 @@ import java.util.ArrayList;
  * @version 1.00 2010/4/13
  */
 
+package server;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
 
 public class Player extends homoSapien
 {
 	int tradingPartner;
 	ArrayList<String> myofferings;
 	boolean tradeIsGood;
-    public Player(String n,int me) 
+    public Player(String n, int me, Connection dbConnection, Statement dbStmt, ResultSet dbResultSet) 
     {
-    	super(n,me);
+    	super(n, me, dbConnection, dbStmt, dbResultSet);
     	tradingPartner=me;
     	myofferings=new ArrayList<>();
     	tradeIsGood=false;

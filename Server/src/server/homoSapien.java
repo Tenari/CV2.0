@@ -1,4 +1,9 @@
 package server;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 /**
  * @(#)homoSapien.java
  *
@@ -10,18 +15,17 @@ package server;
 //this class adds to organism the ability to fight using different weapons/proficencieys and bonus weapon damage/armor help
 //it also implements trade, an inventoryDONE, resourcesDONE, teamsDONE and move speedsDONE!!!!!!!!!!!!!!these not done yet!!!!!!
 public class homoSapien extends Organism
-{
-	
-	boolean team1;
-	String tribe;
-	boolean created;
-	
-	int moveCost;
-	int weightCarried;
-	int spaceAvailable; //the amount of space that a character can hold on their person
-	Inventory mystuff;
-	
-	double smallBlade;
+{	
+    boolean team1;
+    String tribe;
+    boolean created;
+
+    int moveCost;
+    int weightCarried;
+    int spaceAvailable; //the amount of space that a character can hold on their person
+    Inventory mystuff;
+
+    double smallBlade;
     double largeBlade;
     double axe;
     double polearm;
@@ -32,9 +36,9 @@ public class homoSapien extends Organism
     double endurance;
     double hiding;
     
-    public homoSapien(String n,int me) 
-    {
-    	super(n,me);
+   public homoSapien(String n, int me, Connection dbConnection, Statement dbStmt, ResultSet dbResultSet) 
+   {
+    	super(n, me, dbConnection, dbStmt, dbResultSet);
     	
     	smallBlade=10.0;
     	largeBlade=10.0;
@@ -48,62 +52,77 @@ public class homoSapien extends Organism
     	hiding=10.0;
     	
     	mystuff=new Inventory();
-		mystuff.addItems(new Items(3,3,"armor","suckySheild", "none"));
-		mystuff.addItems(new Items(3,3,"weapon","suckySword","smallBlade"));
-		mystuff.addResource("tools",2);
-		mystuff.addResource("water",5);
-		mystuff.addResource("wheat",5);
+        mystuff.addItems(new Items(3,3,"armor","suckySheild", "none"));
+        mystuff.addItems(new Items(3,3,"weapon","suckySword","smallBlade"));
+        mystuff.addResource("tools",2);
+        mystuff.addResource("water",5);
+        mystuff.addResource("wheat",5);
 		
 		created=false;
     }
     //COMBAT________________________________________________________________
+    @Override
     public String getAttackSpot(double defendersDefSkill,String aim)
     {
     	setRealSkills();
     	double proficency=0;
-    	if(attackStyle.equals("handToHand")){proficency=handToHand;}
-    	else if(attackStyle.equals("smallBlade")){proficency=smallBlade;}
-    	else if(attackStyle.equals("largeBlade")){proficency=largeBlade;}
-    	else if(attackStyle.equals("axe")){proficency=axe;}
-    	else if(attackStyle.equals("polearm")){proficency=polearm;}
-    	else if(attackStyle.equals("bow")){proficency=bow;}
-    	else if(attackStyle.equals("throwing")){proficency=throwing;}
+        switch (attackStyle) {
+            case "handToHand":
+                proficency=handToHand;
+                break;
+            case "smallBlade":
+                proficency=smallBlade;
+                break;
+            case "largeBlade":
+                proficency=largeBlade;
+                break;
+            case "axe":
+                proficency=axe;
+                break;
+            case "polearm":
+                proficency=polearm;
+                break;
+            case "bow":
+                proficency=bow;
+                break;
+            case "throwing":
+                proficency=throwing;
+                break;
+        }
     	double diff=  ((attSkill-defendersDefSkill)/2.0)+((3*proficency)/20.0);
     	double legs;double arms;
     	double torso;double head;
     	double miss;
-    	if(aim.equals("torso"))
-    	{
-    		torso=(diff+10.0);
-    		miss=  50.0-(diff*0.55);
-    		arms=  30.0-(diff*0.35);
-    		legs=  9.0-(diff*0.09);
-    		head=  1.0-(diff*0.01);
-    	}
-    	else if(aim.equals("legs"))
-    	{
-    		legs=(diff+33.0);
-    		miss=  50.0-(diff*0.66);
-    		arms=  12.0-(diff*0.22);
-    		torso= 4.0-(diff*0.08);
-    		head=  1.0-(diff*0.04);
-    	}
-    	else if(aim.equals("arms"))
-    	{
-    		arms=(diff+33.0);
-    		miss=  50.0-(diff*0.66);
-    		torso= 12.0-(diff*0.22);
-    		legs=  4.0-(diff*0.08);
-    		head=  1.0-(diff*0.04);
-    	}
-    	else //if(aim.equals("head"))
-    	{
-    		head=(diff+15.0);
-    		miss=  60.0-(diff*0.66);
-    		arms=  15.0-(diff*0.20);
-    		legs=  1.0-(diff*0.02);
-    		torso= 9.0-(diff*0.12);
-    	}
+        switch (aim) {
+            case "torso":
+                torso=(diff+10.0);
+                miss=  50.0-(diff*0.55);
+                arms=  30.0-(diff*0.35);
+                legs=  9.0-(diff*0.09);
+                head=  1.0-(diff*0.01);
+                break;
+            case "legs":
+                legs=(diff+33.0);
+                miss=  50.0-(diff*0.66);
+                arms=  12.0-(diff*0.22);
+                torso= 4.0-(diff*0.08);
+                head=  1.0-(diff*0.04);
+                break;
+            case "arms":
+                arms=(diff+33.0);
+                miss=  50.0-(diff*0.66);
+                torso= 12.0-(diff*0.22);
+                legs=  4.0-(diff*0.08);
+                head=  1.0-(diff*0.04);
+                break;
+            default:        // Aims at head.
+                head=(diff+15.0);
+                miss=  60.0-(diff*0.66);
+                arms=  15.0-(diff*0.20);
+                legs=  1.0-(diff*0.02);
+                torso= 9.0-(diff*0.12);
+                break;
+        }
     	
     	double ra=Math.random()*100;
     	if(ra<=torso)
@@ -158,13 +177,29 @@ public class homoSapien extends Organism
     }
     public void plusToProficency(double skillgain)
     {
-		if(attackStyle.equals("handToHand")){handToHand+=skillgain;}
-    	else if(attackStyle.equals("smallBlade")){smallBlade+=skillgain;}
-    	else if(attackStyle.equals("largeBlade")){largeBlade+=skillgain;}
-    	else if(attackStyle.equals("axe")){axe+=skillgain;}
-    	else if(attackStyle.equals("polearm")){polearm+=skillgain;}
-    	else if(attackStyle.equals("bow")){bow+=skillgain;}
-    	else if(attackStyle.equals("throwing")){throwing+=skillgain;}
+        switch (attackStyle) {
+            case "handToHand":
+                handToHand+=skillgain;
+                break;
+            case "smallBlade":
+                smallBlade+=skillgain;
+                break;
+            case "largeBlade":
+                largeBlade+=skillgain;
+                break;
+            case "axe":
+                axe+=skillgain;
+                break;
+            case "polearm":
+                polearm+=skillgain;
+                break;
+            case "bow":
+                bow+=skillgain;
+                break;
+            case "throwing":
+                throwing+=skillgain;
+                break;
+        }
     }
     public double getDefStr()
     {
@@ -303,19 +338,19 @@ public class homoSapien extends Organism
 	
     public void moveNorth(int w)
     {
-    	if(isFighting==false && isConcious && energy>0)
+    	if(isFighting==false && isConcious && getEnergy()>0)
     	{
     		int mov=determineMoveCost(w);
     		
 	    	if(w==3)
 	    	{
 	    		y-=1;
-	    		energy-=mov;
+	    		setEnergy(getEnergy()-mov);
 	    	}
 	    	else if(w==4)
 	    	{
 	    		y-=1;
-	    		energy-=mov;
+	    		setEnergy(getEnergy()-mov);
 	    	}
 	    	else if(w>=10)
 	    	{
@@ -325,7 +360,7 @@ public class homoSapien extends Organism
 	    		worldname="bar"+" "+(w-10);
 	    		x=3;y=6;//entrance point in the bar array
 	    	}
-	    	else if(w==5)
+	    	else if(w==5)       // If we stepped on the 'return to world' terrain.
 	    	{
 	    		worldname=oldWorld;
 	    		x=leavespotX;y=leavespotY;
@@ -336,18 +371,18 @@ public class homoSapien extends Organism
     }
     public void moveSouth(int w)
     {
-    	if(isFighting==false && isConcious && energy>0)
+    	if(isFighting==false && isConcious && getEnergy()>0)
     	{
     		int mov=determineMoveCost(w);
 	    	if(w==3)
 	    	{
 	    		y+=1;
-	    		energy-=mov;
+	    		setEnergy(getEnergy()-mov);
 	    	}
 	    	if(w==4)
 	    	{
 	    		y+=1;
-	    		energy-=mov;
+	    		setEnergy(getEnergy()-mov);
 	    	}
 	    	
 	    	else if(w>=10)
@@ -358,7 +393,7 @@ public class homoSapien extends Organism
 	    		worldname="bar"+" "+(w-10);
 	    		x=3;y=6;//entrance point in the bar array
 	    	}
-	    	else if(w==5)
+	    	else if(w==5)       // If we stepped on the 'return to world' terrain.
 	    	{
 	    		worldname=oldWorld;
 	    		x=leavespotX;y=leavespotY;
@@ -369,18 +404,18 @@ public class homoSapien extends Organism
     }
     public void moveEast(int w)
     {
-    	if(isFighting==false && isConcious && energy>0)
+    	if(isFighting==false && isConcious && getEnergy()>0)
     	{
     		int mov=determineMoveCost(w);
 	    	if(w==3)
 	    	{
 	    		x+=1;
-	    		energy-=mov;
+	    		setEnergy(getEnergy()-mov);
 	    	}
 	    	if(w==4)
 	    	{
 	    		x+=1;
-	    		energy-=mov;
+	    		setEnergy(getEnergy()-mov);
 	    	}
 	    	
 	    	else if(w>=10)
@@ -391,7 +426,7 @@ public class homoSapien extends Organism
 	    		worldname="bar"+" "+(w-10);
 	    		x=3;y=6;//entrance point in the bar array
 	    	}
-	    	else if(w==5)
+	    	else if(w==5)       // If we stepped on the 'return to world' terrain.
 	    	{
 	    		worldname=oldWorld;
 	    		x=leavespotX;y=leavespotY;
@@ -402,18 +437,18 @@ public class homoSapien extends Organism
     }
     public void moveWest(int w)
     {
-    	if(isFighting==false && isConcious && energy>0)
+    	if(isFighting==false && isConcious && getEnergy()>0)
     	{
     		int mov=determineMoveCost(w);
     		if(w==3)
 	    	{
 	    		x-=1;
-	    		energy-=mov;
+	    		setEnergy(getEnergy()-mov);
 	    	}
 	    	if(w==4)
 	    	{
 	    		x-=1;
-	    		energy-=mov;
+	    		setEnergy(getEnergy()-mov);
 	    	}
 	    	else if(w>=10)
 	    	{
@@ -423,7 +458,7 @@ public class homoSapien extends Organism
 	    		worldname="bar"+" "+(w-10);
 	    		x=3;y=6;//entrance point
 	    	}
-	    	else if(w==5)
+	    	else if(w==5)       // If we stepped on the 'return to world' terrain.
 	    	{
 	    		worldname=oldWorld;
 	    		x=leavespotX;y=leavespotY;

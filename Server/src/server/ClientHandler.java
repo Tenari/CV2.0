@@ -52,10 +52,9 @@ class ClientHandler extends Thread{
         try {
          String firstMessageRead=in.readLine();     // reads in the first line that the applet sends
          setUsername(firstMessageRead);             // the first thing will always be the username, so we set the user name here
-         Player asdf =new Player(getUsername(),1);  // we create a new character class for that user name
-         if(world.charExist(asdf)==false) {         // this if/else thing is used to determine if this character already exists, 
-            world.addCharacter(getUsername());      // if it doesnt, we add him to the world and say that a new char was created
-            uid=world.getUID(asdf);                 // this sets the uid that this class knows to the same one as the one the world knows
+         if(world.charExist(getUsername())==false) {         // this if/else thing is used to determine if this character already exists, 
+            uid=world.addCharacter(getUsername());      // if it doesnt, we add him to the world and say that a new char was created
+            // Also sets the uid that this class knows to the same one as the one the world knows
             System.out.println("player created named "+getUsername());
             if(uid%2==0)
             {
@@ -67,7 +66,7 @@ class ClientHandler extends Thread{
             }
          }
          else {         //if he does exist, we just set the uid, and say that he was already there
-            uid=world.getUID(asdf);
+            uid=world.getUID(getUsername());
             System.out.println("player " + getUsername()+" already there");
          }
          while ((firstMessageRead = in.readLine()) != null) interpretData(firstMessageRead);//"thismsg=in.ReadLine()"means that the loop just waits until in.readLine returns something
