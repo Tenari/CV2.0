@@ -16,8 +16,6 @@ public class Organism
     // Variables to facilitate movement.
     String name;            // Organism's name
     int charUID;            // Organism's UID, used by ClientHandler
-    String oldWorld = "world";        // The last world the Organism was in.
-    String worldname = "world";       // The current world the Organism is in.
     
     // The initial values for the movement parameters.
     private final int startX    =   5;
@@ -25,6 +23,7 @@ public class Organism
     private final int startOldX =   5;
     private final int startOldY =   5;
     private final int startEnergy=  10000;
+    private final String startWorldName = "world";
     
     // Maximum values
     private final int maxEnergy =   10000;
@@ -80,8 +79,8 @@ public class Organism
                                     ""+startY,
                                     ""+startOldX,
                                     ""+startOldY,
-                                    "'"+worldname+"'",
-                                    "'"+oldWorld+"'",
+                                    "'"+startWorldName+"'",
+                                    "'"+startWorldName+"'",
                                     ""+startEnergy  };
         // Insert values for the organism's location
         communicate.insert(movementTableName, initialValues);
@@ -89,8 +88,6 @@ public class Organism
         money=10;
         charUID=myUID;
         name=n;
-        worldname="world";
-        oldWorld="world";
 
         attStr=3.0;
         attSkill=3.0;
@@ -505,13 +502,13 @@ public class Organism
     public void updateLocationInfoForEnteringABuilding(int w) {
         setOldX(getX());
         setOldY(getY());
-        oldWorld=worldname;
-        worldname="bar"+" "+(w-10);
+        setOldWorld(getWorld());
+        setWorld("bar"+" "+(w-10));
         setX(3);        // The hardcoded entrance location for all bars
         setY(6);
     }
     public void updateLocationInfoForExitingABuilding() {
-        worldname=oldWorld;
+        setWorld(getOldWorld());
         setX(getOldX());   // use the oldX/oldY as the new locations
         setY(getOldY());
     }
@@ -562,24 +559,27 @@ public class Organism
     	communicate.updateSingleIntByUID(movementTableName, "oldy", newOldY, charUID);
     }
     
-    public String getWorld()
-    {
-    	if(isDead)
-    	{
-    		return "dead";
+    public String getWorld() {
+    	if(isDead) {
+            return "dead";
     	}
-    	else if(isConcious==false)
-    	{
-    		return "dead2";
+    	else if(!isConcious) {
+            return "dead2";
     	}
-    	else
-    	{
-    		return worldname;
+        else {
+            return communicate.selectSingleStringByUID("world", movementTableName, charUID);
     	}
     }
-    public void setWorld(String w)
+    public void setWorld(String newWorldName)
     {
-    	worldname=w;
+    	communicate.updateSingleStringByUID(movementTableName, "world", newWorldName, charUID);
+    }
+    public String getOldWorld() {
+    	return communicate.selectSingleStringByUID("oldworld", movementTableName, charUID);
+    }
+    public void setOldWorld(String newWorldName)
+    {
+    	communicate.updateSingleStringByUID(movementTableName, "oldworld", newWorldName, charUID);
     }
     
     public String getName()

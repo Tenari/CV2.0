@@ -228,13 +228,13 @@ public class homoSapien extends Organism
     	team1=nub;
     	if(team1)
     	{
-    		worldname="world";
+    		setWorld("world");
                 setX(4);
                 setY(5);
     	}
     	else
     	{
-    		worldname="world1";
+    		setWorld("world1");
     		setX(4);
                 setY(5);
     	}

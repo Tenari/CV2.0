@@ -17,7 +17,7 @@ public class Creature extends Organism
     public Creature(String n,int me,int xI, int yI, String wldnm, int lvl, CustomCommunication c)      
     {
         super(n,me,c);	
-        worldname=wldnm;
+        setWorld(wldnm);
         
         setX(xI);
         setY(yI);

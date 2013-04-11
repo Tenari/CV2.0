@@ -65,33 +65,35 @@ public class CustomCommunication {
     }
     
     /**
-     * Takes a columnName, a tableName and a userID, and does "SELECT colName FROM 
-     *      table WHERE table.`uid` = userID".
+     * Takes a columnName, a tableName and a userID, and does the query:
+     *      "SELECT colName FROM table WHERE table.`uid` = userID".
      * 
      * @param colName
      * @param table
      * @param uid
-     * @return The ResultSet of the query.
+     * @return The last string from the ResultSet of the query. null if failed.
      */
-    public ResultSet selectSingleByUID(String colName, String table, int uid) {
+    public String selectSingleStringByUID(String colName, String table, int uid) {
         // Make the statement.
         String stmt = 
                 "SELECT `"+colName+
                 "` FROM `"+table+
-                "` WHERE `"+table+"`.`uid` = "+uid;   
+                "` WHERE `"+table+"`.`uid` = "+uid+";";   
                 
         // Do the query.
         try {
-            ResultSet dbResultSet = null;
             Statement dbStmt = dbConnection.createStatement();
+            ResultSet dbResultSet = null;
             if (dbStmt.execute(stmt)) {  
                 dbResultSet = dbStmt.getResultSet();
+                dbResultSet.last();
+                return dbResultSet.getString(1);
             } 
             else {
-                System.err.println("CustomCommunication.selectSingleByUID failed");
+                System.err.println("CustomCommunication.selectSingleStringByUID failed");
             }
             
-            return dbResultSet;
+            return null;
         }
         catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage()); 
@@ -138,9 +140,6 @@ public class CustomCommunication {
             System.out.println("VendorError: " + ex.getErrorCode()); 
             return -1;
         }
-       /* catch (NullPointerException e) {
-            return -1;
-        }*/
     }
     
      /**
@@ -183,7 +182,6 @@ public class CustomCommunication {
         }
     }
     
-    
     /**
      * Does the SQL to set an int to a new value, based on a given uid key.
      * @param table
@@ -196,6 +194,34 @@ public class CustomCommunication {
         // Make the statement string.
         String stmt =   "UPDATE `"+table+
                         "` SET "+intName+"="+newValue+
+                        " WHERE uid="+uid;
+        
+        // Do the statement.
+        try {
+            Statement dbStmt = dbConnection.createStatement();
+            dbStmt.execute(stmt);
+            return true;
+        }
+        catch (SQLException ex) {   // Report errors.
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return false;
+        }
+    }
+    
+    /**
+     * Does the SQL to set string to a new value, based on a given uid key.
+     * @param table
+     * @param stringName
+     * @param newValue
+     * @param uid
+     * @return true on success, false otherwise.
+     */
+    public boolean updateSingleStringByUID(String table, String stringName, String newValue, int uid) {
+        // Make the statement string.
+        String stmt =   "UPDATE `"+table+
+                        "` SET "+stringName+"='"+newValue+"'"+
                         " WHERE uid="+uid;
         
         // Do the statement.

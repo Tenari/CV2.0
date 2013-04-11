@@ -25,7 +25,7 @@ public class HumanNPC extends homoSapien
         super(n,me, c);
         routinespot=0;	
         state=0;
-        worldname=wldnm;
+        setWorld(wldnm);
         setX(xI);
         setY(yI);
         routine = new ArrayList<String>();
