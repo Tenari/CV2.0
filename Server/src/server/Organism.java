@@ -124,6 +124,7 @@ public class Organism
         lastMoveDirection="south";
     }
     
+//-----------------COMBAT METHODS-----------------------------------------------
     //returns the name of the spot hit or "miss"--only uses handToHand proficency
     public String getAttackSpot(double defendersDefSkill,String aim)
     {
@@ -211,22 +212,7 @@ public class Organism
     {
     	int gaaa=(int)(Math.random()*(((attStr-defendersDefStr)*0.25)+4));
     	return gaaa;
-    }
-    public void plusToProficency(double skillgain)
-    {
-		if(attackStyle.equals("handToHand")){handToHand+=skillgain;}
-    }
-    public void setRealSkills()
-    {
-    	
-    	attStr=attStrBase*(.04*armsHealth);
-    	attSkill=attSkillBase*(.04*headHealth);
-    	defStr=defStrBase*(.04*torsoHealth);
-    	defSkill=defSkillBase*(.04*legsHealth);
-    	defSkillBase+=.0065;
-    	defStrBase+=.0065;
-    }
-    public void fight(int uid,boolean ismons)
+    }public void fight(int uid,boolean ismons)
     {
     	isMonster=ismons;
     	isFighting=true;
@@ -290,7 +276,6 @@ public class Organism
     {
     	attackStyle=se;
     }
-    
     public boolean isAbleToFight()
     {
     	if((isConcious)&&(!isDead))
@@ -302,7 +287,9 @@ public class Organism
     		return false;
     	}
     }
-   
+//-----------------END COMBAT METHODS-------------------------------------------
+    
+//---------------------HP ACCESSOR METHODS--------------------------------------
     public int getHead()
     {
     	return headHealth;
@@ -355,8 +342,24 @@ public class Organism
     		legsHealth=0;
     	}
     }
-   
-    public double getAttSkill()
+//---------------------END HP ACCESSOR METHODS----------------------------------
+    
+//---------------------SKILL UPDATE/ACCESSOR METHODS----------------------------
+     public void plusToProficency(double skillgain)
+    {
+        if(attackStyle.equals("handToHand")){handToHand+=skillgain;}
+    }
+    public void setRealSkills()
+    {
+    	
+    	attStr=attStrBase*(.04*armsHealth);
+    	attSkill=attSkillBase*(.04*headHealth);
+    	defStr=defStrBase*(.04*torsoHealth);
+    	defSkill=defSkillBase*(.04*legsHealth);
+    	defSkillBase+=.0065;
+    	defStrBase+=.0065;
+    }
+     public double getAttSkill()
     {
     	return attSkill;
     }
@@ -406,6 +409,9 @@ public class Organism
     {
     	defStrBase=x;
     }
+//---------------------END SKILL UPDATE/ACCESSOR METHODS------------------------
+   
+   
     
     public boolean moveNorth(int w)
     {
