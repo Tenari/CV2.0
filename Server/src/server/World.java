@@ -5,13 +5,8 @@
  */
 package server;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Properties;
 import java.util.Scanner;
 
 class World extends Thread{
@@ -35,9 +30,8 @@ class World extends Thread{
     String dbURL = "jdbc:mysql://localhost/game";   // URL of the database.
     String dbUsername = "root";                     
     String dbPassword = "";
-    Connection dbConnection;
-    Statement dbStmt;
-    ResultSet dbResultSet;
+    
+    CustomCommunication communicate;
         
     private Server server;
     
@@ -47,19 +41,7 @@ class World extends Thread{
         server=s;                   // Connect the pointer to the server thread
         
         // SQL Database Connection initialization
-        try {
-            // The driver is connected in the IDE build settings. FYI.
-            
-            Properties connectionProps = new Properties();
-            connectionProps.put("user", this.dbUsername);
-            connectionProps.put("password", this.dbPassword);
-            dbConnection = DriverManager.getConnection(dbURL, connectionProps);
-            dbStmt = dbConnection.createStatement();
-        } catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-        }        
+        communicate = new CustomCommunication();      
         
         
         fullWorld= new String[][] {{"world","wildi","world1"}};
@@ -94,7 +76,7 @@ class World extends Thread{
      */
     public int addCharacter(String name)
     {
-    	Player asef=new Player(name, nextOrganismID, dbConnection, dbStmt, dbResultSet);
+    	Player asef=new Player(name, nextOrganismID, communicate);
     	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
     	nextOrganismID++;
         playerIsCreated = true;
@@ -102,13 +84,13 @@ class World extends Thread{
     }
     public void addNPC(String name,int xNPC, int yNPC, String wname)
     {
-    	HumanNPC asef=new HumanNPC(name,nextOrganismID,xNPC,yNPC,wname, dbConnection, dbStmt, dbResultSet);
+    	HumanNPC asef=new HumanNPC(name,nextOrganismID,xNPC,yNPC,wname, communicate);
     	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
     	nextOrganismID++;
     }
     public void addMonster(String name,int xNPC, int yNPC, String wname, int lvl)
     {
-    	Creature asef=new Creature(name,nextOrganismID,xNPC,yNPC,wname,lvl, dbConnection, dbStmt, dbResultSet);
+    	Creature asef=new Creature(name,nextOrganismID,xNPC,yNPC,wname,lvl, communicate);
     	if(lvl==1)
     	{
     		organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
@@ -604,40 +586,11 @@ class World extends Thread{
     {
     	Scanner had = new Scanner(worldnam);
     	String worldname=had.next();
-    	try {
-            if(worldname.equals("world")) {
-
-                if (dbStmt.execute("SELECT `terrainType` FROM `smallcity` WHERE `smallcity`.`x` = "+x+" AND`smallcity`.`y` = "+y)) {
-                    dbResultSet = dbStmt.getResultSet();
-                } else {
-                    System.err.println("select failed");
-                    return 1;
-                }
-
-                while (dbResultSet.next()) {
-                 return dbResultSet.getInt(1);
-             }
-
-            }
-            if(worldname.equals("bar")) {
-
-                if (dbStmt.execute("SELECT `terrainType` FROM `bar` WHERE `bar`.`x` = "+x+" AND`bar`.`y` = "+y)) {
-                    dbResultSet = dbStmt.getResultSet();
-                } else {
-                    System.err.println("select failed");
-                    return 1;
-                }
-
-                while (dbResultSet.next()) {
-                 return dbResultSet.getInt(1);
-             }
-
-            }
-        } catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-
+        if(worldname.equals("world")) {
+            return communicate.selectSingleIntByXAndY("terrainType", "smallcity", x, y);
+        }
+        if(worldname.equals("bar")) {
+            return communicate.selectSingleIntByXAndY("terrainType", "bar", x, y);
         }
         return 1;
     }

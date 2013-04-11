@@ -8,9 +8,7 @@
 
 package server;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
+
 import java.util.ArrayList;
 
 public class Player extends homoSapien
@@ -18,9 +16,9 @@ public class Player extends homoSapien
 	int tradingPartner;
 	ArrayList<String> myofferings;
 	boolean tradeIsGood;
-    public Player(String n, int me, Connection dbConnection, Statement dbStmt, ResultSet dbResultSet) 
+    public Player(String n, int me, CustomCommunication c) 
     {
-    	super(n, me, dbConnection, dbStmt, dbResultSet);
+    	super(n, me, c);
     	tradingPartner=me;
     	myofferings=new ArrayList<>();
     	tradeIsGood=false;

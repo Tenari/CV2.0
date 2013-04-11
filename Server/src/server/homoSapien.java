@@ -1,8 +1,5 @@
 package server;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 
 /**
  * @(#)homoSapien.java
@@ -36,9 +33,9 @@ public class homoSapien extends Organism
     double endurance;
     double hiding;
     
-   public homoSapien(String n, int me, Connection dbConnection, Statement dbStmt, ResultSet dbResultSet) 
+   public homoSapien(String n, int me, CustomCommunication c) 
    {
-    	super(n, me, dbConnection, dbStmt, dbResultSet);
+    	super(n, me, c);
     	
     	smallBlade=10.0;
     	largeBlade=10.0;
@@ -232,12 +229,14 @@ public class homoSapien extends Organism
     	if(team1)
     	{
     		worldname="world";
-    		x=4;y=5;
+                setX(4);
+                setY(5);
     	}
     	else
     	{
     		worldname="world1";
-    		x=4;y=5;
+    		setX(4);
+                setY(5);
     	}
     }
     public boolean getTeam1()
@@ -336,135 +335,54 @@ public class homoSapien extends Organism
 		return hiding;
 	}
 	
-    public void moveNorth(int w)
-    {
-    	if(isFighting==false && isConcious && getEnergy()>0)
-    	{
-    		int mov=determineMoveCost(w);
-    		
-	    	if(w==3)
-	    	{
-	    		y-=1;
-	    		setEnergy(getEnergy()-mov);
-	    	}
-	    	else if(w==4)
-	    	{
-	    		y-=1;
-	    		setEnergy(getEnergy()-mov);
-	    	}
-	    	else if(w>=10)
-	    	{
-	    		leavespotX=x;
-				leavespotY=y;
-				oldWorld=worldname;
-	    		worldname="bar"+" "+(w-10);
-	    		x=3;y=6;//entrance point in the bar array
-	    	}
-	    	else if(w==5)       // If we stepped on the 'return to world' terrain.
-	    	{
-	    		worldname=oldWorld;
-	    		x=leavespotX;y=leavespotY;
-	    	}
-	    	endurance+=0.005;
+    @Override
+    public boolean moveNorth(int w) {
+        
+        boolean moved = super.moveNorth(w);
+    	if(moved) {
+            int mov=determineMoveCost(w);
+            setEnergy(getEnergy()-mov);
+            endurance+=0.005;
     	}
     	setLastMoveDirection("n");
+        return moved;
     }
-    public void moveSouth(int w)
-    {
-    	if(isFighting==false && isConcious && getEnergy()>0)
-    	{
-    		int mov=determineMoveCost(w);
-	    	if(w==3)
-	    	{
-	    		y+=1;
-	    		setEnergy(getEnergy()-mov);
-	    	}
-	    	if(w==4)
-	    	{
-	    		y+=1;
-	    		setEnergy(getEnergy()-mov);
-	    	}
-	    	
-	    	else if(w>=10)
-	    	{
-	    		leavespotX=x;
-				leavespotY=y;
-				oldWorld=worldname;
-	    		worldname="bar"+" "+(w-10);
-	    		x=3;y=6;//entrance point in the bar array
-	    	}
-	    	else if(w==5)       // If we stepped on the 'return to world' terrain.
-	    	{
-	    		worldname=oldWorld;
-	    		x=leavespotX;y=leavespotY;
-	    	}
-	    	endurance+=0.005;
+    
+    @Override
+    public boolean moveSouth(int w) {
+        
+    	boolean moved = super.moveSouth(w);
+    	if(moved) {
+            int mov=determineMoveCost(w);
+            setEnergy(getEnergy()-mov);
+            endurance+=0.005;
     	}
     	setLastMoveDirection("s");
+        return moved;
     }
-    public void moveEast(int w)
-    {
-    	if(isFighting==false && isConcious && getEnergy()>0)
-    	{
-    		int mov=determineMoveCost(w);
-	    	if(w==3)
-	    	{
-	    		x+=1;
-	    		setEnergy(getEnergy()-mov);
-	    	}
-	    	if(w==4)
-	    	{
-	    		x+=1;
-	    		setEnergy(getEnergy()-mov);
-	    	}
-	    	
-	    	else if(w>=10)
-	    	{
-	    		leavespotX=x;
-				leavespotY=y;
-				oldWorld=worldname;
-	    		worldname="bar"+" "+(w-10);
-	    		x=3;y=6;//entrance point in the bar array
-	    	}
-	    	else if(w==5)       // If we stepped on the 'return to world' terrain.
-	    	{
-	    		worldname=oldWorld;
-	    		x=leavespotX;y=leavespotY;
-	    	}
-	    	endurance+=0.005;
+    
+    @Override
+    public boolean moveEast(int w) {
+        
+    	boolean moved = super.moveEast(w);
+    	if(moved) {
+            int mov=determineMoveCost(w);
+            setEnergy(getEnergy()-mov);
+            endurance+=0.005;
     	}
     	setLastMoveDirection("e");
+        return moved;
     }
-    public void moveWest(int w)
-    {
-    	if(isFighting==false && isConcious && getEnergy()>0)
-    	{
-    		int mov=determineMoveCost(w);
-    		if(w==3)
-	    	{
-	    		x-=1;
-	    		setEnergy(getEnergy()-mov);
-	    	}
-	    	if(w==4)
-	    	{
-	    		x-=1;
-	    		setEnergy(getEnergy()-mov);
-	    	}
-	    	else if(w>=10)
-	    	{
-	    		leavespotX=x;
-				leavespotY=y;
-				oldWorld=worldname;
-	    		worldname="bar"+" "+(w-10);
-	    		x=3;y=6;//entrance point
-	    	}
-	    	else if(w==5)       // If we stepped on the 'return to world' terrain.
-	    	{
-	    		worldname=oldWorld;
-	    		x=leavespotX;y=leavespotY;
-	    	}
-	    	endurance+=0.005;
+    @Override
+    public boolean moveWest(int w) {
+        
+        boolean moved = super.moveWest(w);
+    	if(moved) {
+            int mov=determineMoveCost(w);
+            setEnergy(getEnergy()-mov);
+            endurance+=0.005;
     	}
     	setLastMoveDirection("w");
+        return moved;
     }
 }

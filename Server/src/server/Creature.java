@@ -6,9 +6,6 @@ package server;
  * @author Daniel Zapata
  * @version 1.00 2010/4/12
  */
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.Random;
 
 //the only thing this class has to be able to do is take care of respawns. or nothing if that happens elsewhere.
@@ -17,14 +14,17 @@ public class Creature extends Organism
 
 	int level;
         Random generator;
-     public Creature(String n,int me,int xI, int yI, String wldnm, int lvl, Connection dbConnection, Statement dbStmt, ResultSet dbResultSet)      
-	{
-		super(n,me, dbConnection, dbStmt, dbResultSet);	
-	    	worldname=wldnm;
-	    	super.x=xI;super.y=yI;
-          level=lvl;
-          setLevel(level);
-          generator=new Random();
+    public Creature(String n,int me,int xI, int yI, String wldnm, int lvl, CustomCommunication c)      
+    {
+        super(n,me,c);	
+        worldname=wldnm;
+        
+        setX(xI);
+        setY(yI);
+        
+        level=lvl;
+        setLevel(level);
+        generator=new Random();
      }
      public void setLevel(int lvl)
      {

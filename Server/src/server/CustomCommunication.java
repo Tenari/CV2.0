@@ -13,8 +13,6 @@ import java.util.Properties;
 public class CustomCommunication {
     // SQL variables
     Connection dbConnection;
-    Statement dbStmt;
-    ResultSet dbResultSet;
     // SQL Database Feilds
     String dbURL = "jdbc:mysql://localhost/game";   // URL of the database.
     String dbUsername = "root";                     
@@ -29,7 +27,6 @@ public class CustomCommunication {
             connectionProps.put("user", this.dbUsername);
             connectionProps.put("password", this.dbPassword);
             dbConnection = DriverManager.getConnection(dbURL, connectionProps);
-            dbStmt = dbConnection.createStatement();
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage()); 
             System.out.println("SQLState: " + ex.getSQLState()); 
@@ -55,6 +52,7 @@ public class CustomCommunication {
                 
         // Do the statement.
         try {
+            Statement dbStmt = dbConnection.createStatement();
             dbStmt.execute(stmt);
             return true;        
         }
@@ -84,11 +82,13 @@ public class CustomCommunication {
                 
         // Do the query.
         try {
+            ResultSet dbResultSet = null;
+            Statement dbStmt = dbConnection.createStatement();
             if (dbStmt.execute(stmt)) {  
                 dbResultSet = dbStmt.getResultSet();
             } 
             else {
-                System.err.println("CustomCommunication.selectSingleByUID fialed");
+                System.err.println("CustomCommunication.selectSingleByUID failed");
             }
             
             return dbResultSet;
@@ -100,6 +100,89 @@ public class CustomCommunication {
             return null;
         }
     }
+    
+    /**
+     * Takes a columnName, a tableName and a userID, and does "SELECT colName FROM 
+     *      table WHERE table.`uid` = userID".
+     * 
+     * @param colName
+     * @param table
+     * @param uid
+     * @return The first int from the ResultSet of the query. -1 if failed.
+     */
+    public int selectSingleIntByUID(String colName, String table, int uid) {
+        // Make the statement.
+        String stmt = 
+                "SELECT `"+colName+
+                "` FROM `"+table+
+                "` WHERE `"+table+"`.`uid` = "+uid+";";   
+                
+        // Do the query.
+        try {
+            Statement dbStmt = dbConnection.createStatement();
+            ResultSet dbResultSet = null;
+            if (dbStmt.execute(stmt)) {  
+                dbResultSet = dbStmt.getResultSet();
+                dbResultSet.last();
+                return dbResultSet.getInt(1);
+            } 
+            else {
+                System.err.println("CustomCommunication.selectSingleByUID failed");
+            }
+            
+            return -1;
+        }
+        catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return -1;
+        }
+       /* catch (NullPointerException e) {
+            return -1;
+        }*/
+    }
+    
+     /**
+     * Takes a columnName, a tableName, a x, and a y, and does "SELECT colName 
+     *      FROM table WHERE table.`x` = x AND table.`y` = y".
+     * 
+     * @param colName
+     * @param table
+     * @param uid
+     * @return The first int from the ResultSet of the query. -1 if failed.
+     */
+    public int selectSingleIntByXAndY(String colName, String table, int x, int y) {
+        // Make the statement.
+        String stmt = 
+                "SELECT "+colName+
+                " FROM "+table+
+                " WHERE "+table+".x = "+x+
+                "   AND "+table+".y = "+y;   
+                
+        // Do the query.
+        try {
+            Statement dbStmt = dbConnection.createStatement();
+            ResultSet dbResultSet = null;
+            if (dbStmt.execute(stmt)) {  
+                dbResultSet = dbStmt.getResultSet();
+                dbResultSet.last();
+                return dbResultSet.getInt(1);
+            } 
+            else {
+                System.err.println("CustomCommunication.selectSingleByUID failed");
+            }
+            
+            return -1;
+        }
+        catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return -1;
+        }
+    }
+    
     
     /**
      * Does the SQL to set an int to a new value, based on a given uid key.
@@ -117,6 +200,7 @@ public class CustomCommunication {
         
         // Do the statement.
         try {
+            Statement dbStmt = dbConnection.createStatement();
             dbStmt.execute(stmt);
             return true;
         }

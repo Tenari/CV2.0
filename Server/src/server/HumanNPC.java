@@ -1,8 +1,5 @@
 package server;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 
 /**
@@ -23,13 +20,14 @@ public class HumanNPC extends homoSapien
     private int routinespot; 
     private int state;
 
-    public HumanNPC(String n,int me,int xI, int yI, String wldnm, Connection dbConnection, Statement dbStmt, ResultSet dbResultSet)    
+    public HumanNPC(String n,int me,int xI, int yI, String wldnm, CustomCommunication c)    
     {
-        super(n,me, dbConnection, dbStmt, dbResultSet);
+        super(n,me, c);
         routinespot=0;	
         state=0;
         worldname=wldnm;
-        super.x=xI;super.y=yI;
+        setX(xI);
+        setY(yI);
         routine = new ArrayList<String>();
         routine.add("N");
         routine.add("W");

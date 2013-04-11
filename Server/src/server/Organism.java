@@ -1,12 +1,6 @@
 package server;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @(#)Organism.java
@@ -22,8 +16,6 @@ public class Organism
     // Variables to facilitate movement.
     String name;            // Organism's name
     int charUID;            // Organism's UID, used by ClientHandler
-    int x;                  // Organism's x coord
-    int y;                  // Organism's y coord
     String oldWorld = "world";        // The last world the Organism was in.
     String worldname = "world";       // The current world the Organism is in.
     int leavespotX;         // The x coord of the position the Organism left the outisde world.
@@ -40,9 +32,6 @@ public class Organism
     private final int maxEnergy =   10000;
     
     // SQL variables
-    Connection dbConnection;
-    Statement dbStmt;
-    ResultSet dbResultSet;
     CustomCommunication communicate;
     // SQL Tables
     String movementTableName = "organismsmovementinfo";
@@ -81,18 +70,13 @@ public class Organism
 
     String lastMoveDirection;
     
-    public Organism(String n, int me, Connection dbConnection, Statement dbStmt, ResultSet dbResultSet) 
+    public Organism(String n, int myUID, CustomCommunication c) 
     {
-        // Connect SQL stuff.
-        this.dbConnection   =   dbConnection;
-        this.dbStmt         =   dbStmt;
-        this.dbResultSet    =   dbResultSet;
-        
         // Create the communication
-        communicate = new CustomCommunication();
+        communicate = c;
         // Create the intial values array for the momevment table
         String[] initialValues = {
-                                    ""+me,  // uid
+                                    ""+myUID,  
                                     "'"+n+"'",   // name requires "'" around it because it's a varchar
                                     ""+startX,
                                     ""+startY,
@@ -105,8 +89,7 @@ public class Organism
         communicate.insert(movementTableName, initialValues);
         
         money=10;
-        charUID=me;
-        x=5;y=5;		//initial starting spot(5,5)
+        charUID=myUID;
         name=n;
         worldname="world";
         oldWorld="world";
@@ -424,123 +407,108 @@ public class Organism
     	defStrBase=x;
     }
     
-    public void moveNorth(int w)
+    public boolean moveNorth(int w)
     {
+        boolean moved = false;
     	if(!isFighting && isConcious && getEnergy()>0)
     	{
-	    	if(w==3)
-	    	{
-	    		y-=1;
-	    	}
-	    	else if(w==4)
-	    	{
-	    		y-=1;
-	    	}
-	    	else if(w>=10)
-	    	{
-	    		leavespotX=x;
-				leavespotY=y;
-				oldWorld=worldname;
-	    		worldname="bar"+" "+(w-10);
-	    		x=2;y=5;
-	    	}
-	    	else if(w==5)
-	    	{
-	    		worldname=oldWorld;
-	    		x=leavespotX;y=leavespotY;
-	    	}
-	    	setLastMoveDirection("north");
+            if(w==3 || w==4)
+            {
+                setY(getY()-1);
+                moved = true;
+            }
+            else if(w>=10)
+            {
+                updateLocationInfoForEnteringABuilding(w);
+            }
+            else if(w==5)
+            {
+                updateLocationInfoForExitingABuilding();
+            }
+            setLastMoveDirection("north");
     	}
-    	
+    	return moved;
     }
-    public void moveSouth(int w)
+    public boolean moveSouth(int w)
     {
+        boolean moved = false;
     	if(isFighting==false && isConcious && getEnergy()>0)
     	{
-	    	if(w==3)
-	    	{
-	    		y+=1;
-	    	}
-	    	if(w==4)
-	    	{
-	    		y+=1;
-	    	}
-	    	
-	    	else if(w>=10)
-	    	{
-	    		leavespotX=x;
-				leavespotY=y;
-				oldWorld=worldname;
-	    		worldname="bar"+" "+(w-10);
-	    		x=2;y=5;
-	    	}
-	    	else if(w==5)
-	    	{
-	    		worldname=oldWorld;
-	    		x=leavespotX;y=leavespotY;
-	    	}
-                setLastMoveDirection("south");
-    	}
-    	
+            if(w==3 || w==4)
+            {
+                setY(getY()+1);
+                moved = true;
+            }
+
+            else if(w>=10)
+            {
+                updateLocationInfoForEnteringABuilding(w);
+            }
+            else if(w==5)   // if the tile was a building exit tile.
+            {
+                updateLocationInfoForExitingABuilding();
+            }
+            setLastMoveDirection("south");
+        }
+        return moved;
     }
-    public void moveEast(int w)
+    public boolean moveEast(int w)
     {
+        boolean moved = false;
     	if(isFighting==false && isConcious && getEnergy()>0)
     	{
-	    	if(w==3)
-	    	{
-	    		x+=1;
-	    	}
-	    	if(w==4)
-	    	{
-	    		x+=1;
-	    	}
-	    	
-	    	else if(w>=10)
-	    	{
-	    		leavespotX=x;
-				leavespotY=y;
-				oldWorld=worldname;
-	    		worldname="bar"+" "+(w-10);
-	    		x=2;y=5;
-	    	}
-	    	else if(w==5)
-	    	{
-	    		worldname=oldWorld;
-	    		x=leavespotX;y=leavespotY;
-	    	}
-                setLastMoveDirection("east");
+            if(w==3 || w==4)
+            {
+                setX(getX()+1);
+                moved = true;
+            }
+            else if(w>=10)
+            {
+                updateLocationInfoForEnteringABuilding(w);
+            }
+            else if(w==5)
+            {
+                updateLocationInfoForExitingABuilding();
+            }
+            setLastMoveDirection("east");
     	}
-    	
+        return moved;
     }
-    public void moveWest(int w)
+    public boolean moveWest(int w)
     {
+        boolean moved = false;
     	if(isFighting==false && isConcious && getEnergy()>0)
     	{
-    		if(w==3)
-	    	{
-	    		x-=1;
-	    	}
-	    	if(w==4)
-	    	{
-	    		x-=1;
-	    	}
-	    	else if(w>=10)
-	    	{
-	    		leavespotX=x;
-				leavespotY=y;
-				oldWorld=worldname;
-	    		worldname="bar"+" "+(w-10);
-	    		x=2;y=5;//entrance point
-	    	}
-	    	else if(w==5)
-	    	{
-	    		worldname=oldWorld;
-	    		x=leavespotX;y=leavespotY;
-	    	}
-                setLastMoveDirection("west");
+            if(w==3 || w==4)
+            {
+                setX(getX()-1);
+                moved = true;
+            }
+            else if(w>=10)
+            {
+                updateLocationInfoForEnteringABuilding(w);
+            }
+            else if(w==5)
+            {
+                updateLocationInfoForExitingABuilding();
+            }
+            setLastMoveDirection("west");
     	}
-    	
+        return moved;
+    }
+    
+    public void updateLocationInfoForEnteringABuilding(int w) {
+        leavespotX=getX();
+        leavespotY=getY();
+        oldWorld=worldname;
+        worldname="bar"+" "+(w-10);
+        setX(3);        // The hardcoded entrance location for all bars
+        setY(6);
+    }
+    public void updateLocationInfoForExitingABuilding() {
+        worldname=oldWorld;
+        setX(leavespotX);   // use the leavespots as the new locations
+        setY(leavespotY);
     }
     public void setLastMoveDirection(String gu)
     {
@@ -550,22 +518,34 @@ public class Organism
     {
         return lastMoveDirection;
     }
+    
     public int getX()
     {
-    	return x;
+        return communicate.selectSingleIntByUID("x", movementTableName, charUID);
     }
     public int getY()
     {
-    	return y;
+    	return communicate.selectSingleIntByUID("y", movementTableName, charUID);
     }
-    public void setX(int ad)
-    {
-    	x=ad;
+    
+    /**
+     * Sets the X column of the uid matched row to newID in the 
+     * movementTableName database table.
+     * @param newX the new X value
+     */
+    public void setX(int newX) {
+    	communicate.updateSingleIntByUID(movementTableName, "x", newX, charUID);
     }
-    public void setY(int ab)
-    {
-    	y=ab;
+    
+    /**
+     * Sets the Y column of the uid matched row to newID in the 
+     * movementTableName database table.
+     * @param newY the new Y value
+     */
+    public void setY(int newY) {
+    	communicate.updateSingleIntByUID(movementTableName, "y", newY, charUID);
     }
+    
     public String getWorld()
     {
     	if(isDead)
@@ -598,18 +578,7 @@ public class Organism
      */
     public int getEnergy()
     {
-        dbResultSet = communicate.selectSingleByUID("energy", movementTableName, charUID);
-        try {
-            while (dbResultSet.next()) {
-                    return dbResultSet.getInt(1);
-            }
-            return 0;
-        } catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-            return 0;
-        }
+        return communicate.selectSingleIntByUID("energy", movementTableName, charUID);
     }
     
     /**
