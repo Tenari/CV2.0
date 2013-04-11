@@ -13,16 +13,14 @@ import java.util.ArrayList;
 
 public class Organism 
 {
-    // Variables to facilitate movement.
-    String name;            // Organism's name
-    int charUID;            // Organism's UID, used by ClientHandler
+    // Important variables.
+    int charUID;            // Organism's UID, used by ClientHandler & DB
     
     // The initial values for the movement parameters.
     private final int startX    =   5;
     private final int startY    =   5;
     private final int startOldX =   5;
     private final int startOldY =   5;
-    private final int startEnergy=  10000;
     private final String startWorldName = "world";
     
     // Maximum values
@@ -81,13 +79,13 @@ public class Organism
                                     ""+startOldY,
                                     "'"+startWorldName+"'",
                                     "'"+startWorldName+"'",
-                                    ""+startEnergy  };
+                                    ""+maxEnergy  };
         // Insert values for the organism's location
         communicate.insert(movementTableName, initialValues);
         
         money=10;
         charUID=myUID;
-        name=n;
+        setName(n);
 
         attStr=3.0;
         attSkill=3.0;
@@ -570,8 +568,7 @@ public class Organism
             return communicate.selectSingleStringByUID("world", movementTableName, charUID);
     	}
     }
-    public void setWorld(String newWorldName)
-    {
+    public void setWorld(String newWorldName) {
     	communicate.updateSingleStringByUID(movementTableName, "world", newWorldName, charUID);
     }
     public String getOldWorld() {
@@ -584,7 +581,10 @@ public class Organism
     
     public String getName()
     {
-    	return name;
+    	return communicate.selectSingleStringByUID("name", movementTableName, charUID);
+    }
+    public void setName(String newName) {
+        communicate.updateSingleStringByUID(movementTableName, "name", newName, charUID);
     }
     
     /**
@@ -614,7 +614,7 @@ public class Organism
     
     public boolean equals(Object obj)
     {
-    	String as=name;
+    	String as=getName();
     	if (as.equalsIgnoreCase(((Player)obj).getName()))
     		return true;
     	else
