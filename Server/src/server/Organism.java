@@ -18,8 +18,6 @@ public class Organism
     int charUID;            // Organism's UID, used by ClientHandler
     String oldWorld = "world";        // The last world the Organism was in.
     String worldname = "world";       // The current world the Organism is in.
-    int leavespotX;         // The x coord of the position the Organism left the outisde world.
-    int leavespotY;         // The y coord of the position the Organism left the outisde world.
     
     // The initial values for the movement parameters.
     private final int startX    =   5;
@@ -212,7 +210,8 @@ public class Organism
     {
     	int gaaa=(int)(Math.random()*(((attStr-defendersDefStr)*0.25)+4));
     	return gaaa;
-    }public void fight(int uid,boolean ismons)
+    }
+    public void fight(int uid,boolean ismons)
     {
     	isMonster=ismons;
     	isFighting=true;
@@ -504,8 +503,8 @@ public class Organism
     }
     
     public void updateLocationInfoForEnteringABuilding(int w) {
-        leavespotX=getX();
-        leavespotY=getY();
+        setOldX(getX());
+        setOldY(getY());
         oldWorld=worldname;
         worldname="bar"+" "+(w-10);
         setX(3);        // The hardcoded entrance location for all bars
@@ -513,8 +512,8 @@ public class Organism
     }
     public void updateLocationInfoForExitingABuilding() {
         worldname=oldWorld;
-        setX(leavespotX);   // use the leavespots as the new locations
-        setY(leavespotY);
+        setX(getOldX());   // use the oldX/oldY as the new locations
+        setY(getOldY());
     }
     public void setLastMoveDirection(String gu)
     {
@@ -533,6 +532,12 @@ public class Organism
     {
     	return communicate.selectSingleIntByUID("y", movementTableName, charUID);
     }
+    public int getOldX() {
+        return communicate.selectSingleIntByUID("oldx", movementTableName, charUID);
+    }
+    public int getOldY() {
+        return communicate.selectSingleIntByUID("oldy", movementTableName, charUID);
+    }
     
     /**
      * Sets the X column of the uid matched row to newID in the 
@@ -542,7 +547,6 @@ public class Organism
     public void setX(int newX) {
     	communicate.updateSingleIntByUID(movementTableName, "x", newX, charUID);
     }
-    
     /**
      * Sets the Y column of the uid matched row to newID in the 
      * movementTableName database table.
@@ -550,6 +554,12 @@ public class Organism
      */
     public void setY(int newY) {
     	communicate.updateSingleIntByUID(movementTableName, "y", newY, charUID);
+    }
+    public void setOldX(int newOldX) {
+    	communicate.updateSingleIntByUID(movementTableName, "oldx", newOldX, charUID);
+    }
+    public void setOldY(int newOldY) {
+    	communicate.updateSingleIntByUID(movementTableName, "oldy", newOldY, charUID);
     }
     
     public String getWorld()
