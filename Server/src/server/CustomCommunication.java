@@ -65,6 +65,45 @@ public class CustomCommunication {
     }
     
     /**
+     * Takes a columnName, a tableName and a userID, and does "SELECT colName FROM 
+     *      table WHERE table.`uid` = userID".
+     * 
+     * @param colName
+     * @param table
+     * @param uid
+     * @return The first double from the ResultSet of the query. -1.0 if failed.
+     */
+    public double selectSingleDoubleByUID(String colName, String table, int uid) {
+        // Make the statement.
+        String stmt = 
+                "SELECT `"+colName+
+                "` FROM `"+table+
+                "` WHERE `"+table+"`.`uid` = "+uid+";";   
+                
+        // Do the query.
+        try {
+            Statement dbStmt = dbConnection.createStatement();
+            ResultSet dbResultSet = null;
+            if (dbStmt.execute(stmt)) {  
+                dbResultSet = dbStmt.getResultSet();
+                dbResultSet.last();
+                return dbResultSet.getDouble(1);
+            } 
+            else {
+                System.err.println("CustomCommunication.selectSingleByUID failed");
+            }
+            
+            return -1.0;
+        }
+        catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return -1.0;
+        }
+    }
+    
+    /**
      * Takes a columnName, a tableName and a userID, and does the query:
      *      "SELECT colName FROM table WHERE table.`uid` = userID".
      * 
@@ -179,6 +218,34 @@ public class CustomCommunication {
             System.out.println("SQLState: " + ex.getSQLState()); 
             System.out.println("VendorError: " + ex.getErrorCode()); 
             return -1;
+        }
+    }
+    
+    /**
+     * Does the SQL to set a double to a new value, based on a given uid key.
+     * @param table
+     * @param doubleName
+     * @param newValue
+     * @param uid
+     * @return true on success, false otherwise.
+     */
+    public boolean updateSingleDoubleByUID(String table, String doubleName, double newValue, int uid) {
+        // Make the statement string.
+        String stmt =   "UPDATE `"+table+
+                        "` SET "+doubleName+"="+newValue+
+                        " WHERE uid="+uid;
+        
+        // Do the statement.
+        try {
+            Statement dbStmt = dbConnection.createStatement();
+            dbStmt.execute(stmt);
+            return true;
+        }
+        catch (SQLException ex) {   // Report errors.
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return false;
         }
     }
     

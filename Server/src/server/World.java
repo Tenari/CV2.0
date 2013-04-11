@@ -289,13 +289,13 @@ class World extends Thread{
      * @param uid the int used to find a Player
      * @return a Player object
      */
-    public Player getCharacter(int uid)
+    public Organism getCharacter(int uid)
     {
-    	return (Player)organisms.get(uid);
+    	return organisms.get(uid);
     }
-    public Creature getMonster(int uid)
+    public Organism getMonster(int uid)
     {
-    	return (Creature)organisms.get(uid);
+    	return organisms.get(uid);
     }
     
     /**

@@ -86,7 +86,7 @@ public class homoSapien extends Organism
                 proficency=throwing;
                 break;
         }
-    	double diff=  ((attSkill-defendersDefSkill)/2.0)+((3*proficency)/20.0);
+    	double diff=  ((getAttSkill()-defendersDefSkill)/2.0)+((3*proficency)/20.0);
     	double legs;double arms;
     	double torso;double head;
     	double miss;
@@ -161,7 +161,7 @@ public class homoSapien extends Organism
     }
     public int getDamageDone(double defendersDefStr)
     {
-    	int gaaa=(int)(Math.random()*(((attStr-defendersDefStr)*0.25)+4+getWeaponDamage()));
+    	int gaaa=(int)(Math.random()*(((getAttStr()-defendersDefStr)*0.25)+4+getWeaponDamage()));
     	return gaaa;
     }// here is where weapon bonus goes in
     public int getWeaponDamage()
@@ -200,7 +200,7 @@ public class homoSapien extends Organism
     }
     public double getDefStr()
     {
-    	return defStr+getArmorBonus();
+    	return super.getDefStr()+getArmorBonus();
     }
     //COMBAT________________________________________________________________
     

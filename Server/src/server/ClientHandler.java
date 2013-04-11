@@ -58,11 +58,11 @@ class ClientHandler extends Thread{
             System.out.println("player created named "+getUsername());
             if(uid%2==0)
             {
-                world.getCharacter(uid).setTeam(true);
+                ((Player)world.getCharacter(uid)).setTeam(true);
             }
             else
             {
-                world.getCharacter(uid).setTeam(false);
+                ((Player)world.getCharacter(uid)).setTeam(false);
             }
          }
          else {         //if he does exist, we just set the uid, and say that he was already there
@@ -140,20 +140,20 @@ class ClientHandler extends Thread{
                 world.startTrade(uid);
                 break;
             case "offer":
-                world.getCharacter(uid).addOffer(asdf.next());//read in next theing for what is being offered.add it to the list of that dude's offerings
+                ((Player)world.getCharacter(uid)).addOffer(asdf.next());//read in next theing for what is being offered.add it to the list of that dude's offerings
                 break;
             case "unoffer":
-                world.getCharacter(uid).removeOffer(asdf.next());//read in next theing for what is being unoffered.remove it from the list of that dude's offerings
+                ((Player)world.getCharacter(uid)).removeOffer(asdf.next());//read in next theing for what is being unoffered.remove it from the list of that dude's offerings
                 break;
             case "acceptTrade":
-                world.getCharacter(uid).makeDealGood();
-                if(world.getCharacter(uid).getTradeIsGood() && world.getCharacter(world.getCharacter(uid).getTrader()).getTradeIsGood())
+                ((Player)world.getCharacter(uid)).makeDealGood();
+                if(((Player)world.getCharacter(uid)).getTradeIsGood() && ((Player)world.getCharacter(((Player)world.getCharacter(uid)).getTrader())).getTradeIsGood())
                 {
-                        world.finishTrade(uid,world.getCharacter(uid).getTrader());
+                        world.finishTrade(uid,((Player)world.getCharacter(uid)).getTrader());
                 }
                 break;
             case "unacceptTrade":
-                world.getCharacter(uid).makeDealBad();
+                ((Player)world.getCharacter(uid)).makeDealBad();
                 break;
             case "head":
                 world.getCharacter(uid).setAim(msg);
@@ -235,13 +235,13 @@ class ClientHandler extends Thread{
 
     public void updateTrade()
     {
-           if(world.getCharacter(world.getCharacter(uid).getTrader()).getName().equals(world.getCharacter(uid).getName()))
+           if(world.getCharacter(((Player)world.getCharacter(uid)).getTrader()).getName().equals(world.getCharacter(uid).getName()))
            {
                    //need to wrap up trade/ reset stuff for further use
            }
            else
            {
-                   sendData("tradeUpdate "+world.getCharacter(world.getCharacter(uid).getTrader()).getOffer());
+                   sendData("tradeUpdate "+((Player)world.getCharacter(((Player)world.getCharacter(uid)).getTrader())).getOffer());
            }
     }
 
@@ -251,23 +251,23 @@ class ClientHandler extends Thread{
                            +world.getCharacter(uid).getArms()+" "
                            +world.getCharacter(uid).getTorso()+" "
                            +world.getCharacter(uid).getLegs()+" "
-                           +world.getCharacter(uid).determineMoveCost(2)+" "
-                           +world.getCharacter(uid).getWeight()+" "
+                           +((Player)world.getCharacter(uid)).determineMoveCost(2)+" "
+                           +((Player)world.getCharacter(uid)).getWeight()+" "
                            +world.getCharacter(uid).getEnergy()+" "
                            +world.getCharacter(uid).getMoney()+" "
                            +world.getCharacter(uid).getStrength()+" "
                            +world.getCharacter(uid).getAgility()+" "
                            +world.getCharacter(uid).getHandToHand()+" "
-                           +world.getCharacter(uid).getSmallBlade()+" "
-                           +world.getCharacter(uid).getLargeBlade()+" "
-                           +world.getCharacter(uid).getAxe()+" "
-                           +world.getCharacter(uid).getPolearm()+" "
-                           +world.getCharacter(uid).getBow()+" "
-                           +world.getCharacter(uid).getThrowing()+" "
-                           +world.getCharacter(uid).getIntimidation()+" "
-                           +world.getCharacter(uid).getDiplomacy()+" "
-                           +world.getCharacter(uid).getEndurance()+" "
-                           +world.getCharacter(uid).getHiding());
+                           +((Player)world.getCharacter(uid)).getSmallBlade()+" "
+                           +((Player)world.getCharacter(uid)).getLargeBlade()+" "
+                           +((Player)world.getCharacter(uid)).getAxe()+" "
+                           +((Player)world.getCharacter(uid)).getPolearm()+" "
+                           +((Player)world.getCharacter(uid)).getBow()+" "
+                           +((Player)world.getCharacter(uid)).getThrowing()+" "
+                           +((Player)world.getCharacter(uid)).getIntimidation()+" "
+                           +((Player)world.getCharacter(uid)).getDiplomacy()+" "
+                           +((Player)world.getCharacter(uid)).getEndurance()+" "
+                           +((Player)world.getCharacter(uid)).getHiding());
     }
 
      public void updateResou()

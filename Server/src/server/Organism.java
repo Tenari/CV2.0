@@ -15,7 +15,7 @@ public class Organism
 {
     // Important variables.
     int charUID;            // Organism's UID, used by ClientHandler & DB
-    
+//-------------------Initializing constants-------------------------------------
     // The initial values for the movement parameters.
     private final int startX    =   5;
     private final int startY    =   5;
@@ -23,30 +23,34 @@ public class Organism
     private final int startOldY =   5;
     private final String startWorldName = "world";
     
+    // Initial HP values
+    private final int headHealthStart   =   15;
+    private final int armsHealthStart   =   15;
+    private final int legsHealthStart   =   15;
+    private final int torsoHealthStart  =   15;
+    
+    // Initial combat stats
+    private final double attStrStart    =   3.0;	//the actual attacking Strength of this character
+    private final double attSkillStart  =   3.0;	//the actual attacking Skill of this character
+    private final double defStrStart    =   3.0;	//the actual defending Strength of this character
+    private final double defSkillStart  =   3.0;	//the actual defending Skill of this character
+    
     // Maximum values
     private final int maxEnergy =   10000;
-    
+//-------------------End Initializing constants---------------------------------
     // SQL variables
     CustomCommunication communicate;
     // SQL Tables
     String movementTableName = "organismsmovementinfo";
+    String combatTableName = "combatStats";
     
     // Other variables.
     int money;		//holds the amount of cash the character has on them.
 
-    double attStr;		//the actual attacking Strength of this character
-    double attSkill;	//the actual attacking Skill of this character
-    double defStr;		//the actual defending Strength of this character
-    double defSkill;	//the actual defending Skill of this character
     double attStrBase;	//the base(wont go down) attacking Strength of this character
     double attSkillBase;//the base(wont go down) attacking Skill of this character
     double defStrBase;	//the base(wont go down) defending Strength of this character
     double defSkillBase;//the base(wont go down) defending Skill of this character
-
-    int headHealth;
-    int armsHealth;
-    int legsHealth;
-    int torsoHealth;
 
     String aim;	
     boolean isFighting;
@@ -65,14 +69,14 @@ public class Organism
 
     String lastMoveDirection;
     
-    public Organism(String n, int myUID, CustomCommunication c) 
+    public Organism(String name, int myUID, CustomCommunication c) 
     {
         // Create the communication
         communicate = c;
         // Create the intial values array for the momevment table
-        String[] initialValues = {
+        String[] initialMoveValues = {
                                     ""+myUID,  
-                                    "'"+n+"'",   // name requires "'" around it because it's a varchar
+                                    "'"+name+"'",   // name requires "'" around it because it's a varchar
                                     ""+startX,
                                     ""+startY,
                                     ""+startOldX,
@@ -81,24 +85,28 @@ public class Organism
                                     "'"+startWorldName+"'",
                                     ""+maxEnergy  };
         // Insert values for the organism's location
-        communicate.insert(movementTableName, initialValues);
+        communicate.insert(movementTableName, initialMoveValues);
+        
+        String[] initialFightValues = {
+                                    ""+myUID,  
+                                    ""+attStrStart,   
+                                    ""+attSkillStart,
+                                    ""+defStrStart,
+                                    ""+defSkillStart,
+                                    ""+headHealthStart,
+                                    ""+armsHealthStart,
+                                    ""+torsoHealthStart,
+                                    ""+legsHealthStart  };
+        
+        // Insert values for the organism's combat Stats
+        communicate.insert(combatTableName, initialFightValues);
         
         money=10;
         charUID=myUID;
-        setName(n);
-
-        attStr=3.0;
-        attSkill=3.0;
-        defStr=3.0;
-        defSkill=3.0;
         attStrBase=3.0;
         attSkillBase=3.0;
         defStrBase=3.0;
         defSkillBase=3.0;
-        headHealth=15;
-        armsHealth=15;
-        legsHealth=15;
-        torsoHealth=15;
 
         handToHand=10.0;
 
@@ -119,12 +127,11 @@ public class Organism
     
 //-----------------COMBAT METHODS-----------------------------------------------
     //returns the name of the spot hit or "miss"--only uses handToHand proficency
-    public String getAttackSpot(double defendersDefSkill,String aim)
-    {
+    public String getAttackSpot(double defendersDefSkill,String aim) {
     	setRealSkills();
     	double proficency=0;
     	if(attackStyle.equals("handToHand")){proficency=handToHand;}
-    	double diff=  ((attSkill-defendersDefSkill)/2.0)+((3*proficency)/20.0);
+    	double diff=  ((getAttSkill()-defendersDefSkill)/2.0)+((3*proficency)/20.0);
     	double legs;double arms;
     	double torso;double head;
     	double miss;
@@ -201,22 +208,19 @@ public class Organism
     }
     //DOES NOT TAKE INOT ACCOUNT WEAPON DAMAGE
     //DOES NOT TAKE INTO ACCOUNT ARMOR BONUS
-    public int getDamageDone(double defendersDefStr)
-    {
-    	int gaaa=(int)(Math.random()*(((attStr-defendersDefStr)*0.25)+4));
-    	return gaaa;
+    public int getDamageDone(double defendersDefStr) {
+    	int dmg=(int)(Math.random()*(((getAttStr()-defendersDefStr)*0.25)+4));
+    	return dmg;
     }
-    public void fight(int uid,boolean ismons)
-    {
+    public void fight(int uid,boolean ismons) {
     	isMonster=ismons;
     	isFighting=true;
     	opponent=uid;
     	fightStatus="";
     	setRealSkills();
     }
-    public boolean run(double defendersAttSkill)
-    {
-    	double bleh = (defSkill-defendersAttSkill)+(Math.random());
+    public boolean run(double defendersAttSkill) {
+    	double bleh = (getDefSkill()-defendersAttSkill)+(Math.random());
     	if(bleh > 0.33)
     	{
             isFighting  =   false;
@@ -232,28 +236,22 @@ public class Organism
     	}
     	
     }
-    public void autorun()
-    {
+    public void autorun() {
     	isFighting=false;fightStatus="";opponent=charUID;isMonster=false;
     }
-    public String getFightStatus()
-    {
+    public String getFightStatus() {
     	return fightStatus;
     }
-    public void setFightStatus(String s)
-    {
+    public void setFightStatus(String s) {
     	fightStatus=s;
     }
-    public String getAim()
-    {
+    public String getAim() {
     	return aim;
     }
-    public void setAim(String a)
-    {
+    public void setAim(String a) {
     	aim=a;
     }
-    public int getOpponent()
-    {
+    public int getOpponent() {
     	if(isFighting)
     	{
     		return opponent;
@@ -261,17 +259,14 @@ public class Organism
     	else
     		return charUID;
     }
-    public boolean getOpponentType()
-    {
+    public boolean getOpponentType() {
     	return isMonster;
     }
     
-    public void setAttackStyle(String se)
-    {
+    public void setAttackStyle(String se) {
     	attackStyle=se;
     }
-    public boolean isAbleToFight()
-    {
+    public boolean isAbleToFight() {
     	if((isConcious)&&(!isDead))
     	{
     		return true;
@@ -284,57 +279,53 @@ public class Organism
 //-----------------END COMBAT METHODS-------------------------------------------
     
 //---------------------HP ACCESSOR METHODS--------------------------------------
-    public int getHead()
-    {
-    	return headHealth;
+    public int getHead() {
+        return communicate.selectSingleIntByUID("headHP", combatTableName, charUID);
     }
-    public int getArms()
-    {
-    	return armsHealth;
+    public int getArms() {
+    	return communicate.selectSingleIntByUID("armsHP", combatTableName, charUID);
     }
-    public int getTorso()
-    {
-    	return torsoHealth;
+    public int getTorso() {
+    	return communicate.selectSingleIntByUID("torsoHP", combatTableName, charUID);
     }
-    public int getLegs()
-    {
-    	return legsHealth;
+    public int getLegs() {
+    	return communicate.selectSingleIntByUID("legsHP", combatTableName, charUID);
     }
     
-    public void setHead(int a)
-    {
-    	headHealth=a;
-    	if(headHealth<=0)
-    	{
-    		isConcious=false;
-    		headHealth=0;
+    public void setHead(int newHP) {
+    	if(newHP<=0) {
+            isConcious=false;
+            communicate.updateSingleIntByUID(combatTableName, "headHP", 0, charUID);
     	}
+        else {
+            communicate.updateSingleIntByUID(combatTableName, "headHP", newHP, charUID);
+        }
     }
-    public void setArms(int a)
-    {
-    	armsHealth=a;
-    	if(armsHealth<=0)
-    	{
-    		armsHealth=0;
+    public void setArms(int newHP) {
+    	if(newHP<=0) {
+            communicate.updateSingleIntByUID(combatTableName, "armsHP", 0, charUID);
     	}
+        else {
+            communicate.updateSingleIntByUID(combatTableName, "armsHP", newHP, charUID);
+        }
     }
-    public void setTorso(int a)
-    {
-    	torsoHealth=a;
-    	if(torsoHealth<=0)
-    	{
-    		isDead=true;
-    		isConcious=false;
-    		torsoHealth=0;
+    public void setTorso(int newHP) {
+        if(newHP<=0) {
+            communicate.updateSingleIntByUID(combatTableName, "torsoHP", 0, charUID);
+            isDead=true;
+            isConcious=false;
     	}
+        else {
+            communicate.updateSingleIntByUID(combatTableName, "torsoHP", newHP, charUID);
+        }
     }
-    public void setLegs(int a)
-    {
-    	legsHealth=a;
-    	if(legsHealth<=0)
-    	{
-    		legsHealth=0;
+    public void setLegs(int newHP) {
+        if(newHP<=0) {
+            communicate.updateSingleIntByUID(combatTableName, "legsHP", 0, charUID);
     	}
+        else {
+            communicate.updateSingleIntByUID(combatTableName, "legsHP", newHP, charUID);
+        }
     }
 //---------------------END HP ACCESSOR METHODS----------------------------------
     
@@ -346,29 +337,41 @@ public class Organism
     public void setRealSkills()
     {
     	
-    	attStr=attStrBase*(.04*armsHealth);
-    	attSkill=attSkillBase*(.04*headHealth);
-    	defStr=defStrBase*(.04*torsoHealth);
-    	defSkill=defSkillBase*(.04*legsHealth);
+    	setAttStr(attStrBase*(.04*getArms()));
+    	setAttSkill(attSkillBase*(.04*getHead()));
+    	setDefStr(defStrBase*(.04*getTorso()));
+    	setDefSkill(defSkillBase*(.04*getLegs()));
     	defSkillBase+=.0065;
     	defStrBase+=.0065;
     }
-     public double getAttSkill()
-    {
-    	return attSkill;
+    public double getAttSkill() {
+    	return communicate.selectSingleDoubleByUID("attSkill", combatTableName, charUID);
     }
-    public double getAttStr()
-    {
-    	return attStr;
+    public double getAttStr() {
+    	return communicate.selectSingleDoubleByUID("attStr", combatTableName, charUID);
     }
-    public double getDefSkill()
-    {
-    	return defSkill;
+    public double getDefSkill() {
+    	return communicate.selectSingleDoubleByUID("defSkill", combatTableName, charUID);
     }
-    public double getDefStr()
-    {
-    	return defStr;
-    }//here is where armor bonus goes in
+    public double getDefStr() {
+    	return communicate.selectSingleDoubleByUID("defStr", combatTableName, charUID);
+    }
+    
+    public void setAttStr(double newSkillValue) {
+        communicate.updateSingleDoubleByUID(combatTableName, "attStr", newSkillValue, charUID);
+    }
+
+    public void setAttSkill(double newSkillValue) {
+        communicate.updateSingleDoubleByUID(combatTableName, "attSkill", newSkillValue, charUID);
+    }
+
+    public void setDefStr(double newSkillValue) {
+        communicate.updateSingleDoubleByUID(combatTableName, "defStr", newSkillValue, charUID);
+    }
+
+    public void setDefSkill(double newSkillValue) {
+        communicate.updateSingleDoubleByUID(combatTableName, "defSkill", newSkillValue, charUID);
+    }
     
     public double getAttSkillBase()
     {
@@ -592,8 +595,7 @@ public class Organism
      * a given organism, identified by unique uid int.
      * @return The amount of energy available to the organism.
      */
-    public int getEnergy()
-    {
+    public int getEnergy() {
         return communicate.selectSingleIntByUID("energy", movementTableName, charUID);
     }
     
@@ -602,8 +604,7 @@ public class Organism
      * by unique uid int to the listed parameter.
      * @param e 
      */
-    public void setEnergy(int e)
-    {
+    public void setEnergy(int e) {
         int energy = e;
         if (e > maxEnergy)
     	{
@@ -612,8 +613,7 @@ public class Organism
         communicate.updateSingleIntByUID(movementTableName, "energy", energy, charUID);
     }
     
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
     	String as=getName();
     	if (as.equalsIgnoreCase(((Player)obj).getName()))
     		return true;
@@ -621,31 +621,25 @@ public class Organism
     		return false;
     }
     
-    public void setMoney(int x)
-        {
+    public void setMoney(int x) {
             money=x;
         }
-    public void sethandToHand(double x)
-	{
+    public void sethandToHand(double x) {
 		handToHand=x;
 	}
     
-    public int getMoney()
-        {
+    public int getMoney() {
             return money;
         }
-    public double getStrength()
-{
-	return (attStr+attSkill)/2;
-}
-    public double getAgility()
-{
-	return (defStr+defSkill)/2;
-} 
-    public double getHandToHand()
-{
+    public double getStrength() {
+	return (getAttStr()+getAttSkill())/2;
+    }
+    public double getAgility() {
+	return (getDefStr()+getDefSkill())/2;
+    } 
+    public double getHandToHand() {
 	return handToHand;
-}
+    }
 
     void act() {
         
