@@ -267,10 +267,10 @@ class World extends Thread{
     public int getUID(String name)
     {
         for (Organism i : organisms){
-                    if(i.getName().equals(name)){
-	    		return organisms.indexOf(i);
-                    }
-                }
+            if(i.getName().equals(name)){
+                return organisms.indexOf(i);
+            }
+        }
     	return -1;   //failed
     }
     
