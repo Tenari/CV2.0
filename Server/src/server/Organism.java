@@ -30,17 +30,17 @@ public class Organism
     private final int torsoHealthStart  =   15;
     
     // Initial combat stats
-    private final double attStrStart    =   3.0;	//the actual attacking Strength of this character
-    private final double attSkillStart  =   3.0;	//the actual attacking Skill of this character
-    private final double defStrStart    =   3.0;	//the actual defending Strength of this character
-    private final double defSkillStart  =   3.0;	//the actual defending Skill of this character
+    private final double attStrStart    =   3.0;	//the initialized attacking Strength of this character
+    private final double attSkillStart  =   3.0;	//the initialized attacking Skill of this character
+    private final double defStrStart    =   3.0;	//the initialized defending Strength of this character
+    private final double defSkillStart  =   3.0;	//the initialized defending Skill of this character
     
     // Initial detailed stats
     private final double handToHandStart=   10.0;
     private final int moneyStart        =   10;
     
     // Maximum values
-    private final int maxEnergy =   10000;
+    private final int maxEnergy         =   10000;
 //-------------------End Initializing constants---------------------------------
     // SQL variables
     CustomCommunication communicate;
@@ -48,20 +48,9 @@ public class Organism
     String movementTableName = "organismsmovementinfo";
     String combatTableName = "combatstats";
     String statsTableName = "detailedstats";
-    
-    // Other variables.
-    int money;		//holds the amount of cash the character has on them.
-
-    double attStrBase;	//the base(wont go down) attacking Strength of this character
-    double attSkillBase;//the base(wont go down) attacking Skill of this character
-    double defStrBase;	//the base(wont go down) defending Strength of this character
-    double defSkillBase;//the base(wont go down) defending Skill of this character
 
     String aim;	
     boolean isFighting;
-    int opponent;
-
-    double handToHand;
 
     String attackStyle;
 
@@ -118,15 +107,8 @@ public class Organism
         
         // Insert values for the organism's combat Stats
         communicate.insert(statsTableName, initialStatsValues);
-        
-        money=10;
+       
         charUID=myUID;
-        attStrBase=3.0;
-        attSkillBase=3.0;
-        defStrBase=3.0;
-        defSkillBase=3.0;
-
-        handToHand=10.0;
 
         attackStyle="handToHand";
 
@@ -148,80 +130,72 @@ public class Organism
     public String getAttackSpot(double defendersDefSkill,String aim) {
     	setRealSkills();
     	double proficency=0;
-    	if(attackStyle.equals("handToHand")){proficency=handToHand;}
+    	if(attackStyle.equals("handToHand")){proficency=getHandToHand();}
     	double diff=  ((getAttSkill()-defendersDefSkill)/2.0)+((3*proficency)/20.0);
     	double legs;double arms;
     	double torso;double head;
     	double miss;
-    	if(aim.equals("torso"))
-    	{
-    		torso=(diff+10.0);
-    		miss=  50.0-(diff*0.55);
-    		arms=  30.0-(diff*0.35);
-    		legs=  9.0-(diff*0.09);
-    		head=  1.0-(diff*0.01);
+    	if(aim.equals("torso")) {
+            torso=(diff+10.0);
+            miss=  50.0-(diff*0.55);
+            arms=  30.0-(diff*0.35);
+            legs=  9.0-(diff*0.09);
+            head=  1.0-(diff*0.01);
     	}
-    	else if(aim.equals("legs"))
-    	{
-    		legs=(diff+33.0);
-    		miss=  50.0-(diff*0.66);
-    		arms=  12.0-(diff*0.22);
-    		torso= 4.0-(diff*0.08);
-    		head=  1.0-(diff*0.04);
+    	else if(aim.equals("legs")) {
+            legs=(diff+33.0);
+            miss=  50.0-(diff*0.66);
+            arms=  12.0-(diff*0.22);
+            torso= 4.0-(diff*0.08);
+            head=  1.0-(diff*0.04);
     	}
-    	else if(aim.equals("arms"))
-    	{
-    		arms=(diff+33.0);
-    		miss=  50.0-(diff*0.66);
-    		torso= 12.0-(diff*0.22);
-    		legs=  4.0-(diff*0.08);
-    		head=  1.0-(diff*0.04);
+    	else if(aim.equals("arms")) {
+            arms=(diff+33.0);
+            miss=  50.0-(diff*0.66);
+            torso= 12.0-(diff*0.22);
+            legs=  4.0-(diff*0.08);
+            head=  1.0-(diff*0.04);
     	}
-    	else //if(aim.equals("head"))
-    	{
-    		head=(diff+15.0);
-    		miss=  60.0-(diff*0.66);
-    		arms=  15.0-(diff*0.20);
-    		legs=  1.0-(diff*0.02);
-    		torso= 9.0-(diff*0.12);
+        else {
+            head=(diff+15.0);
+            miss=  60.0-(diff*0.66);
+            arms=  15.0-(diff*0.20);
+            legs=  1.0-(diff*0.02);
+            torso= 9.0-(diff*0.12);
     	}
     	
+        // Make the stat bases increase.
     	double ra=Math.random()*100;
-    	if(ra<=torso)
-    	{
-    		
-    		attSkillBase+=.005;
-    		attStrBase+=.01;
-    		plusToProficency(.01);return "torso";
+    	if(ra<=torso) {
+            setAttSkillBase(getAttSkillBase()+.005);
+            setAttStrBase(getAttStrBase()+.01);
+            plusToProficency(.01);
+            return "torso";
     	}
-    	else if(ra<=torso+head)
-    	{
-    		
-    		attSkillBase+=.005;
-    		attStrBase+=.01;
-    		plusToProficency(.01);return "head";
+    	else if(ra<=torso+head) {
+            setAttSkillBase(getAttSkillBase()+.005);
+            setAttStrBase(getAttStrBase()+.01);
+            plusToProficency(.01);
+            return "head";
     	}
-    	else if(ra<=torso+head+legs)
-    	{
-    		
-    		attSkillBase+=.005;
-    		attStrBase+=.01;
-    		plusToProficency(.01);return "legs";
+    	else if(ra<=torso+head+legs) {
+            setAttSkillBase(getAttSkillBase()+.005);
+            setAttStrBase(getAttStrBase()+.01);
+            plusToProficency(.01);
+            return "legs";
     	}
-    	else if(ra<=torso+head+legs+arms)
-    	{
-    		
-    		attSkillBase+=.005;
-    		attStrBase+=.01;
-    		plusToProficency(.01);return "arms";
+    	else if(ra<=torso+head+legs+arms) {
+            setAttSkillBase(getAttSkillBase()+.005);
+            setAttStrBase(getAttStrBase()+.01);
+            plusToProficency(.01);
+            return "arms";
     	}
     	else if(ra<=torso+head+legs+arms+miss)
-    	{
-    		
-    		plusToProficency(.005);
-    		attStrBase+=.01;return "miss";
+        {
+            plusToProficency(.005);
+            setAttStrBase(getAttStrBase()+.01);
+            return "miss";
     	}
-    	
     	return "miss";
     }
     //DOES NOT TAKE INOT ACCOUNT WEAPON DAMAGE
@@ -230,10 +204,10 @@ public class Organism
     	int dmg=(int)(Math.random()*(((getAttStr()-defendersDefStr)*0.25)+4));
     	return dmg;
     }
-    public void fight(int uid,boolean ismons) {
+    public void fight(int uid, boolean ismons) {
     	isMonster=ismons;
     	isFighting=true;
-    	opponent=uid;
+    	setOpponent(uid);
     	fightStatus="";
     	setRealSkills();
     }
@@ -243,7 +217,7 @@ public class Organism
     	{
             isFighting  =   false;
             fightStatus =   "";
-            opponent    =   charUID;
+            setOpponent(charUID);
             isMonster   =   false;
             return true;
     	}
@@ -255,7 +229,10 @@ public class Organism
     	
     }
     public void autorun() {
-    	isFighting=false;fightStatus="";opponent=charUID;isMonster=false;
+    	isFighting=false;
+        fightStatus="";
+        setOpponent(charUID);
+        isMonster=false;
     }
     public String getFightStatus() {
     	return fightStatus;
@@ -272,7 +249,7 @@ public class Organism
     public int getOpponent() {
     	if(isFighting)
     	{
-    		return opponent;
+    		return communicate.selectSingleIntByUID("opponentUID", combatTableName, charUID);
     	}
     	else
     		return charUID;
@@ -350,17 +327,17 @@ public class Organism
 //---------------------SKILL UPDATE/ACCESSOR METHODS----------------------------
      public void plusToProficency(double skillgain)
     {
-        if(attackStyle.equals("handToHand")){handToHand+=skillgain;}
+        if(attackStyle.equals("handToHand")){setHandToHand(getHandToHand()+skillgain);}
     }
     public void setRealSkills()
     {
-    	
-    	setAttStr(attStrBase*(.04*getArms()));
-    	setAttSkill(attSkillBase*(.04*getHead()));
-    	setDefStr(defStrBase*(.04*getTorso()));
-    	setDefSkill(defSkillBase*(.04*getLegs()));
-    	defSkillBase+=.0065;
-    	defStrBase+=.0065;
+    	setAttStr(getAttStrBase()*(.04*getArms()));
+    	setAttSkill(getAttSkillBase()*(.04*getHead()));
+    	setDefStr(getDefStrBase()*(.04*getTorso()));
+    	setDefSkill(getDefSkillBase()*(.04*getLegs()));
+        
+    	setDefSkillBase(getDefSkillBase()+.0065);
+    	setDefStrBase(getDefStrBase()+.0065);
     }
     public double getAttSkill() {
     	return communicate.selectSingleDoubleByUID("attSkill", combatTableName, charUID);
@@ -378,51 +355,45 @@ public class Organism
     public void setAttStr(double newSkillValue) {
         communicate.updateSingleDoubleByUID(combatTableName, "attStr", newSkillValue, charUID);
     }
-
     public void setAttSkill(double newSkillValue) {
         communicate.updateSingleDoubleByUID(combatTableName, "attSkill", newSkillValue, charUID);
     }
-
     public void setDefStr(double newSkillValue) {
         communicate.updateSingleDoubleByUID(combatTableName, "defStr", newSkillValue, charUID);
     }
-
     public void setDefSkill(double newSkillValue) {
         communicate.updateSingleDoubleByUID(combatTableName, "defSkill", newSkillValue, charUID);
     }
     
-    public double getAttSkillBase()
-    {
-    	return attSkillBase;
+    public double getAttSkillBase() {
+    	return communicate.selectSingleDoubleByUID("attSkillBase", statsTableName, charUID);
     }
-    public double getAttStrBase()
-    {
-    	return attStrBase;
+    public double getAttStrBase() {
+    	return communicate.selectSingleDoubleByUID("attStrBase", statsTableName, charUID);
     }
-    public double getDefSkillBase()
-    {
-    	return defSkillBase;
+    public double getDefSkillBase() {
+    	return communicate.selectSingleDoubleByUID("defSkillBase", statsTableName, charUID);
     }
-    public double getDefStrBase()
-    {
-    	return defStrBase;
+    public double getDefStrBase() {
+    	return communicate.selectSingleDoubleByUID("defStrBase", statsTableName, charUID);
     }
     
-    public void setAttSkillBase(double x)
-    {
-    	attSkillBase=x;
+    /**
+     * These setskillBase methods work similarly to other setters--just put in 
+     *  the new double value you want the skill to have. 
+     * @param x 
+     */
+    public void setAttSkillBase(double newSkillValue) {
+        communicate.updateSingleDoubleByUID(statsTableName, "attSkillBase", newSkillValue, charUID);
     }
-    public void setAttStrBase(double x)
-    {
-    	attStrBase=x;
+    public void setAttStrBase(double newSkillValue) {
+    	communicate.updateSingleDoubleByUID(statsTableName, "attStrBase", newSkillValue, charUID);
     }
-    public void setDefSkillBase(double x)
-    {
-    	defSkillBase=x;
+    public void setDefSkillBase(double newSkillValue) {
+    	communicate.updateSingleDoubleByUID(statsTableName, "defSkillBase", newSkillValue, charUID);
     }
-    public void setDefStrBase(double x)
-    {
-    	defStrBase=x;
+    public void setDefStrBase(double newSkillValue) {
+    	communicate.updateSingleDoubleByUID(statsTableName, "defStrBase", newSkillValue, charUID);
     }
 //---------------------END SKILL UPDATE/ACCESSOR METHODS------------------------
    
@@ -639,16 +610,14 @@ public class Organism
     		return false;
     }
     
-    public void setMoney(int x) {
-            money=x;
-        }
-    public void sethandToHand(double x) {
-		handToHand=x;
-	}
+    public void setMoney(int money) {
+        communicate.updateSingleIntByUID(statsTableName, "money", money, charUID);
+    }
+    
     
     public int getMoney() {
-            return money;
-        }
+        return communicate.selectSingleIntByUID("money", statsTableName, charUID);
+    }
     public double getStrength() {
 	return (getAttStr()+getAttSkill())/2;
     }
@@ -656,9 +625,11 @@ public class Organism
 	return (getDefStr()+getDefSkill())/2;
     } 
     public double getHandToHand() {
-	return handToHand;
+        return communicate.selectSingleDoubleByUID("handToHand", statsTableName, charUID);
     }
-
+    public void setHandToHand(double newProficencyDouble) {
+        communicate.updateSingleDoubleByUID(statsTableName, "handToHand", newProficencyDouble, charUID);
+    }
     void act() {
         
     }
@@ -685,5 +656,9 @@ public class Organism
     Inventory getInventory() {
         return null;
         
+    }
+
+    private void setOpponent(int uid) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

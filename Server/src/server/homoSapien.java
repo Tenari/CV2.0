@@ -65,7 +65,7 @@ public class homoSapien extends Organism
     	double proficency=0;
         switch (attackStyle) {
             case "handToHand":
-                proficency=handToHand;
+                proficency=getHandToHand();
                 break;
             case "smallBlade":
                 proficency=smallBlade;
@@ -124,37 +124,37 @@ public class homoSapien extends Organism
     	double ra=Math.random()*100;
     	if(ra<=torso)
     	{
-    		
-    		attSkillBase+=.005;
-    		attStrBase+=.01;
-    		plusToProficency(.01);return "torso";
+            setAttSkillBase(getAttSkillBase()+.005);
+            setAttStrBase(getAttStrBase()+.01);
+            plusToProficency(.01);
+            return "torso";
     	}
     	else if(ra<=torso+head)
     	{
-    		
-    		attSkillBase+=.005;
-    		attStrBase+=.01;
-    		plusToProficency(.01);return "head";
+            setAttSkillBase(getAttSkillBase()+.005);
+            setAttStrBase(getAttStrBase()+.01);
+            plusToProficency(.01);
+            return "head";
     	}
     	else if(ra<=torso+head+legs)
     	{
-    		
-    		attSkillBase+=.005;
-    		attStrBase+=.01;
-    		plusToProficency(.01);return "legs";
+            setAttSkillBase(getAttSkillBase()+.005);
+            setAttStrBase(getAttStrBase()+.01);
+            plusToProficency(.01);
+            return "legs";
     	}
     	else if(ra<=torso+head+legs+arms)
     	{
-    		
-    		attSkillBase+=.005;
-    		attStrBase+=.01;
-    		plusToProficency(.01);return "arms";
+            setAttSkillBase(getAttSkillBase()+.005);
+            setAttStrBase(getAttStrBase()+.01);
+            plusToProficency(.01);
+            return "arms";
     	}
     	else if(ra<=torso+head+legs+arms+miss)
     	{
-    		
-    		plusToProficency(.005);
-    		attStrBase+=.01;return "miss";
+            plusToProficency(.005);
+            setAttStrBase(getAttStrBase()+.01);
+            return "miss";
     	}
     	
     	return "miss";
@@ -176,7 +176,7 @@ public class homoSapien extends Organism
     {
         switch (attackStyle) {
             case "handToHand":
-                handToHand+=skillgain;
+                setHandToHand(getHandToHand()+skillgain);
                 break;
             case "smallBlade":
                 smallBlade+=skillgain;
