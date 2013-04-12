@@ -167,106 +167,96 @@ class World extends Thread{
      */
     public void infiniteLoop()
     {
-    	long startTimeFight=System.currentTimeMillis();
-    	long startTimeEnergy=System.currentTimeMillis();
-    	long startTimeNPC=System.currentTimeMillis();
-    	long startTimeSpawn=System.currentTimeMillis();
+        long startTimeFight=System.currentTimeMillis();
+        long startTimeEnergy=System.currentTimeMillis();
+        long startTimeNPC=System.currentTimeMillis();
+        long startTimeSpawn=System.currentTimeMillis();
         long startTimeUpdate=System.currentTimeMillis();
-    	while(true)
-    	{
-    		long newTime=System.currentTimeMillis();
-    		//loop for rounds of combat
-	 		if((newTime-startTimeFight)>=1000)
-			{
-				for(int i=0; i<fights.size(); i++)
-				{
-					if(fights.get(i).getBool())//if the fight is happening between two characters
-					{
-						organisms.get(fights.get(i).getNumOne()).setFightStatus("");
-	    				organisms.get(fights.get(i).getNumTwo()).setFightStatus("");
-						fightOneRound(fights.get(i).getNumOne(),fights.get(i).getNumTwo(),true,true);
-				    	fightOneRound(fights.get(i).getNumTwo(),fights.get(i).getNumOne(),true,true);
-				    	if((organisms.get(fights.get(i).getNumTwo()).isAbleToFight()==false)||(organisms.get(fights.get(i).getNumOne()).isAbleToFight()==false))
-				    	{
-				    		organisms.get(fights.get(i).getNumOne()).autorun();
-				    		organisms.get(fights.get(i).getNumTwo()).autorun();
-				    		fights.remove(new NumberPair(fights.get(i).getNumOne(),1,true));
-				    	}
-					}
-					else
-					{
-						organisms.get(fights.get(i).getNumOne()).setFightStatus("");
-	    				organisms.get(fights.get(i).getNumTwo()).setFightStatus("");
-						fightOneRound(fights.get(i).getNumOne(),fights.get(i).getNumTwo(),false,false);
-				    	fightOneRound(fights.get(i).getNumTwo(),fights.get(i).getNumOne(),false,true);
-				    	if((organisms.get(fights.get(i).getNumTwo()).isAbleToFight()==false)||(organisms.get(fights.get(i).getNumOne()).isAbleToFight()==false))
-				    	{
-				    		organisms.get(fights.get(i).getNumOne()).autorun();
-				    		organisms.get(fights.get(i).getNumTwo()).autorun();
-				    		fights.remove(new NumberPair(fights.get(i).getNumOne(),1,true));
-				    	}
-					}
-					
-				}
-				startTimeFight=System.currentTimeMillis();
-			}
-			//loop for adding monsters
-			populate();
-                
-			//loop for adding energy
-			if((newTime-startTimeEnergy)>=60000)
-			{
-				for(int i=0; i<organisms.size(); i++)
-				{
-					organisms.get(i).setEnergy(organisms.get(i).getEnergy()+7);
-				}
-				startTimeEnergy=System.currentTimeMillis();
-			}
-			//loop for acting NPCs
-			if((newTime-startTimeNPC)>=700 && playerIsCreated)
-			{
-				for(int a=0;a<organisms.size();a++)
-				{
-					organisms.get(a).act();
-				}
-				startTimeNPC=System.currentTimeMillis();
-                                server.updateMoveScreensInAllClients();
-			}
-			if((newTime-startTimeSpawn)>=7200000)
-			{
-				for(int a=0;a<organisms.size();a++)
-				{
-					if(organisms.get(a).getWorld().equals("dead")||organisms.get(a).getWorld().equals("dead2"))
-					{
-						int b=organisms.get(a).getLevel();
-						if(b==1)
-						{
-							levelOne--;
-						}
-						else if(b==2)
-						{
-							levelTwo--;
-						}
-						else
-						{
-							levelThree--;
-						}
-						organisms.remove(a);
-						
-					}
-				}
-				startTimeSpawn=System.currentTimeMillis();
-			}
-                        //loop for updating Trade information in clients
-			if((newTime-startTimeUpdate)>=35 && playerIsCreated)
-			{
-				server.updateInventoryInAllClients();
-                                server.updateResourcesInAllClients();
-                                server.updateTradeInAllClients();
-				startTimeUpdate=System.currentTimeMillis();
-			}
-			
-    	}
+        while(true)
+        {
+            long newTime=System.currentTimeMillis();
+            //loop for rounds of combat
+            if((newTime-startTimeFight)>=1000) {
+                for(int i=0; i<fights.size(); i++) {
+                    // If the fight is happening between two characters:
+                    if(fights.get(i).getBool()) {
+                        organisms.get(fights.get(i).getNumOne()).setFightStatus("");
+                        organisms.get(fights.get(i).getNumTwo()).setFightStatus("");
+                        fightOneRound(fights.get(i).getNumOne(),fights.get(i).getNumTwo(),true,true);
+                        fightOneRound(fights.get(i).getNumTwo(),fights.get(i).getNumOne(),true,true);
+                        if((organisms.get(fights.get(i).getNumTwo()).isAbleToFight()==false)
+                                ||(organisms.get(fights.get(i).getNumOne()).isAbleToFight()==false)) {
+                            organisms.get(fights.get(i).getNumOne()).autorun();
+                            organisms.get(fights.get(i).getNumTwo()).autorun();
+                            fights.remove(new NumberPair(fights.get(i).getNumOne(),1,true));
+                        }
+                    }
+                    else {
+                        organisms.get(fights.get(i).getNumOne()).setFightStatus("");
+                        organisms.get(fights.get(i).getNumTwo()).setFightStatus("");
+                        fightOneRound(fights.get(i).getNumOne(),fights.get(i).getNumTwo(),false,false);
+                        fightOneRound(fights.get(i).getNumTwo(),fights.get(i).getNumOne(),false,true);
+                        if((organisms.get(fights.get(i).getNumTwo()).isAbleToFight()==false)
+                                ||(organisms.get(fights.get(i).getNumOne()).isAbleToFight()==false)) {
+                            organisms.get(fights.get(i).getNumOne()).autorun();
+                            organisms.get(fights.get(i).getNumTwo()).autorun();
+                            fights.remove(new NumberPair(fights.get(i).getNumOne(),1,true));
+                        }
+                    }
+
+                }
+                startTimeFight=System.currentTimeMillis();
+            }
+            
+            //loop for adding monsters
+            populate();
+
+            //loop for adding energy
+            if((newTime-startTimeEnergy)>=60000) {
+                for(int i=0; i<organisms.size(); i++) {
+                    organisms.get(i).setEnergy(organisms.get(i).getEnergy()+7);
+                }
+                startTimeEnergy=System.currentTimeMillis();
+            }
+            
+            //loop for acting NPCs
+            if((newTime-startTimeNPC)>=700 && playerIsCreated) {
+                for(int a=0;a<organisms.size();a++) {
+                    organisms.get(a).act();
+                }
+                startTimeNPC=System.currentTimeMillis();
+                server.updateMoveScreensInAllClients();
+            }
+            if((newTime-startTimeSpawn)>=7200000) {
+                for(int a=0;a<organisms.size();a++) {
+                    if(organisms.get(a).getWorld().equals("dead")
+                            ||organisms.get(a).getWorld().equals("dead2")) {
+                        
+                        int b=organisms.get(a).getLevel();
+                        if(b==1) {
+                            levelOne--;
+                        }
+                        else if(b==2) {
+                            levelTwo--;
+                        }
+                        else {
+                            levelThree--;
+                        }
+                        organisms.remove(a);
+
+                    }
+                }
+                startTimeSpawn=System.currentTimeMillis();
+            }
+            
+            //loop for updating Trade information in clients
+            if((newTime-startTimeUpdate)>=40 && playerIsCreated) {
+                server.updateInventoryInAllClients();
+                server.updateResourcesInAllClients();
+                server.updateTradeInAllClients();
+                startTimeUpdate=System.currentTimeMillis();
+            }
+        }
     }
     
     /**

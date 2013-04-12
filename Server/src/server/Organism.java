@@ -35,6 +35,10 @@ public class Organism
     private final double defStrStart    =   3.0;	//the actual defending Strength of this character
     private final double defSkillStart  =   3.0;	//the actual defending Skill of this character
     
+    // Initial detailed stats
+    private final double handToHandStart=   10.0;
+    private final int moneyStart        =   10;
+    
     // Maximum values
     private final int maxEnergy =   10000;
 //-------------------End Initializing constants---------------------------------
@@ -42,7 +46,8 @@ public class Organism
     CustomCommunication communicate;
     // SQL Tables
     String movementTableName = "organismsmovementinfo";
-    String combatTableName = "combatStats";
+    String combatTableName = "combatstats";
+    String statsTableName = "detailedstats";
     
     // Other variables.
     int money;		//holds the amount of cash the character has on them.
@@ -96,10 +101,23 @@ public class Organism
                                     ""+headHealthStart,
                                     ""+armsHealthStart,
                                     ""+torsoHealthStart,
-                                    ""+legsHealthStart  };
+                                    ""+legsHealthStart,
+                                    ""+myUID };
         
         // Insert values for the organism's combat Stats
         communicate.insert(combatTableName, initialFightValues);
+        
+        String[] initialStatsValues = {
+                                    ""+myUID,  
+                                    ""+attStrStart,   
+                                    ""+attSkillStart,
+                                    ""+defStrStart,
+                                    ""+defSkillStart,
+                                    ""+handToHandStart,
+                                    ""+moneyStart };
+        
+        // Insert values for the organism's combat Stats
+        communicate.insert(statsTableName, initialStatsValues);
         
         money=10;
         charUID=myUID;
