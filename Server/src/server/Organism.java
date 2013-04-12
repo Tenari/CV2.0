@@ -7,7 +7,7 @@ import java.util.ArrayList;
  *
  *
  * @author Daniel Zapata
- * @version 1.00 2010/4/12
+ * @version 1.50 4/12/2013
  */
 
 
@@ -53,9 +53,6 @@ public class Organism
     boolean isFighting;
 
     String attackStyle;
-
-    boolean isConcious;
-    boolean isDead;
 
     String fightStatus;
 
@@ -119,10 +116,7 @@ public class Organism
 
         isMonster=false;
 
-        isConcious=true;
-        isDead=false;
-
-        lastMoveDirection="south";
+       lastMoveDirection="south";
     }
     
 //-----------------COMBAT METHODS-----------------------------------------------
@@ -262,8 +256,8 @@ public class Organism
     	attackStyle=se;
     }
     public boolean isAbleToFight() {
-    	if((isConcious)&&(!isDead))
-    	{
+    	if((isConcious())
+                &&(!isDead())) {
     		return true;
     	}
     	else
@@ -289,7 +283,6 @@ public class Organism
     
     public void setHead(int newHP) {
     	if(newHP<=0) {
-            isConcious=false;
             communicate.updateSingleIntByUID(combatTableName, "headHP", 0, charUID);
     	}
         else {
@@ -307,8 +300,6 @@ public class Organism
     public void setTorso(int newHP) {
         if(newHP<=0) {
             communicate.updateSingleIntByUID(combatTableName, "torsoHP", 0, charUID);
-            isDead=true;
-            isConcious=false;
     	}
         else {
             communicate.updateSingleIntByUID(combatTableName, "torsoHP", newHP, charUID);
@@ -402,7 +393,7 @@ public class Organism
     public boolean moveNorth(int w)
     {
         boolean moved = false;
-    	if(!isFighting && isConcious && getEnergy()>0)
+    	if(!isFighting && isConcious() && getEnergy()>0)
     	{
             if(w==3 || w==4)
             {
@@ -424,7 +415,7 @@ public class Organism
     public boolean moveSouth(int w)
     {
         boolean moved = false;
-    	if(isFighting==false && isConcious && getEnergy()>0)
+    	if(isFighting==false && isConcious() && getEnergy()>0)
     	{
             if(w==3 || w==4)
             {
@@ -447,7 +438,7 @@ public class Organism
     public boolean moveEast(int w)
     {
         boolean moved = false;
-    	if(isFighting==false && isConcious && getEnergy()>0)
+    	if(isFighting==false && isConcious() && getEnergy()>0)
     	{
             if(w==3 || w==4)
             {
@@ -469,7 +460,7 @@ public class Organism
     public boolean moveWest(int w)
     {
         boolean moved = false;
-    	if(isFighting==false && isConcious && getEnergy()>0)
+    	if(isFighting==false && isConcious() && getEnergy()>0)
     	{
             if(w==3 || w==4)
             {
@@ -550,10 +541,10 @@ public class Organism
     }
     
     public String getWorld() {
-    	if(isDead) {
+    	if(isDead()) {
             return "dead";
     	}
-    	else if(!isConcious) {
+    	else if(!isConcious()) {
             return "dead2";
     	}
         else {
@@ -659,6 +650,19 @@ public class Organism
     }
 
     private void setOpponent(int uid) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        communicate.updateSingleIntByUID(combatTableName, "opponentUID", uid, charUID);
+    }
+    
+    public boolean isDead(){
+        if( getTorso() <= 0 ){
+            return true;
+        }
+        return false;
+    }
+    public boolean isConcious(){
+        if( getHead() <= 0 || isDead()){
+            return false;
+        }
+        return true;
     }
 }
