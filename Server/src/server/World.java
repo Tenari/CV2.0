@@ -13,7 +13,8 @@ class World extends Thread{
     
     private ArrayList<Organism> organisms;   // list that hold all of the characters in the game
     private String[][] fullWorld;
-    
+   
+	// The city's dimensions
     private int smallCityYLength = 12;
     private int smallCityXLength = 22;
     
