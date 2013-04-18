@@ -136,25 +136,6 @@ class World extends Thread{
     // deactivated
     public void populate()
     {
-        /*if(levelOne<500)
-        {
-            int xCord = (int)(Math.random()*100);
-            int yCord = (int)(Math.random()*100);
-            String name="squirel"+levelOne;
-            addMonster(name,xCord,yCord,"wildi",1);
-        }
-        if(levelTwo<250)
-        {
-            int xCord = (int)(Math.random()*67)+17;
-            int yCord = (int)(Math.random()*67)+17;
-            addMonster("wolf"+levelTwo+"",xCord,yCord,"wildi",2);
-        }
-        if(levelThree<100)
-        {
-            int xCord = (int)(Math.random()*33)+33;
-            int yCord = (int)(Math.random()*33)+33;
-            addMonster("bear"+levelThree+"",xCord,yCord,"wildi",3);
-        }*/
     }	
     
     /**

@@ -80,6 +80,11 @@ public class Server {
      */
     public static void main(String[] args) {
         System.out.println("Multiplayer Server\n");
+        // Create the database. Comment this out if it's already made.
+        CreateCustomDatabase c = new CreateCustomDatabase();
+        c.addTables();      // Add the needed tables to the DB
+        c.addDataToTables();// Add the data to the tabels just created.
+        
         if (args.length == 1) {
             Server newServer = new Server(Integer.parseInt(args[0]));
         }
