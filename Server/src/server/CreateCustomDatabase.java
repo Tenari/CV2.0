@@ -16,7 +16,7 @@ public class CreateCustomDatabase {
     Connection dbConnection;
     // SQL Database Feilds
     String dbURL = "jdbc:mysql://localhost/?user=root&password=";   // URL of the server
-    String dbURL2 = "jdbc:mysql://localhost/game2";// URL of the database.
+    String dbURL2 = "jdbc:mysql://localhost/game";// URL of the database.
     String dbUsername = "root";                     
     String dbPassword = "";
     
@@ -55,7 +55,7 @@ public class CreateCustomDatabase {
             System.out.println("VendorError: " + ex.getErrorCode()); 
         }
         
-        String stmt = "CREATE DATABASE game2";
+        String stmt = "CREATE DATABASE game";
         // Do the query.
         try {
             Statement dbStmt = dbConnection.createStatement();
