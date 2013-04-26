@@ -97,7 +97,8 @@ public class CreateCustomDatabase {
                 + " x int, y int,"
                 + " oldx int, oldy int,"
                 + " world varchar(9), oldworld varchar(9),"
-                + " energy int)";
+                + " energy int,"
+                + " class int)";
         doStatement(stmt);
     }
     

@@ -77,7 +77,7 @@ class World extends Thread{
      */
     public int addCharacter(String name)
     {
-    	Player asef=new Player(name, nextOrganismID, communicate);
+    	Player asef=new Player(name, nextOrganismID, communicate, 0);
     	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
     	nextOrganismID++;
         playerIsCreated = true;
@@ -85,28 +85,14 @@ class World extends Thread{
     }
     public void addNPC(String name,int xNPC, int yNPC, String wname)
     {
-    	HumanNPC asef=new HumanNPC(name,nextOrganismID,xNPC,yNPC,wname, communicate);
+    	HumanNPC asef=new HumanNPC(name,nextOrganismID,xNPC,yNPC,wname, communicate, 1000);
     	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
     	nextOrganismID++;
     }
     public void addMonster(String name,int xNPC, int yNPC, String wname, int lvl)
     {
-    	Creature asef=new Creature(name,nextOrganismID,xNPC,yNPC,wname,lvl, communicate);
-    	if(lvl==1)
-    	{
-    		organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
-    		levelOne++;
-    	}
-    	if(lvl==2)
-    	{
-        	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
-        	levelTwo++;
-    	}
-     	if(lvl==3)
-     	{
-     		organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
-     		levelThree++;
-     	}
+    	Creature asef=new Creature(name,nextOrganismID,xNPC,yNPC,wname,lvl, communicate, 100+lvl);
+    	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
         nextOrganismID++;
         
     }

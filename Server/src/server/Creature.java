@@ -14,9 +14,9 @@ public class Creature extends Organism
 
 	int level;
         Random generator;
-    public Creature(String n,int me,int xI, int yI, String wldnm, int lvl, CustomCommunication c)      
+    public Creature(String n,int me,int xI, int yI, String wldnm, int lvl, CustomCommunication c, int classCode)      
     {
-        super(n,me,c);	
+        super(n,me,c, classCode);	
         setWorld(wldnm);
         
         setX(xI);

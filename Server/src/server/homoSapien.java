@@ -33,9 +33,9 @@ public class homoSapien extends Organism
     double endurance;
     double hiding;
     
-   public homoSapien(String n, int me, CustomCommunication c) 
+   public homoSapien(String n, int me, CustomCommunication c, int classCode) 
    {
-    	super(n, me, c);
+    	super(n, me, c, classCode);
     	
     	smallBlade=10.0;
     	largeBlade=10.0;

@@ -60,7 +60,7 @@ public class Organism
 
     String lastMoveDirection;
     
-    public Organism(String name, int myUID, CustomCommunication c) 
+    public Organism(String name, int myUID, CustomCommunication c, int classCode) 
     {
         // Create the communication
         communicate = c;
@@ -74,7 +74,8 @@ public class Organism
                                     ""+startOldY,
                                     "'"+startWorldName+"'",
                                     "'"+startWorldName+"'",
-                                    ""+maxEnergy  };
+                                    ""+maxEnergy,
+                                    ""+classCode};
         // Insert values for the organism's location
         communicate.insert(movementTableName, initialMoveValues);
         

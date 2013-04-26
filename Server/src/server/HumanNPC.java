@@ -20,9 +20,9 @@ public class HumanNPC extends homoSapien
     private int routinespot; 
     private int state;
 
-    public HumanNPC(String n,int me,int xI, int yI, String wldnm, CustomCommunication c)    
+    public HumanNPC(String n,int me,int xI, int yI, String wldnm, CustomCommunication c, int classCode)    
     {
-        super(n,me, c);
+        super(n,me, c, classCode);
         routinespot=0;	
         state=0;
         setWorld(wldnm);

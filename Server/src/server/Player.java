@@ -16,9 +16,9 @@ public class Player extends homoSapien
 	int tradingPartner;
 	ArrayList<String> myofferings;
 	boolean tradeIsGood;
-    public Player(String n, int me, CustomCommunication c) 
+    public Player(String n, int me, CustomCommunication c, int classCode) 
     {
-    	super(n, me, c);
+    	super(n, me, c, classCode);
     	tradingPartner=me;
     	myofferings=new ArrayList<>();
     	tradeIsGood=false;

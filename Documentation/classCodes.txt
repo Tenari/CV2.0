@@ -1,0 +1,42 @@
+CLASS			code (range)
+Players:		0-1000
+Roman:			0-7
+	hands		0
+	small blade	1
+	axe		2
+	large blade	3
+	polearm		4
+	shooting	5
+	throwing	6
+	magic		7
+Japanese:		10-17
+	hands		10
+	small blade	11
+	axe		12
+	large blade	13
+	polearm		14
+	shooting	15
+	throwing	16
+	magic		17
+
+NPCs:			1001-10000
+
+Human NPCs:		1001-5000
+Named NPCs:		1001-4000
+	Mr Paige	1001
+	Jake		1002
+nameless types:		4000-5000
+    blacksmith		4000-4009
+	roman		4000
+	japanese	4001
+    worker		4010-4029
+	roman		4010, 4011
+	japanese	4012, 4013
+
+Monsters:		5001-10000
+Natural:		5001-7000
+	squirell	5001, 5002
+	wolf		5010, 5011
+	bear		5020, 5021
+SuperNatural:		7001-10000
+	unicorn		7001, 7002
