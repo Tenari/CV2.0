@@ -7,5 +7,5 @@ New:
 updateMoveScreen():
 lists the groundcode for each visible tile. If the player is at the edge of the map, groundCode will be 0 for out of range spots.
 additionally, lists direction and classCode(which maps to an image) for each spot after groundCode, assuming an organism is there.
-"[for each tile: [groundCode] [[direction] [classCode] if organism on spot] -1]"
-ex: "0 -1 0 -1 0 -1 0 -1 1 -1 2 n 500 -1 ...."will always have 10X10 "-1"s
+"v [for each tile: [groundCode] [[direction] [classCode] if organism on spot] -1]"
+ex: "v 0 -1 0 -1 0 -1 0 -1 1 -1 2 n 500 -1 ...."will always have 10X10 "-1"s

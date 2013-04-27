@@ -117,6 +117,7 @@ class ClientHandler extends Thread{
             case "A":
                 //client says move X direction, we tell the world to move the char "uid" X direction
                 world.moveCharacter(uid, "west");
+                System.out.println(world.getPlayerMapView(world.getCharacter(uid)));
                 break;
             case "S":
                 world.moveCharacter(uid, "south");
@@ -200,6 +201,12 @@ class ClientHandler extends Thread{
         }
         sendData(""+world.getCharacter(uid).getLastMoveDirection()+" "+world.getCharacter(uid).getTeam1()+" "+world.getCharacter(uid).getWorld()+" "+world.getCharacter(uid).getX()+" "+world.getCharacter(uid).getY()+" "
                             +useme);//sends worldname followed by the char's X and Y followed by the positions of local characters to the applet, so it knows where to draw them.
+    }
+    
+    public void newUpdateMoveScreen()
+    {
+        String updateInfo = "v " + world.getPlayerMapView(world.getCharacter(uid));
+        sendData(updateInfo);
     }
 
     public void updateFight()

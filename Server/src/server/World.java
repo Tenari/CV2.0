@@ -71,60 +71,6 @@ class World extends Thread{
     }
     
     /**
-     * This method adds a Character to the characters ArrayList
-     * Returns the uid of added character.
-     * @param name the name of the character
-     */
-    public int addCharacter(String name)
-    {
-    	Player asef=new Player(name, nextOrganismID, communicate, 0);
-    	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
-    	nextOrganismID++;
-        playerIsCreated = true;
-        return nextOrganismID-1; // return the uid of the character we just created.
-    }
-    public void addNPC(String name,int xNPC, int yNPC, String wname)
-    {
-    	HumanNPC asef=new HumanNPC(name,nextOrganismID,xNPC,yNPC,wname, communicate, 1000);
-    	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
-    	nextOrganismID++;
-    }
-    public void addMonster(String name,int xNPC, int yNPC, String wname, int lvl)
-    {
-    	Creature asef=new Creature(name,nextOrganismID,xNPC,yNPC,wname,lvl, communicate, 100+lvl);
-    	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
-        nextOrganismID++;
-        
-    }
-    
-    /**
-     * This method checks to see that the specified charater actually exists
-     * @param name the name of the Human being checked
-     * @return boolean value indicating existence
-     */
-    public boolean charExist(String name)
-    {
-    	if(organisms.isEmpty())
-    	{return false;}
-    	else
-    	{
-	    	for (Organism i : organisms){
-                    if(i.getName().equals(name)){
-	    		return true;
-                    }
-                }
-	    	return false;
-    	}
-    	
-    }
-    
-    // Keeps monster NPC population at appropriate levels
-    // deactivated
-    public void populate()
-    {
-    }	
-    
-    /**
      * The primary infinite loop which updates the state of the game world.
      * Handles:
      *  Fights
@@ -225,6 +171,60 @@ class World extends Thread{
                 startTimeUpdate=System.currentTimeMillis();
             }
         }
+    }
+    
+    /**
+     * This method adds a Character to the characters ArrayList
+     * Returns the uid of added character.
+     * @param name the name of the character
+     */
+    public int addCharacter(String name)
+    {
+    	Player asef=new Player(name, nextOrganismID, communicate, 0);
+    	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
+    	nextOrganismID++;
+        playerIsCreated = true;
+        return nextOrganismID-1; // return the uid of the character we just created.
+    }
+    public void addNPC(String name,int xNPC, int yNPC, String wname)
+    {
+    	HumanNPC asef=new HumanNPC(name,nextOrganismID,xNPC,yNPC,wname, communicate, 1000);
+    	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
+    	nextOrganismID++;
+    }
+    public void addMonster(String name,int xNPC, int yNPC, String wname, int lvl)
+    {
+    	Creature asef=new Creature(name,nextOrganismID,xNPC,yNPC,wname,lvl, communicate, 100+lvl);
+    	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
+        nextOrganismID++;
+        
+    }
+    
+    /**
+     * This method checks to see that the specified charater actually exists
+     * @param name the name of the Human being checked
+     * @return boolean value indicating existence
+     */
+    public boolean charExist(String name)
+    {
+    	if(organisms.isEmpty())
+    	{return false;}
+    	else
+    	{
+	    	for (Organism i : organisms){
+                    if(i.getName().equals(name)){
+	    		return true;
+                    }
+                }
+	    	return false;
+    	}
+    	
+    }
+    
+    // Keeps monster NPC population at appropriate levels
+    // deactivated
+    public void populate()
+    {
     }
     
     /**
@@ -750,5 +750,50 @@ class World extends Thread{
     	}
     	organisms.get(otherbro).setTrader(otherbro);
     	organisms.get(uid).setTrader(uid);
+    }
+    
+    public String getPlayerMapView(Organism player){
+        String dataAsString = "";
+        // 10X10 is the magic number for the size of the view players have of the world
+        for(int i=0; i<11; i++){    // This particular '10' is the y length
+            for(int j=0; j<11; j++){// This particular '10' is the x length
+                int tempX = player.getX()-5+j;      // -5 because the player is on row 5, and +j because we are iterating.
+                if (!(tempX <= 0 || tempX >=getLocationXDimension(player.getWorld()))){   // If this tile is NOT off the map...
+                    int tempY = player.getY() - 5 + i;// similar to above
+                    if (!(tempY <= 0 || tempY >=getLocationYDimension(player.getWorld()))){   // If this tile is NOT off the map...
+                        dataAsString = dataAsString + nextSpotType(tempX, tempY, player.getWorld()) + " ";
+                        int organismClass = communicate.selectSingleIntByXAndY("class", "organismsmovementinfo", tempX, tempY);
+                        if(organismClass == -1){    // If there was no one there
+                            dataAsString = dataAsString + organismClass + " ";
+                        }
+                        else{
+                            // The s is hard coded, because currently the DB doesn't store the direction information for all organisms.
+                            dataAsString = dataAsString + "s " + organismClass + " -1 ";
+                        }
+                    }
+                }
+                else {  // The case for an off-the-map tile.
+                    dataAsString = dataAsString + "0 -1 "; // O represents "off the map" and -1 represents "end of item"
+                }
+            }
+        }
+        return dataAsString;
+    }
+    
+    private int getLocationXDimension(String worldName){
+        switch(worldName){
+            case "world":
+                return smallCityXLength;
+            default:
+                return smallCityXLength;
+        }
+    }
+    private int getLocationYDimension(String worldName){
+        switch(worldName){
+            case "world":
+                return smallCityYLength;
+            default:
+                return smallCityYLength;
+        }
     }
 }
