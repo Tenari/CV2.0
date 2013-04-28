@@ -204,6 +204,9 @@ public class CustomCommunication {
             ResultSet dbResultSet = null;
             if (dbStmt.execute(stmt)) {  
                 dbResultSet = dbStmt.getResultSet();
+                if (dbResultSet == null){
+                    return -1;
+                }
                 dbResultSet.last();
                 return dbResultSet.getInt(1);
             } 
