@@ -178,7 +178,7 @@ class ClientHandler extends Thread{
         }
     }
 
-    public void updateMoveScreen()
+    public void oldUpdateMoveScreen()
     {
         String useme="";        //this string will hold the postitions of all characters needed to draw
         
@@ -203,7 +203,7 @@ class ClientHandler extends Thread{
                             +useme);//sends worldname followed by the char's X and Y followed by the positions of local characters to the applet, so it knows where to draw them.
     }
     
-    public void newUpdateMoveScreen()
+    public void updateMoveScreen()
     {
         String updateInfo = "v " + world.getPlayerMapView(world.getCharacter(uid));
         sendData(updateInfo);

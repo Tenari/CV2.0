@@ -118,8 +118,8 @@ public void keyPressed(KeyEvent e) {
 public void keyReleased(KeyEvent e) {}
 
 // Still gross.
-public void paint( Graphics bufferGraphics )
-{
+    @Override
+    public void paint( Graphics bufferGraphics ){
     if(!firstFrameStill) {
 
         Scanner scan = new Scanner(paintInformation);

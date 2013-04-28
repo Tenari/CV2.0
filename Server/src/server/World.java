@@ -180,7 +180,7 @@ class World extends Thread{
      */
     public int addCharacter(String name)
     {
-    	Player asef=new Player(name, nextOrganismID, communicate, 0);
+    	Player asef=new Player(name, nextOrganismID, communicate, 20);
     	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
     	nextOrganismID++;
         playerIsCreated = true;
@@ -767,8 +767,8 @@ class World extends Thread{
                             dataAsString = dataAsString + organismClass + " ";
                         }
                         else{
-                            // The s is hard coded, because currently the DB doesn't store the direction information for all organisms.
-                            dataAsString = dataAsString + "s " + organismClass + " -1 ";
+                            // The 2 is hard coded, because currently the DB doesn't store the direction information for all organisms.
+                            dataAsString = dataAsString + "2 " + organismClass + " -1 ";
                         }
                     }
                 }
