@@ -117,7 +117,6 @@ class ClientHandler extends Thread{
             case "A":
                 //client says move X direction, we tell the world to move the char "uid" X direction
                 world.moveCharacter(uid, "west");
-                System.out.println(world.getPlayerMapView(world.getCharacter(uid)));
                 break;
             case "S":
                 world.moveCharacter(uid, "south");

@@ -201,19 +201,13 @@ public class CustomCommunication {
         // Do the query.
         try {
             Statement dbStmt = dbConnection.createStatement();
-            ResultSet dbResultSet = null;
-            if (dbStmt.execute(stmt)) {  
-                dbResultSet = dbStmt.getResultSet();
-                if (dbResultSet == null){
-                    return -1;
-                }
+            ResultSet dbResultSet = dbStmt.executeQuery(stmt);
+            // If there are actually results to handle, we'll just return the int
+            while (dbResultSet.next()) {
                 dbResultSet.last();
                 return dbResultSet.getInt(1);
             } 
-            else {
-                System.err.println("CustomCommunication.selectSingleByUID failed");
-            }
-            
+            // Otherwise, return the failure value.
             return -1;
         }
         catch (SQLException ex) {

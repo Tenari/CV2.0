@@ -771,6 +771,9 @@ class World extends Thread{
                             dataAsString = dataAsString + "2 " + organismClass + " -1 ";
                         }
                     }
+                    else {  // The case for an off-the-map tile.
+                        dataAsString = dataAsString + "0 -1 "; // O represents "off the map" and -1 represents "end of item"
+                    }
                 }
                 else {  // The case for an off-the-map tile.
                     dataAsString = dataAsString + "0 -1 "; // O represents "off the map" and -1 represents "end of item"
