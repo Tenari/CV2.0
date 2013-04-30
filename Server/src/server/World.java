@@ -164,10 +164,11 @@ class World extends Thread{
             }
             
             //loop for updating Trade information in clients
-            if((newTime-startTimeUpdate)>=40 && playerIsCreated) {
-                server.updateInventoryInAllClients();
+            if((newTime-startTimeUpdate)>=190 && playerIsCreated) {
+               /* server.updateInventoryInAllClients();
                 server.updateResourcesInAllClients();
                 server.updateTradeInAllClients();
+                server.updateMoveScreensInAllClients();*/
                 startTimeUpdate=System.currentTimeMillis();
             }
         }
@@ -188,13 +189,13 @@ class World extends Thread{
     }
     public void addNPC(String name,int xNPC, int yNPC, String wname)
     {
-    	HumanNPC asef=new HumanNPC(name,nextOrganismID,xNPC,yNPC,wname, communicate, 1000);
+    	HumanNPC asef=new HumanNPC(name,nextOrganismID,xNPC,yNPC,wname, communicate, 25);
     	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
     	nextOrganismID++;
     }
     public void addMonster(String name,int xNPC, int yNPC, String wname, int lvl)
     {
-    	Creature asef=new Creature(name,nextOrganismID,xNPC,yNPC,wname,lvl, communicate, 100+lvl);
+    	Creature asef=new Creature(name,nextOrganismID,xNPC,yNPC,wname,lvl, communicate, 102);
     	organisms.add(asef);//putting our new character into our arrList, so it is actually in the game
         nextOrganismID++;
         
@@ -793,44 +794,44 @@ class World extends Thread{
             case "n":
                 for(int i=0; i<11; i++){    // This particular '11' is the x length
                     int tempX = player.getX()-5+i;      // -5 because the player is on row 5, and +i because we are iterating.
-                    if (!(tempX <= 0 || tempX >=getLocationXDimension(player.getWorld()))){   // If this tile is NOT off the map...
-                        dataAsString = dataAsString + nextSpotType(tempX, player.getY() - 5, player.getWorld()) + " -1 ";
+                    if (coordOnMap(tempX, player.getY() - 5, player.getWorld())){   // If this tile is NOT off the map...
+                        dataAsString = dataAsString + nextSpotType(tempX, player.getY() - 5, player.getWorld()) + " ";
                     }
                     else{
-                        dataAsString = dataAsString + "0 -1 ";
+                        dataAsString = dataAsString + "0 ";
                     }
                 }
                 break;
             case "s":
                 for(int i=0; i<11; i++){    // This particular '11' is the x length
                     int tempX = player.getX()-5+i;      // -5 because the player is on row 5, and +i because we are iterating.
-                    if (!(tempX <= 0 || tempX >=getLocationXDimension(player.getWorld()))){   // If this tile is NOT off the map...
-                        dataAsString = dataAsString + nextSpotType(tempX, player.getY() + 5, player.getWorld()) + " -1 ";
+                    if (coordOnMap(tempX, player.getY() + 5, player.getWorld())){   // If this tile is NOT off the map...
+                        dataAsString = dataAsString + nextSpotType(tempX, player.getY() + 5, player.getWorld()) + " ";
                     }
                     else{
-                        dataAsString = dataAsString + "0 -1 ";
+                        dataAsString = dataAsString + "0 ";
                     }
                 }
                 break;
             case "e":
                 for(int i=0; i<11; i++){    
                     int tempY = player.getY()-5+i;      
-                    if (!(tempY <= 0 || tempY >=getLocationYDimension(player.getWorld()))){   
-                        dataAsString = dataAsString + nextSpotType(player.getX() - 5, tempY, player.getWorld()) + " -1 ";
+                    if (coordOnMap(player.getX() + 5, tempY, player.getWorld())){   
+                        dataAsString = dataAsString + nextSpotType(player.getX() + 5, tempY, player.getWorld()) + " ";
                     }
                     else{
-                        dataAsString = dataAsString + "0 -1 ";
+                        dataAsString = dataAsString + "0 ";
                     }
                 }
                 break;
             case "w":
                 for(int i=0; i<11; i++){    
                     int tempY = player.getY()-5+i;      
-                    if (!(tempY <= 0 || tempY >=getLocationYDimension(player.getWorld()))){   
-                        dataAsString = dataAsString + nextSpotType(player.getX() + 5, tempY, player.getWorld()) + " -1 ";
+                    if (coordOnMap(player.getX() - 5, tempY, player.getWorld())){   
+                        dataAsString = dataAsString + nextSpotType(player.getX() - 5, tempY, player.getWorld()) + " ";
                     }
                     else{
-                        dataAsString = dataAsString + "0 -1 ";
+                        dataAsString = dataAsString + "0 ";
                     }
                 }
                 break;
@@ -850,13 +851,24 @@ class World extends Thread{
                         int organismClass = communicate.selectSingleIntByXAndY("class", "organismsmovementinfo", tempX, tempY);
                         if(!(organismClass == -1)){   // If the organismClass did NOT fail (did succeed) to get the clasCode 
                             // The 2 is hard coded, because currently the DB doesn't store the direction information for all organisms.
-                            dataAsString = dataAsString + "2 " + organismClass + " " + tempX + " " +tempY;
+                            dataAsString = dataAsString + "2 " + organismClass + " " + tempX + " " +tempY + " ";
                         }
                     }
                 }
             }
         }
         return dataAsString;
+    }
+    
+    boolean coordOnMap(int x, int y, String worldName){
+        // If x is good,
+        if((x > 0)&&(x < getLocationXDimension(worldName)-1)){
+            // and y is good
+            if((y > 0)&&(y < getLocationYDimension(worldName)-1)){
+                return true;
+            }
+        }
+        return false;
     }
     
     private int getLocationXDimension(String worldName){

@@ -33,7 +33,7 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
     Image lastPainting;
     
     // Declare variables for tile painting.
-    Image[] images = new Image[102];             // Total number of images in the game
+    Image[] images = new Image[200];             // Total number of images in the game
     int tileCode;
     int secondNumber;
     int classCode;
@@ -90,37 +90,37 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
                 
             case drawNewTopRowMessageCode: {
                 // Draw the old image, but down one tile.
-                bufferGraphics.drawImage(lastPainting, 0, tileDimension, lastPainting.getWidth(null), lastPainting.getHeight(null), null);
+                bufferGraphics.drawImage(lastPainting, 0, tileDimension, tileDimension*numXTiles, tileDimension*numYTiles, null);
                 // Loop to paint the new top row
                 for(int r=0; r<numXTiles; r++){
-                    parseAndPaint(bufferGraphics, 0 , r);               // 0 implies fixed top row.
+                    parseAndPaintShort(bufferGraphics, 0 , r);               // 0 implies fixed top row.
                 }
                 break;
             }
             case drawNewBottomRowMessageCode: {
                 // Draw the old image, but up one tile.
-                bufferGraphics.drawImage(lastPainting, 0, 0-tileDimension, lastPainting.getWidth(null), lastPainting.getHeight(null), null);
+                bufferGraphics.drawImage(lastPainting, 0, 0-tileDimension, tileDimension*numXTiles, tileDimension*numYTiles, null);
                 // Loop to paint the new bottom row
                 for(int r=0; r<numXTiles; r++){
-                    parseAndPaint(bufferGraphics, 10 , r);               // 0 implies fixed bottom row.
+                    parseAndPaintShort(bufferGraphics, 10 , r);               // 0 implies fixed bottom row.
                 }
                 break;
             }
             case drawNewRightColMessageCode:{
                 // Draw the old image, but shifted right one tile.
-                bufferGraphics.drawImage(lastPainting, 0-tileDimension, 0, lastPainting.getWidth(null), lastPainting.getHeight(null), null);
+                bufferGraphics.drawImage(lastPainting, 0-tileDimension, 0, tileDimension*numXTiles, tileDimension*numYTiles, null);
                 // Loop to paint the new rightmost Col
                 for(int r=0; r<numYTiles; r++){
-                    parseAndPaint(bufferGraphics, r , 10);               // 10 implies fixed rightmost col.
+                    parseAndPaintShort(bufferGraphics, r , 10);               // 10 implies fixed rightmost col.
                 }
                 break;
             }
             case drawNewLeftColMessageCode: {
                 // Draw the old image, but shifted left one tile.
-                bufferGraphics.drawImage(lastPainting, tileDimension, 0, lastPainting.getWidth(null), lastPainting.getHeight(null), null);
+                bufferGraphics.drawImage(lastPainting, tileDimension, 0, tileDimension*numXTiles, tileDimension*numYTiles, null);
                 // Loop to paint the new leftmost col
                 for(int r=0; r<numXTiles; r++){
-                    parseAndPaint(bufferGraphics, r, 0);               // 0 implies fixed leftmost col.
+                    parseAndPaintShort(bufferGraphics, r, 0);               // 0 implies fixed leftmost col.
                 }
                 break;
             }
@@ -149,9 +149,14 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
         }
     }
     
+    void parseAndPaintShort(Graphics graphics, int i, int j){
+        tileCode = scan.nextInt();
+        paintTile(graphics, tileCode, j, i);                        // Paint the background tile.
+    }
+    
     void parseAndPaintOrgs(Graphics graphics){
-        classCode       =   scan.nextInt();
         int direction   =   scan.nextInt();
+        classCode       =   scan.nextInt();
         int x           =   scan.nextInt();
         int y           =   scan.nextInt();
         paintOrganism(graphics, direction, classCode, x, y);

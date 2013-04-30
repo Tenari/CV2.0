@@ -295,6 +295,7 @@ class ClientHandler extends Thread{
     // Send data to the client
     public void sendData(String msg) {
         out.println(msg);
+        System.out.println(msg);
         if (out.checkError()) {
          System.out.println("ERROR!\nCould not deliver message to client");
          kill();
