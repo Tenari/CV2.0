@@ -33,7 +33,7 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
     Image lastPainting;
     
     // Declare variables for tile painting.
-    Image[] images = new Image[24];             // Total number of images in the game
+    Image[] images = new Image[102];             // Total number of images in the game
     int tileCode;
     int secondNumber;
     int classCode;
@@ -191,27 +191,12 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
     
     Image getImage(int tileNum){
         switch(tileNum){
-            case 0:
-                return getImageLogic(0);            // Blank, off-map
-            case 1:
-                return getImageLogic(1);            // Tree
-            case 3:
-                return getImageLogic(3);            // Road
-            case 4:
-                return getImageLogic(4);            // Grass
+            
             case 10:
             case 11:
                 return getImageLogic(10);           // Door
-            case 21:
-                return getImageLogic(21);           // Roman sword North
-            case 22:
-                return getImageLogic(22);           // Roman sword South
-            case 23:
-                return getImageLogic(23);           // Roman sword East
-            case 24:
-                return getImageLogic(24);           // Roman sword West
             default:
-                return getImageLogic(0);            // Blank, off-map
+                return getImageLogic(tileNum);            // Blank, off-map
         }
     }
     
