@@ -10,3 +10,7 @@ additionally, lists direction and classCode(which maps to an image) for each spo
 DirectionCodes: 1= north. 2= south. 3= east. 4= west.
 "v [for each tile: [groundCode] [[directionCode] [classCode] if organism on spot] -1]"
 ex: "v 0 -1 0 -1 0 -1 0 -1 1 -1 2 2 500 -1 ...."will always have 11X11 "-1"s
+
+updateOrganisms():
+"o [for each organism found: [classCode] [directionCode] [relativeX] [relativeY]]"
+ex: "o 101 2 4 4 1000 2 6 4"

@@ -133,6 +133,10 @@ public void infiniteLoop() throws IOException {
                 String firstWordOfMessage = serverMessageScanner.next();        // Get the first word, an indicator of what action the Client needs to perform.
                 switch (firstWordOfMessage) {
                     case "v":
+                    case "n":
+                    case "s":
+                    case "e":
+                    case "w":
                         theGameWorld.setText(fullServerMessage);    // If it's a basic movement message, send the whole message to the MainWorldCanvas.
                         break;
                     case "fighting":                                // If it's a combat-hp message.

@@ -105,6 +105,12 @@ public class Server {
             }
     }
     
+    public void updateOrganismsInAllClients(){
+        for (Object i : clientsMap.values()) {
+                ((ClientHandler)i).updateOrganisms();
+            }
+    }
+    
     public void updateTradeInAllClients(){
         for (Object i : clientsMap.values()) {
                 ((ClientHandler)i).updateTrade();

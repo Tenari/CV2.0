@@ -139,7 +139,7 @@ class World extends Thread{
                     organisms.get(a).act();
                 }
                 startTimeNPC=System.currentTimeMillis();
-                server.updateMoveScreensInAllClients();
+                server.updateOrganismsInAllClients();
             }
             if((newTime-startTimeSpawn)>=7200000) {
                 for(int a=0;a<organisms.size();a++) {
@@ -260,15 +260,17 @@ class World extends Thread{
      * This method moves the specified character in the specified direction
      * @param uid the int user id for the character to be moved
      * @param dir the direction code for which way the character is suppoed to go.
+     * returns true if the move changed location of the organism, false otherwise
      */
-    public void moveCharacter(int uid, String dir)
+    public boolean moveCharacter(int uid, String dir)
     {
+        boolean worked = false;
     	if(dir.equals("north"))
     	{
 		if(organisms.get(uid).getY()>0)
 		{
 			int w=nextSpotType(organisms.get(uid).getX(),organisms.get(uid).getY()-1,organisms.get(uid).getWorld());//a param to pass saying what type of spot we are trying to move to
-			organisms.get(uid).moveNorth(w);//moves our actuall character North
+			worked = organisms.get(uid).moveNorth(w);//moves our actuall character North
 		}
 		else if(organisms.get(uid).getY()==0)
 		{
@@ -286,31 +288,30 @@ class World extends Thread{
     		if(organisms.get(uid).getY()<smallCityYLength-1)
     		{
     			int w=nextSpotType(organisms.get(uid).getX(),organisms.get(uid).getY()+1,organisms.get(uid).getWorld());
-    			organisms.get(uid).moveSouth(w);
+    			worked = organisms.get(uid).moveSouth(w);
     		}
     		else if(organisms.get(uid).getY()==smallCityYLength-1)
-			{
-				String next=changeWorld("south",uid,organisms.get(uid).getWorld());
-				if(next.equals(organisms.get(uid).getWorld())==false)
+		{
+			String next=changeWorld("south",uid,organisms.get(uid).getWorld());
+			if(next.equals(organisms.get(uid).getWorld())==false)
 			{
 				
 				organisms.get(uid).setWorld(next);
 				organisms.get(uid).setY(0);
 			}
-			}
-	    	}
+		}
+        }
     	
     	if(dir.equals("east"))
     	{
 		if(organisms.get(uid).getX()<smallCityXLength-1)
 		{
 			int w=nextSpotType(organisms.get(uid).getX()+1,organisms.get(uid).getY(),organisms.get(uid).getWorld());
-			organisms.get(uid).moveEast(w);
+			worked = organisms.get(uid).moveEast(w);
 		}
 		else if(organisms.get(uid).getX()==smallCityXLength-1)
 		{
 			String next=changeWorld("east",uid,organisms.get(uid).getWorld());
-			System.out.print(next);
 			if(next.equals(organisms.get(uid).getWorld())==false)
 			{
 				
@@ -325,7 +326,7 @@ class World extends Thread{
 		if(organisms.get(uid).getX()>0)
 		{
 			int w=nextSpotType(organisms.get(uid).getX()-1,organisms.get(uid).getY(),organisms.get(uid).getWorld());
-			organisms.get(uid).moveWest(w);
+			worked = organisms.get(uid).moveWest(w);
 		}
 		else if(organisms.get(uid).getX()==0)
 		{
@@ -339,7 +340,8 @@ class World extends Thread{
 		}
     	}
         server.updateCharacterStatsInAllClients();
-        server.updateMoveScreensInAllClients();
+        server.updateOrganismsInAllClients();
+        return worked;
     }
     
     /**
@@ -754,9 +756,9 @@ class World extends Thread{
     
     public String getPlayerMapView(Organism player){
         String dataAsString = "";
-        // 10X10 is the magic number for the size of the view players have of the world
-        for(int i=0; i<11; i++){    // This particular '10' is the y length
-            for(int j=0; j<11; j++){// This particular '10' is the x length
+        // 11X11 is the magic number for the size of the view players have of the world
+        for(int i=0; i<11; i++){    // This particular '11' is the y length
+            for(int j=0; j<11; j++){// This particular '11' is the x length
                 int tempX = player.getX()-5+j;      // -5 because the player is on row 5, and +j because we are iterating.
                 if (!(tempX <= 0 || tempX >=getLocationXDimension(player.getWorld()))){   // If this tile is NOT off the map...
                     int tempY = player.getY() - 5 + i;// similar to above
@@ -777,6 +779,80 @@ class World extends Thread{
                 }
                 else {  // The case for an off-the-map tile.
                     dataAsString = dataAsString + "0 -1 "; // O represents "off the map" and -1 represents "end of item"
+                }
+            }
+        }
+        return dataAsString;
+    }
+    
+    public String getPlayerMapView(Organism player, String direction){
+        String dataAsString = "";
+        switch (direction) {
+            // Each of these cases gets the outermost row or column depending on the direction moved.
+            // It returns it in a spaced-delimited string of [tileCodes -1], ordered by location.
+            case "n":
+                for(int i=0; i<11; i++){    // This particular '11' is the x length
+                    int tempX = player.getX()-5+i;      // -5 because the player is on row 5, and +i because we are iterating.
+                    if (!(tempX <= 0 || tempX >=getLocationXDimension(player.getWorld()))){   // If this tile is NOT off the map...
+                        dataAsString = dataAsString + nextSpotType(tempX, player.getY() - 5, player.getWorld()) + " -1 ";
+                    }
+                    else{
+                        dataAsString = dataAsString + "0 -1 ";
+                    }
+                }
+                break;
+            case "s":
+                for(int i=0; i<11; i++){    // This particular '11' is the x length
+                    int tempX = player.getX()-5+i;      // -5 because the player is on row 5, and +i because we are iterating.
+                    if (!(tempX <= 0 || tempX >=getLocationXDimension(player.getWorld()))){   // If this tile is NOT off the map...
+                        dataAsString = dataAsString + nextSpotType(tempX, player.getY() + 5, player.getWorld()) + " -1 ";
+                    }
+                    else{
+                        dataAsString = dataAsString + "0 -1 ";
+                    }
+                }
+                break;
+            case "e":
+                for(int i=0; i<11; i++){    
+                    int tempY = player.getY()-5+i;      
+                    if (!(tempY <= 0 || tempY >=getLocationYDimension(player.getWorld()))){   
+                        dataAsString = dataAsString + nextSpotType(player.getX() - 5, tempY, player.getWorld()) + " -1 ";
+                    }
+                    else{
+                        dataAsString = dataAsString + "0 -1 ";
+                    }
+                }
+                break;
+            case "w":
+                for(int i=0; i<11; i++){    
+                    int tempY = player.getY()-5+i;      
+                    if (!(tempY <= 0 || tempY >=getLocationYDimension(player.getWorld()))){   
+                        dataAsString = dataAsString + nextSpotType(player.getX() + 5, tempY, player.getWorld()) + " -1 ";
+                    }
+                    else{
+                        dataAsString = dataAsString + "0 -1 ";
+                    }
+                }
+                break;
+        }
+        return dataAsString;
+    }
+    
+    public String getPlayerOrganismsView(Organism player){
+        String dataAsString = "";
+        // 11X11 is the magic number for the size of the view players have of the world
+        for(int i=0; i<11; i++){    // This particular '11' is the y length
+            for(int j=0; j<11; j++){// This particular '11' is the x length
+                int tempX = player.getX()-5+j;      // -5 because the player is on row 5, and +j because we are iterating.
+                if (!(tempX <= 0 || tempX >=getLocationXDimension(player.getWorld()))){         // If this tile is NOT off the map...
+                    int tempY = player.getY() - 5 + i;// similar to above
+                    if (!(tempY <= 0 || tempY >=getLocationYDimension(player.getWorld()))){     // If this tile is NOT off the map...
+                        int organismClass = communicate.selectSingleIntByXAndY("class", "organismsmovementinfo", tempX, tempY);
+                        if(!(organismClass == -1)){   // If the organismClass did NOT fail (did succeed) to get the clasCode 
+                            // The 2 is hard coded, because currently the DB doesn't store the direction information for all organisms.
+                            dataAsString = dataAsString + "2 " + organismClass + " " + tempX + " " +tempY;
+                        }
+                    }
                 }
             }
         }

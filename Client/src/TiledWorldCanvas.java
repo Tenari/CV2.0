@@ -15,6 +15,10 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
     final int bufferSideLength      =   (32*11);    // The size of one side of the buffer: 32px * 11 tiles
     final String drawFullWorldMessageCode=  "v";
     final String drawNewTopRowMessageCode=  "n";
+    final String drawNewBottomRowMessageCode="s";
+    final String drawNewLeftColMessageCode= "w";
+    final String drawNewRightColMessageCode="e";
+    final String drawOrganismsMsgCode   =   "o";
     final int numXTiles             =   11;
     final int numYTiles             =   11;
     final int tileDimension         =   32;
@@ -25,8 +29,8 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
     Scanner scan;
     ClientJApplet client;
     long startTime;
-    int[][] mapMem = new int[numYTiles][numXTiles];
     ArrayList<ClientOrganismMapInfo> orgMem = new ArrayList<>();
+    Image lastPainting;
     
     // Declare variables for tile painting.
     Image[] images = new Image[24];             // Total number of images in the game
@@ -63,6 +67,9 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
         
         // And, finally, transfer the offscreen image to the visible window.
         g.drawImage(offscreenImage, 0, 0, this);
+        
+        // Remember the image we just drew for future reference.
+        lastPainting = offscreenImage;
     }
     
     @Override
@@ -70,46 +77,84 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
         // Check the first word of the message...
         scan = new Scanner(serverMessageToParseAndPaint);
         String firstWord = scan.next();
-        
         // ...and decide what to do.
-        if(firstWord.equals(drawFullWorldMessageCode)){
-            // Iteratate left to right, then top to bottom through all the tiles we are supposed to be drawing.
-            for(int i=0; i<numYTiles; i++){
-                for(int j=0; j<numXTiles; j++){
-                    
-                    boolean hasOrganism = parseToNegative1();
-                    paintTile(bufferGraphics, tileCode, j, i);                  // Paint the background tile.
-                    
-                    mapMem[i][j] = tileCode;
-                    
-                    if (hasOrganism){
-                        paintOrganism(bufferGraphics, secondNumber, classCode, j, i);// Paint the organism on top of the tile.
-                        // record organisms memory stuff here
+        switch (firstWord) {
+            case drawFullWorldMessageCode:
+                // Iteratate left to right, then top to bottom through all the tiles we are supposed to be drawing.
+                for(int i=0; i<numYTiles; i++){
+                    for(int j=0; j<numXTiles; j++){
+                        parseAndPaint(bufferGraphics, i , j);
                     }
                 }
-            }
-        }
-        else if(firstWord.equals(drawNewTopRowMessageCode)){
-            
-            // Loops to paint all but the top row
-            for(int i=0; i<numYTiles; i++){
-                for(int j=0; j<numXTiles; j++){
+                break;
+                
+            case drawNewTopRowMessageCode: {
+                // Draw the old image, but down one tile.
+                bufferGraphics.drawImage(lastPainting, 0, tileDimension, lastPainting.getWidth(null), lastPainting.getHeight(null), null);
+                // Loop to paint the new top row
+                for(int r=0; r<numXTiles; r++){
+                    parseAndPaint(bufferGraphics, 0 , r);               // 0 implies fixed top row.
                 }
+                break;
             }
-            
-            // Loop to paint the new top row
-            for(int r=0; r<numXTiles; r++){
-                boolean hasOrganism = parseToNegative1();
-                    paintTile(bufferGraphics, tileCode, r, 0);                  // Paint the background tile.
-                    
-                    mapMem[0][r] = tileCode;
-                    
-                    if (hasOrganism){
-                        paintOrganism(bufferGraphics, secondNumber, classCode, r, 0);// Paint the organism on top of the tile.
-                        // record organisms memory stuff here
-                    }
+            case drawNewBottomRowMessageCode: {
+                // Draw the old image, but up one tile.
+                bufferGraphics.drawImage(lastPainting, 0, 0-tileDimension, lastPainting.getWidth(null), lastPainting.getHeight(null), null);
+                // Loop to paint the new bottom row
+                for(int r=0; r<numXTiles; r++){
+                    parseAndPaint(bufferGraphics, 10 , r);               // 0 implies fixed bottom row.
+                }
+                break;
+            }
+            case drawNewRightColMessageCode:{
+                // Draw the old image, but shifted right one tile.
+                bufferGraphics.drawImage(lastPainting, 0-tileDimension, 0, lastPainting.getWidth(null), lastPainting.getHeight(null), null);
+                // Loop to paint the new rightmost Col
+                for(int r=0; r<numYTiles; r++){
+                    parseAndPaint(bufferGraphics, r , 10);               // 10 implies fixed rightmost col.
+                }
+                break;
+            }
+            case drawNewLeftColMessageCode: {
+                // Draw the old image, but shifted left one tile.
+                bufferGraphics.drawImage(lastPainting, tileDimension, 0, lastPainting.getWidth(null), lastPainting.getHeight(null), null);
+                // Loop to paint the new leftmost col
+                for(int r=0; r<numXTiles; r++){
+                    parseAndPaint(bufferGraphics, r, 0);               // 0 implies fixed leftmost col.
+                }
+                break;
+            }
+            case drawOrganismsMsgCode: {
+                while(scan.hasNext()){
+                    parseAndPaintOrgs(bufferGraphics);
+                }
+                break;
             }
         }
+    }
+    
+    /**
+     * Handles the logic for parsing the drawMessage and then painting from it.
+     * @param graphics - Graphics element on which stuff is drawn.
+     * @param i - column iterator
+     * @param j - row iterator
+     */
+    void parseAndPaint(Graphics graphics, int i, int j){
+        boolean hasOrganism = parseToNegative1();
+        paintTile(graphics, tileCode, j, i);                        // Paint the background tile.
+
+        if (hasOrganism){
+            paintOrganism(graphics, secondNumber, classCode, j, i);// Paint the organism on top of the tile.
+            // record organisms memory stuff here
+        }
+    }
+    
+    void parseAndPaintOrgs(Graphics graphics){
+        classCode       =   scan.nextInt();
+        int direction   =   scan.nextInt();
+        int x           =   scan.nextInt();
+        int y           =   scan.nextInt();
+        paintOrganism(graphics, direction, classCode, x, y);
     }
     
     void setText(String fullServerMessage) {
@@ -177,8 +222,7 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
         return images[x];
     }
     
-    public void sendMessage(String msg)
-    {
+    public void sendMessage(String msg) {
         long newTime=System.currentTimeMillis();        // Get the new time.
         if((newTime-startTime)>=waitSpeed)              // If the minimum time has elapsed.
         {

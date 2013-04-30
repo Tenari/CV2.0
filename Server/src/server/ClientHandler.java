@@ -69,6 +69,7 @@ class ClientHandler extends Thread{
             uid=world.getUID(getUsername());
             System.out.println("player " + getUsername()+" already there");
          }
+         updateMoveScreen();updateMoveScreen();updateMoveScreen();updateMoveScreen();updateMoveScreen();
          while ((firstMessageRead = in.readLine()) != null) interpretData(firstMessageRead);//"thismsg=in.ReadLine()"means that the loop just waits until in.readLine returns something
         }													//it will return null in the case that the "in" bit is dead.  then we just send the inread String off to our interpretData method
         catch(IOException e) {
@@ -108,6 +109,7 @@ class ClientHandler extends Thread{
         Scanner asdf=new Scanner(msgg);
         String msg=asdf.next();
         String useme="";             //this string will hold the postitions of all characters needed to draw
+        boolean moved; // used to determine what kind of update to send ot the movement screen.
         switch (msg) {
             case "USER":
                 // the client is requesting for the username, and we oblige
@@ -116,16 +118,28 @@ class ClientHandler extends Thread{
                 break;
             case "A":
                 //client says move X direction, we tell the world to move the char "uid" X direction
-                world.moveCharacter(uid, "west");
+                moved = world.moveCharacter(uid, "west");
+                if (moved)
+                    updateMoveScreen("w");      // do the specialized update for a movement
+                updateOrganisms();
                 break;
             case "S":
-                world.moveCharacter(uid, "south");
+                moved = world.moveCharacter(uid, "south");
+                if (moved)
+                    updateMoveScreen("s");      // do the specialized update for a movement
+                updateOrganisms();
                 break;
             case "D":
-                world.moveCharacter(uid, "east");
+                moved = world.moveCharacter(uid, "east");
+                if (moved)
+                    updateMoveScreen("e");      // do the specialized update for a movement
+                updateOrganisms();
                 break;
             case "W":
-                world.moveCharacter(uid, "north");
+                moved = world.moveCharacter(uid, "north");
+                if (moved)
+                    updateMoveScreen("n");      // do the specialized update for a movement
+                updateOrganisms();
                 break;
             case "f":
                 world.startFight(uid);
@@ -177,39 +191,17 @@ class ClientHandler extends Thread{
         }
     }
 
-    public void oldUpdateMoveScreen()
-    {
-        String useme="";        //this string will hold the postitions of all characters needed to draw
-        
-        //Create an arrayList that has in it all the characters that we need to draw in the 10X10
-        ArrayList<Organism> beee=world.getOthersWorld(world.getCharacter(uid).getX(),world.getCharacter(uid).getY(),world.getCharacter(uid).getWorld());
-        for(int v=0;v<beee.size();v++)//loop throught the arrList and get all the locations in a String format--one big string
-        {
-                useme=useme+beee.get(v).getX()+" "+beee.get(v).getY()+" ";
-        }
-        beee=world.getOthersWorldNPC(world.getCharacter(uid).getX(),world.getCharacter(uid).getY(),world.getCharacter(uid).getWorld());
-        for(int v=0;v<beee.size();v++)//loop throught the arrList and get all the locations in a String format--one big string
-        {
-                useme=useme+beee.get(v).getX()+" "+beee.get(v).getY()+" ";
-        }
-        useme=useme+"99999 ";
-        beee=world.getOthersWorldMonster(world.getCharacter(uid).getX(),world.getCharacter(uid).getY(),world.getCharacter(uid).getWorld());
-        for(int v=0;v<beee.size();v++)//loop throught the arrList and get all the locations in a String format--one big string
-        {
-                useme=useme+beee.get(v).getX()+" "+beee.get(v).getY()+" ";
-        }
-        sendData(""+world.getCharacter(uid).getLastMoveDirection()+" "+world.getCharacter(uid).getTeam1()+" "+world.getCharacter(uid).getWorld()+" "+world.getCharacter(uid).getX()+" "+world.getCharacter(uid).getY()+" "
-                            +useme);//sends worldname followed by the char's X and Y followed by the positions of local characters to the applet, so it knows where to draw them.
-    }
-    
-    public void updateMoveScreen()
-    {
+    public void updateMoveScreen() {
         String updateInfo = "v " + world.getPlayerMapView(world.getCharacter(uid));
         sendData(updateInfo);
     }
+    
+    public void updateOrganisms() {
+        String updateInfo = "o " + world.getPlayerOrganismsView(world.getCharacter(uid));
+        sendData(updateInfo);
+    }
 
-    public void updateFight()
-    {
+    public void updateFight() {
            if(world.getCharacter(uid).getOpponentType())//if the opponent is a monster
            {
                    sendData("fighting "+world.getMonster(world.getCharacter(uid).getOpponent()).getHead()+" "
@@ -239,8 +231,7 @@ class ClientHandler extends Thread{
 
     }
 
-    public void updateTrade()
-    {
+    public void updateTrade() {
            if(world.getCharacter(((Player)world.getCharacter(uid)).getTrader()).getName().equals(world.getCharacter(uid).getName()))
            {
                    //need to wrap up trade/ reset stuff for further use
@@ -251,8 +242,7 @@ class ClientHandler extends Thread{
            }
     }
 
-    public void updateCharacter()
-    {
+    public void updateCharacter() {
            sendData("charstatus "+world.getCharacter(uid).getHead()+" "
                            +world.getCharacter(uid).getArms()+" "
                            +world.getCharacter(uid).getTorso()+" "
@@ -276,8 +266,7 @@ class ClientHandler extends Thread{
                            +((Player)world.getCharacter(uid)).getHiding());
     }
 
-     public void updateResou()
-    {
+    public void updateResou() {
            sendData("resou "+world.getCharacter(uid).getInventory().getLeather()+" "
                            +world.getCharacter(uid).getInventory().getCloth()+" "
                            +world.getCharacter(uid).getInventory().getTools()+" "
@@ -310,5 +299,10 @@ class ClientHandler extends Thread{
          System.out.println("ERROR!\nCould not deliver message to client");
          kill();
         }
+    }
+
+    private void updateMoveScreen(String direction) {
+        String updateInfo = direction + " " + world.getPlayerMapView(world.getCharacter(uid), direction);
+        sendData(updateInfo);
     }
 }
