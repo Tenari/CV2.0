@@ -20,5 +20,4 @@ public class ClientOrganismMapInfo {
         x           =   xCoord;
         y           =   yCoord;
     }
-    
 }

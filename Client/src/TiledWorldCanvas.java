@@ -25,51 +25,53 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
     final long waitSpeed            =   222;         // The time (in milliseconds) it takes before another move can be sent to the server.
     
     // Internally available 'tools'
-    String serverMessageToParseAndPaint = "";
-    Scanner scan;
-    ClientJApplet client;
-    long startTime;
-    ArrayList<ClientOrganismMapInfo> orgMem = new ArrayList<>();
-    Image lastPainting;
+    String          serverMessageToParseAndPaint    = "";
+    Scanner         scan;
+    ClientJApplet   client;
+    long            startTime;
+    ArrayList<ClientOrganismMapInfo> orgMem         = new ArrayList<>();
+    int[][]         mapMem                          = new int[numYTiles][numXTiles];
+    Graphics        offscreenGraphicsContainer;
+    Image           offscreenImage                  = null;
     
     // Declare variables for tile painting.
-    Image[] images = new Image[200];             // Total number of images in the game
+    Image[] images = new Image[200];                // Total number of images in the game
     int tileCode;
     int secondNumber;
     int classCode;
     int sureNegative1;
     
     public TiledWorldCanvas(ClientJApplet c){
+            System.out.println("start of Constructor");
+        // Create the offscreen buffer and associated Graphics
+        offscreenImage = createImage(bufferSideLength, bufferSideLength);       // Make the image blank and square
+            System.out.println("created image");
         
         startTime=System.currentTimeMillis();           // Intialize the startTime counter.
+            System.out.println("set startTime");
         client = c;
-        setVisible(true);                           // Make Canvas visible.
-        this.addKeyListener(this);// Utilize the implemented KeyListener.
+            System.out.println("created client pointer");
+        setVisible(true);                               // Make Canvas visible.
+            System.out.println("set vsible");
+        this.addKeyListener(this);                      // Utilize the implemented KeyListener.
+            System.out.println("end of constructor");
     }
     
     @Override 
     public void update(Graphics g) {
-        // Create Local variable needed for Double Buffering to work.
-        Graphics offscreenGraphicsContainer;
-        Image offscreenImage = null;
-
-        // Create the offscreen buffer and associated Graphics
-        offscreenImage = createImage(bufferSideLength, bufferSideLength);       // Make the image blank and square
         offscreenGraphicsContainer = offscreenImage.getGraphics();              // Use the graphics element from the blank image we just made.
-        
-        // Clear the exposed area.
-        offscreenGraphicsContainer.setColor(getBackground());
-        offscreenGraphicsContainer.fillRect(0, 0, bufferSideLength, bufferSideLength);
-        offscreenGraphicsContainer.setColor(getForeground());
-        
-        // Do the actual painting of the canvas.
-        paint(offscreenGraphicsContainer);
-        
-        // And, finally, transfer the offscreen image to the visible window.
-        g.drawImage(offscreenImage, 0, 0, this);
-        
-        // Remember the image we just drew for future reference.
-        lastPainting = offscreenImage;
+            System.out.println("created graphicsContainter");
+        System.out.println("start of update");
+        if (offscreenGraphicsContainer != null){
+            System.out.println("start of inside update if");
+            // Do the actual painting of the canvas.
+            paint(offscreenGraphicsContainer);
+
+            // And, finally, transfer the offscreen image to the visible window.
+            g.drawImage(offscreenImage, 0, 0, this);
+            System.out.println("end of inside update if");
+        }
+        System.out.println("end of update");
     }
     
     @Override
@@ -78,88 +80,105 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
         scan = new Scanner(serverMessageToParseAndPaint);
         String firstWord = scan.next();
         // ...and decide what to do.
+        
+        // First parse and store the data
         switch (firstWord) {
+            
             case drawFullWorldMessageCode:
-                // Iteratate left to right, then top to bottom through all the tiles we are supposed to be drawing.
+                // Clear the organims arrayList
+                orgMem = new ArrayList<>();
+                
+                // Iteratate left to right, then top to bottom through all the tiles we are supposed to be saving.
                 for(int i=0; i<numYTiles; i++){
                     for(int j=0; j<numXTiles; j++){
-                        parseAndPaint(bufferGraphics, i , j);
+                        boolean hasOrganism = parseToNegative1();
+                        mapMem[i][j] = tileCode;
+                        if (hasOrganism){
+                            // record organisms memory stuff here
+                            orgMem.add(new ClientOrganismMapInfo(classCode, secondNumber, j, i));
+                        }
                     }
                 }
                 break;
                 
-            case drawNewTopRowMessageCode: {
-                // Draw the old image, but down one tile.
-                bufferGraphics.drawImage(lastPainting, 0, tileDimension, tileDimension*numXTiles, tileDimension*numYTiles, null);
-                // Loop to paint the new top row
+            case drawNewTopRowMessageCode: 
+                // Loop to shift the memMap old data
+                for (int i=numYTiles-1; i>0; i--){
+                    mapMem[i] = mapMem[i-1];
+                }
+                // Loop to store the new top row
                 for(int r=0; r<numXTiles; r++){
-                    parseAndPaintShort(bufferGraphics, 0 , r);               // 0 implies fixed top row.
+                    mapMem[0][r] = scan.nextInt();                  // 0 implies fixed top row.
                 }
                 break;
-            }
-            case drawNewBottomRowMessageCode: {
-                // Draw the old image, but up one tile.
-                bufferGraphics.drawImage(lastPainting, 0, 0-tileDimension, tileDimension*numXTiles, tileDimension*numYTiles, null);
-                // Loop to paint the new bottom row
+                
+            case drawNewBottomRowMessageCode: 
+                // Loop to shift the memMap old data
+                for (int i=0; i<numYTiles-1; i++){
+                    mapMem[i] = mapMem[i+1];
+                }
+                // Loop to store the new bottom row
                 for(int r=0; r<numXTiles; r++){
-                    parseAndPaintShort(bufferGraphics, 10 , r);               // 0 implies fixed bottom row.
+                    mapMem[10][r] = scan.nextInt();                 // 10 implies fixed bottom row.
                 }
                 break;
-            }
-            case drawNewRightColMessageCode:{
-                // Draw the old image, but shifted right one tile.
-                bufferGraphics.drawImage(lastPainting, 0-tileDimension, 0, tileDimension*numXTiles, tileDimension*numYTiles, null);
-                // Loop to paint the new rightmost Col
+            case drawNewRightColMessageCode:
+                // Loop to shift the memMap old data
+                for (int i=0; i<numYTiles; i++){
+                    for(int j=0; j<numXTiles-1; j++){
+                        mapMem[i][j] = mapMem[i][j+1];
+                    }
+                }
+                // Loop to store the new rightmost Col
                 for(int r=0; r<numYTiles; r++){
-                    parseAndPaintShort(bufferGraphics, r , 10);               // 10 implies fixed rightmost col.
+                    mapMem[r][10] = scan.nextInt();                 // 10 implies fixed rightmost col.
                 }
                 break;
-            }
-            case drawNewLeftColMessageCode: {
-                // Draw the old image, but shifted left one tile.
-                bufferGraphics.drawImage(lastPainting, tileDimension, 0, tileDimension*numXTiles, tileDimension*numYTiles, null);
-                // Loop to paint the new leftmost col
+            
+            case drawNewLeftColMessageCode: 
+                // Loop to shift the memMap old data
+                for (int i=0; i<numYTiles; i++){
+                    for(int j=numXTiles-1; j> 0; j--){
+                        mapMem[i][j] = mapMem[i][j-1];
+                    }
+                }
+                // Loop to store the new leftmost col
                 for(int r=0; r<numXTiles; r++){
-                    parseAndPaintShort(bufferGraphics, r, 0);               // 0 implies fixed leftmost col.
+                    mapMem[r][0] = scan.nextInt();                  // 0 implies fixed leftmost col.
                 }
                 break;
-            }
-            case drawOrganismsMsgCode: {
+            
+            case drawOrganismsMsgCode: 
+                // Clear the organims arrayList
+                orgMem = new ArrayList<>();
+                
                 while(scan.hasNext()){
-                    parseAndPaintOrgs(bufferGraphics);
+                    int direction   =   scan.nextInt();
+                    classCode       =   scan.nextInt();
+                    int x           =   scan.nextInt();
+                    int y           =   scan.nextInt();
+                    orgMem.add(new ClientOrganismMapInfo(classCode, direction, x, y));
                 }
                 break;
+        }
+        if (offscreenGraphicsContainer != null){
+            // Then draw the image from saved data.
+            drawImageFromData(bufferGraphics);
+        }
+    }
+    
+    void drawImageFromData(Graphics graphics){
+        // Loop through the map and draw the background tiles.
+        for (int i=0; i<numYTiles; i++){
+            for(int j=0; j<numXTiles; j++){
+                paintTile(graphics, mapMem[i][j], j, i);
             }
         }
-    }
-    
-    /**
-     * Handles the logic for parsing the drawMessage and then painting from it.
-     * @param graphics - Graphics element on which stuff is drawn.
-     * @param i - column iterator
-     * @param j - row iterator
-     */
-    void parseAndPaint(Graphics graphics, int i, int j){
-        boolean hasOrganism = parseToNegative1();
-        paintTile(graphics, tileCode, j, i);                        // Paint the background tile.
-
-        if (hasOrganism){
-            paintOrganism(graphics, secondNumber, classCode, j, i);// Paint the organism on top of the tile.
-            // record organisms memory stuff here
+        
+        // Loop through the organisms and draw them.
+        for(ClientOrganismMapInfo i : orgMem){
+            paintOrganism(graphics, i.direction, i.classCode, i.x, i.y);
         }
-    }
-    
-    void parseAndPaintShort(Graphics graphics, int i, int j){
-        tileCode = scan.nextInt();
-        paintTile(graphics, tileCode, j, i);                        // Paint the background tile.
-    }
-    
-    void parseAndPaintOrgs(Graphics graphics){
-        int direction   =   scan.nextInt();
-        classCode       =   scan.nextInt();
-        int x           =   scan.nextInt();
-        int y           =   scan.nextInt();
-        paintOrganism(graphics, direction, classCode, x, y);
     }
     
     void setText(String fullServerMessage) {
@@ -241,6 +260,7 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
         if (e.getKeyChar() == 'e' || e.getKeyChar() == 'E') {
             sendMessage("E");
         }
+        e.consume();
     }
 
     @Override
