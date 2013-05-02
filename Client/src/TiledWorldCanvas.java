@@ -2,6 +2,8 @@
  * Canvas on which the world is drawn. Utilizes the tiled message format.
  */
 import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
@@ -31,8 +33,11 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
     long            startTime;
     ArrayList<ClientOrganismMapInfo> orgMem         = new ArrayList<>();
     int[][]         mapMem                          = new int[numYTiles][numXTiles];
+    
+    // Double Buffering stuff
+    Dimension       offscreenDimension;
     Graphics        offscreenGraphicsContainer;
-    Image           offscreenImage                  = null;
+    Image           offscreenImage;
     
     // Declare variables for tile painting.
     Image[] images = new Image[200];                // Total number of images in the game
@@ -42,40 +47,41 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
     int sureNegative1;
     
     public TiledWorldCanvas(ClientJApplet c){
-            System.out.println("start of Constructor");
-        // Create the offscreen buffer and associated Graphics
-        offscreenImage = createImage(bufferSideLength, bufferSideLength);       // Make the image blank and square
-            System.out.println("created image");
-        
         startTime=System.currentTimeMillis();           // Intialize the startTime counter.
-            System.out.println("set startTime");
         client = c;
-            System.out.println("created client pointer");
         setVisible(true);                               // Make Canvas visible.
-            System.out.println("set vsible");
         this.addKeyListener(this);                      // Utilize the implemented KeyListener.
-            System.out.println("end of constructor");
     }
     
     @Override 
     public void update(Graphics g) {
-        offscreenGraphicsContainer = offscreenImage.getGraphics();              // Use the graphics element from the blank image we just made.
-            System.out.println("created graphicsContainter");
-        System.out.println("start of update");
-        if (offscreenGraphicsContainer != null){
-            System.out.println("start of inside update if");
-            // Do the actual painting of the canvas.
-            paint(offscreenGraphicsContainer);
+        Dimension d = getSize();
+        
+        // Create the offscreen graphics context
+        if ((offscreenGraphicsContainer == null)
+	 || (d.width != offscreenDimension.width)
+	 || (d.height != offscreenDimension.height)) {
+	    offscreenDimension = d;
+	    offscreenImage = createImage(d.width, d.height);
+	    offscreenGraphicsContainer = offscreenImage.getGraphics();
+	}
+        // Erase the previous image
+	offscreenGraphicsContainer.setColor(getBackground());
+	offscreenGraphicsContainer.fillRect(0, 0, d.width, d.height);
+	offscreenGraphicsContainer.setColor(Color.black);
 
-            // And, finally, transfer the offscreen image to the visible window.
-            g.drawImage(offscreenImage, 0, 0, this);
-            System.out.println("end of inside update if");
-        }
-        System.out.println("end of update");
+        // Do the actual painting of the canvas.
+        paintFrame(offscreenGraphicsContainer);
+
+        // And, finally, transfer the offscreen image to the visible window.
+        g.drawImage(offscreenImage, 0, 0, null);
     }
     
-    @Override
-    public void paint( Graphics bufferGraphics ){
+    /**
+     * Paint a frame of the world.
+     * @param g 
+     */
+    public void paintFrame(Graphics g){
         // Check the first word of the message...
         scan = new Scanner(serverMessageToParseAndPaint);
         String firstWord = scan.next();
@@ -163,8 +169,19 @@ public class TiledWorldCanvas extends Canvas implements KeyListener {
         }
         if (offscreenGraphicsContainer != null){
             // Then draw the image from saved data.
-            drawImageFromData(bufferGraphics);
+            drawImageFromData(g);
         }
+    }
+    
+    /**
+     * Paint the previous frame, if any.
+     * @param g 
+     */
+    @Override
+    public void paint( Graphics g ){
+        if (offscreenImage != null) {
+	    g.drawImage(offscreenImage, 0, 0, null);
+	}
     }
     
     void drawImageFromData(Graphics graphics){
