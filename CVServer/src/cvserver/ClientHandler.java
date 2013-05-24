@@ -22,7 +22,17 @@ class ClientHandler extends Thread{
     private BufferedReader in;
     private PrintWriter out;
     private WorldManager gameMaster;
-    private int uid;
+    private int uid     =   -1;
+    
+    final String northKey    =    "W";
+    final String southKey    =    "S";
+    final String eastKey     =    "A";
+    final String westKey     =    "D";
+    
+    int northCode   =   1;
+    int southCode   =   2;
+    int eastCode    =   3;
+    int westCode    =   4;
     
     // Constructor
     public ClientHandler(CVServer server, Socket socket, int sessid, WorldManager gm) {
@@ -90,11 +100,25 @@ class ClientHandler extends Thread{
     // Change username
     public void setUsername(String username) {
         this.username = username;
+        uid = gameMaster.getID(this.username);
     }
 
     // Decide what to do from input
     private void interpretData(String msg) {
-        
+        switch (msg){
+            case northKey:
+                movePlayer(northCode);
+                break;
+            case southKey:
+                movePlayer(southCode);
+                break;
+            case eastKey:
+                movePlayer(eastCode);
+                break;
+            case westKey:
+                movePlayer(westCode);
+                break;
+        }
     }
 
     // Send data to the client
@@ -109,5 +133,24 @@ class ClientHandler extends Thread{
          System.out.println("ERROR!\nCould not deliver message to client");
          kill();
         }
+    }
+    
+    void movePlayer(int directionCode){
+        boolean moved = false;
+        if (uid != -1){
+            moved = gameMaster.moveOrganism(uid, directionCode);
+        }
+        else {
+            moved = gameMaster.moveOrganism(gameMaster.getID(username), directionCode);
+        }
+        // If a move occured, we need to inform the other players.
+        if (moved){
+            server.updateMoveScreensForWorld(gameMaster.organism.getWorld(gameMaster.getID(username)));
+        }
+    }
+    
+    public void updateMoveScreen() {
+        String updateInfo = "v " + gameMaster.getPlayerMapView(gameMaster.getID(username));
+        sendData(updateInfo);
     }
 }

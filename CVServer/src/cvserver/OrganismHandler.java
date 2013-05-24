@@ -15,7 +15,7 @@ public class OrganismHandler {
     private final int startY    =   5;
     private final int startOldX =   5;
     private final int startOldY =   5;
-    private final String startWorldName = "world";
+    private final String startWorldName = "smallcity";
     
     // Initial HP values
     private final int headHealthStart   =   15;
@@ -32,6 +32,7 @@ public class OrganismHandler {
     // Initial detailed stats
     private final double handToHandStart=   10.0;
     private final int moneyStart        =   10;
+    private final double enduranceStart =   10.0;
     
     // Maximum values
     private final int maxEnergy         =   10000;
@@ -96,7 +97,8 @@ public class OrganismHandler {
                                         ""+torsoHealthStart,
                                         ""+legsHealthStart,
                                         ""+handToHandStart,
-                                        ""+moneyStart };
+                                        ""+moneyStart,
+                                        ""+enduranceStart};
             worked = communicate.insert(statsTableName, initialStatsValues);
             
             return worked;
@@ -224,5 +226,65 @@ public class OrganismHandler {
     	communicate.updateSingleDoubleByUID(statsTableName, "defStrBase", newSkillValue, orgUID);
     }
 //---------------------END SKILL UPDATE/ACCESSOR METHODS------------------------
- 
+
+//--------------------LOCATION ACCESSOR METHODS---------------------------------
+    public int getX(int orgUID)
+    {
+        return communicate.selectSingleIntByUID("x", movementTableName, orgUID);
+    }
+    public int getY(int orgUID)
+    {
+    	return communicate.selectSingleIntByUID("y", movementTableName, orgUID);
+    }
+    public int getOldX(int orgUID) {
+        return communicate.selectSingleIntByUID("oldx", movementTableName, orgUID);
+    }
+    public int getOldY(int orgUID) {
+        return communicate.selectSingleIntByUID("oldy", movementTableName, orgUID);
+    }
+    
+    /**
+     * Sets the X column of the uid matched row to newID in the 
+     * movementTableName database table.
+     * @param newX the new X value
+     */
+    public void setX(int newX, int orgUID) {
+    	communicate.updateSingleIntByUID(movementTableName, "x", newX, orgUID);
+    }
+    /**
+     * Sets the Y column of the uid matched row to newID in the 
+     * movementTableName database table.
+     * @param newY the new Y value
+     */
+    public void setY(int newY, int orgUID) {
+    	communicate.updateSingleIntByUID(movementTableName, "y", newY, orgUID);
+    }
+    public void setOldX(int newOldX, int orgUID) {
+    	communicate.updateSingleIntByUID(movementTableName, "oldx", newOldX, orgUID);
+    }
+    public void setOldY(int newOldY, int orgUID) {
+    	communicate.updateSingleIntByUID(movementTableName, "oldy", newOldY, orgUID);
+    }
+    
+    public String getWorld(int orgUID) {
+        return communicate.selectSingleStringByUID("world", movementTableName, orgUID);
+    }
+//--------------------------END LOCATION ACCESSORS------------------------------
+     public int getEnergy(int orgUID) {
+        return communicate.selectSingleIntByUID("energy", movementTableName, orgUID);
+    }
+     
+     /**
+     * Sets the energy stat in the database for a given organism, identified 
+     * by unique uid int to the listed parameter.
+     * @param e 
+     */
+    public void setEnergy(int e, int orgUID) {
+        int energy = e;
+        if (e > maxEnergy)
+    	{
+    		energy = maxEnergy;
+    	}
+        communicate.updateSingleIntByUID(movementTableName, "energy", energy, orgUID);
+    }
 }

@@ -102,4 +102,18 @@ public class CVServer {
         clientsMap.remove(cid);
     }
     
+    
+    public void updateMoveScreensInAllClients(){
+        for (Object i : clientsMap.values()) {
+            ((ClientHandler)i).updateMoveScreen();
+        }
+    }
+    
+    public void updateMoveScreensForWorld(String worldname){
+        for (Object i : clientsMap.values()) {
+            if ( gameMaster.organism.getWorld(gameMaster.getID(((ClientHandler)i).getUsername())).equals(worldname) ){
+                ((ClientHandler)i).updateMoveScreen();
+            }
+        }
+    }
 }

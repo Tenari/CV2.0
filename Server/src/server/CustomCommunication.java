@@ -143,6 +143,44 @@ public class CustomCommunication {
     }
     
     /**
+     * Takes a name, and a tableName, and does the query:
+     *      "SELECT `uid` FROM table WHERE table.`name` = name".
+     * 
+     * @param name
+     * @param table
+     * @return The last int from the ResultSet of the query. -1 if failed.
+     */
+    public int selectUIDByName(String name, String table) {
+        // Make the statement.
+        String stmt = 
+                "SELECT `uid"+
+                "` FROM `"+table+
+                "` WHERE `"+table+"`.`name` = "+name+";";
+                
+        // Do the query.
+        try {
+            Statement dbStmt = dbConnection.createStatement();
+            ResultSet dbResultSet = null;
+            if (dbStmt.execute(stmt)) {  
+                dbResultSet = dbStmt.getResultSet();
+                dbResultSet.last();
+                return dbResultSet.getInt(1);
+            } 
+            else {
+                System.err.println("CustomCommunication.selectUIDByName failed");
+            }
+            
+            return -1;
+        }
+        catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return -1;
+        }
+    }
+    
+    /**
      * Takes a columnName, a tableName and a userID, and does "SELECT colName FROM 
      *      table WHERE table.`uid` = userID".
      * 

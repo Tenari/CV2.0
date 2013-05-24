@@ -92,7 +92,7 @@ public class CreateCustomDatabase {
                 + " headHPBase int, armsHPBase int,"
                 + " torsoHPBase int, legsHPBase int,"
                 + " handToHand double, "
-                + " money int)";
+                + " money int, endurance double)";
         doStatement(stmt);
         stmt = "CREATE TABLE organismsmovementinfo(uid int PRIMARY KEY,"
                 + " name varchar(35),"
