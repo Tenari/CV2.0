@@ -7,14 +7,6 @@ package server;
  * @version 1.00 2009/10/6
  */
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import javax.swing.AbstractButton;
-import javax.swing.JButton;
-import java.applet.*;
 public class Items {
 	
 	public int weight;

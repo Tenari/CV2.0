@@ -1,0 +1,90 @@
+3current:
+
+Ground:
+  off-map		0
+  wall		1 (forward facing)
+		2 (forward right corner)
+  road		3
+  grass		4
+  leave-blg mat	5
+  door		10/11
+
+
+Organisms:
+  n-r-s		21	(n= north r= roman s= sword)
+  s-r-s		22
+  e-r-s		23
+  w-r-s		24
+
+  n-r-d		26	(d= dagger)
+  s-r-d		27
+  e-r-d		28
+  w-r-d		29
+
+  n-j-s		31	(j= japanese)
+  s-j-s		32
+  e-j-s		33
+  w-j-s		34
+
+  n-j-d		35
+  s-j-d		36
+  e-j-d		37
+  w-j-d		38
+
+  bear		100-104
+
+#####################################################################################
+
+planned image Codes for full Game:
+ground codes:	0-999 + 10001-infinity
+   off-map	0
+   walls	1-199	(impassable)
+   road		200-299 (lowest cost)
+   grass	300-399	(passable)
+   tree		400-499 (impassable)
+   water	500-599 (?)
+   doors	10001-infinity
+
+CLASS			code (range)
+Players:		1000-2000
+Roman:			1000-39
+	hands		1000
+	small blade	1005
+	axe		1010
+	large blade	1015
+	polearm		1020
+	shooting	1025
+	throwing	1030
+	magic		1035
+Japanese:		1040-79
+	hands		1040
+	small blade	1045
+	axe		1050
+	large blade	1055
+	polearm		1060
+	shooting	1065
+	throwing	1070
+	magic		1075
+Others:			1080-2000
+
+NPCs:			2001-10000
+
+Human NPCs:		2001-5000
+Named NPCs:		2001-4000
+	Mr Paige	2001
+	Jake		2002
+nameless types:		4000-5000
+    blacksmith		4000-4009
+	roman		4000
+	japanese	4001
+    worker		4010-4029
+	roman		4010, 4011
+	japanese	4012, 4013
+
+Monsters:		5001-10000
+Natural:		5001-7000
+	squirell	5001, 5002
+	wolf		5010, 5011
+	bear		5020, 5021
+SuperNatural:		7001-10000
+	unicorn		7001, 7002

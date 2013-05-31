@@ -3,9 +3,27 @@ updateMoveScreen():
 "[direction] [team] [world] [personal x] [personal y] [[other player x] [other player y] for as many as exist] [[humanNPC x] [humanNPC y] for as many as exist] 99999 [[monster x] [monster y] for as many as exist] "
 ex: "n false bar 5 5 2 3 99999 "
 
+-------------------------------------------------------------------------------------
+
 New:
 updateMoveScreen():
-lists the groundcode for each visible tile. If the player is at the edge of the map, groundCode will be 0 for out of range spots.
-additionally, lists direction and classCode(which maps to an image) for each spot after groundCode, assuming an organism is there.
-"v [for each tile: [groundCode] [[direction] [classCode] if organism on spot] -1]"
-ex: "v 0 -1 0 -1 0 -1 0 -1 1 -1 2 n 500 -1 ...."will always have 10X10 "-1"s
+  lists the groundcode for each visible tile. If the player is at the edge of the map, groundCode will be 0 for out of range spots.
+  Form: "v [for each tile: [groundCode] ] "
+  ex: "v 0 0 0 0 1 2..." 
+
+updateOrganisms():
+  DirectionCodes: 1= north. 2= south. 3= east. 4= west.
+  Form: "o [for each organism found: [classCode] [directionCode] [relativeX] [relativeY]]"
+  ex: "o 101 2 4 4 1000 2 6 4"
+
+UpdateSkillStats():
+  Form: "s [attStr] [attSkill] [defStr] [defSkill] [attStrBase] [attStrBase] [attSkillBase] [defStrBase] [defSkillBase] [endurance]"
+  ex: "s 9.75 8.72 8.0 4.3 10.0 10.0 10.0 10.0 11.32"
+
+UpdateHealthStats()
+  Form "hp [heapHP] [armsHP] [torsoHP] [legsHP]"
+  ex:  "hp 10 9 10 5"
+
+UpdateMistStats():
+  Form:
+  ex:

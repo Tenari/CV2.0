@@ -46,7 +46,7 @@ private ResourcesCanvas res;                // The instantiation of the class fo
 private TradeCanvas trader;
 private TradeActionsPanel bottomTradePanel;
 
-private MainWorldCanvas theGameWorld;           // The global instantiation of the main world viewport canvas class.
+private TiledWorldCanvas theGameWorld;           // The global instantiation of the main world viewport canvas class.
 
 private int leftStatusTabsTopLeftX = 1;         // Top Left Bound X-coord for status tabs.
 private int leftStatusTabsTopLeftY = 1;         // Top Left Bound Y-coord for status tabs.
@@ -132,6 +132,7 @@ public void infiniteLoop() throws IOException {
                 Scanner serverMessageScanner = new Scanner(fullServerMessageCopy);// Make the Scanner of the copy of the message.
                 String firstWordOfMessage = serverMessageScanner.next();        // Get the first word, an indicator of what action the Client needs to perform.
                 switch (firstWordOfMessage) {
+                    case "v":
                     case "n":
                     case "s":
                     case "e":
@@ -297,13 +298,18 @@ public void init() {
         getContentPane().add("West",leftStatusTabs);
     }
     
-    //----- MainWorldCanvas Setup ----\\
+   /* //----- MainWorldCanvas Setup ----\\
         // 'theGameWorld' is a canvas that goes in the JApplet, and lets the player see the world.
         theGameWorld = new MainWorldCanvas(worldImageArray,this);      // Construct it with the array of images it needs.
         ((Component)theGameWorld).setFocusable(true);                   // Make it visible.
         theGameWorld.setBounds(230,1,320,320);                          // Set it's bounds with the Canvas-inhereited method.
         getContentPane().add(theGameWorld);                             // Add it to the JApplet.
-//  \\---MainWorldCanvas Setup Done---//
+//  \\---MainWorldCanvas Setup Done---//*/
+    
+        theGameWorld = new TiledWorldCanvas(this);
+        ((Component)theGameWorld).setFocusable(true);
+        theGameWorld.setBounds(230,1,32*11,32*11);
+        getContentPane().add(theGameWorld);
     
     //------- JButtons Setup ---------\\ 
         // The setup for the JButton which starts fights.

@@ -3,11 +3,19 @@ old:
 3	road
 4	grass
 
-new:
+current:
+off-map		0
+wall		1 (forward facing)
+		2 (forward right corner)
+road		3
+grass		4
+door		10
+
+planned:
 off-map		0
 wall		100-199
 road		200-299
 grass		300-399
 tree		400-499
 water		500-599
-door		10000-infinity
+door		10001-infinity

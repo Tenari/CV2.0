@@ -1,10 +1,8 @@
-/**
- * The server itself.
- * 
- * @author Daniel Zapata | djz24
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
-
-package server;
+package cvserver;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -12,22 +10,26 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Server {
+/**
+ *
+ * @author Tenari
+ */
+public class CVServer {
 
-    private Map<Integer,ClientHandler> clientsMap;      // Records connected Clients and their IDs
-    private int clientCount;                            // Number of currently connected Clients
-    private ServerSocket server;                        // Connection to read/talk on some port
-    private World staging;                              // Pointer to thread which contains game world state.
+    Map<Integer,ClientHandler> clientsMap;      // Records connected Clients and their IDs
+    int clientCount;                            // Number of currently connected Clients
+    ServerSocket server;                        // Connection to read/talk on some port
+    WorldManager gameMaster;                    // Pointer to thread which contains game world state.
     
     /**
      * The constructor
      * @param port 
      */
-    public Server(int port) {
+    public CVServer(int port) {
         clientsMap = new HashMap<>();
         clientCount = 0;
-        staging = new World(this);          //the instance of the game world where everything happens
-        staging.start();
+        gameMaster = new WorldManager();           // Construct the instance of the worldManager, which updates and calculates everything.
+        gameMaster.start();                        // Start it...
         try {
             System.out.print("Starting server on port " + port + "...");
             server = new ServerSocket(port);
@@ -48,7 +50,7 @@ public class Server {
             while (true) {
                 Socket socket = server.accept();
                 clientCount++;
-                ClientHandler client = new ClientHandler(this, socket, clientCount, staging);
+                ClientHandler client = new ClientHandler(this, socket, clientCount, gameMaster);
                 clientsMap.put(clientCount, client);
                 System.out.println("MplayClient " + clientCount + " joined");
                 client.start();
@@ -80,16 +82,17 @@ public class Server {
      */
     public static void main(String[] args) {
         System.out.println("Multiplayer Server\n");
+        
         // Create the database. Comment this out if it's already made.
         CreateCustomDatabase c = new CreateCustomDatabase();
         c.addTables();      // Add the needed tables to the DB
         c.addDataToTables();// Add the data to the tabels just created.
         
         if (args.length == 1) {
-            Server newServer = new Server(Integer.parseInt(args[0]));
+            CVServer newServer = new CVServer(Integer.parseInt(args[0]));
         }
         else {
-            System.out.println("Usage: java MplayServer port");
+            System.out.println("Usage: java CVServer port");
         }
     }
     
@@ -99,44 +102,18 @@ public class Server {
         clientsMap.remove(cid);
     }
     
+    
     public void updateMoveScreensInAllClients(){
         for (Object i : clientsMap.values()) {
-                ((ClientHandler)i).updateMoveScreen();
-            }
+            ((ClientHandler)i).updateMoveScreenOrgs();
+        }
     }
     
-    public void updateOrganismsInAllClients(){
+    public void updateMoveScreensForWorld(String worldname){
         for (Object i : clientsMap.values()) {
-                ((ClientHandler)i).updateOrganisms();
+            if ( gameMaster.organism.getWorld(gameMaster.getID(((ClientHandler)i).getUsername())).equals(worldname) ){
+                ((ClientHandler)i).updateMoveScreenOrgs();
             }
-    }
-    
-    public void updateTradeInAllClients(){
-        for (Object i : clientsMap.values()) {
-                ((ClientHandler)i).updateTrade();
-            }
-    }
-    
-    public void updateResourcesInAllClients(){
-        for (Object i : clientsMap.values()) {
-                ((ClientHandler)i).updateResou();
-            }
-    }
-    
-    public void updateInventoryInAllClients(){
-        for (Object i : clientsMap.values()) {
-                ((ClientHandler)i).updateInven();
-            }
-    }
-    
-    public void updateFightInAllClients(){
-        for (Object i : clientsMap.values()) {
-                ((ClientHandler)i).updateFight();
-            }
-    }
-    public void updateCharacterStatsInAllClients(){
-        for (Object i : clientsMap.values()) {
-                ((ClientHandler)i).updateCharacter();
-            }
+        }
     }
 }

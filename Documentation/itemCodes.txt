@@ -1,0 +1,81 @@
+"CREATE TABLE hsitems(uid int PRIMARY KEY,"
+                + " name varchar(20),"
+                + " code int, weight int,"
+                + " equipped bit, slot int,"   //slot=> which inventory location it's in.
+                + " mod1type int, mod1value int,"
+                + " mod2type int, mod2value int,"
+                + " mod3type int, mod3value int)";
+modtype Codes:
+0	no effect
+1	attStr
+2	attSkill
+3	defStr
+4	defSkill
+5	hand to hand
+6	small blade
+7	large blade
+8	axe
+9	polearm
+10	shooting
+11	throwing
+
+
+
+"code" Codes:
+WEAPONS = 100 - 999
+100-199	glove (unarmed combat weapon)
+	100-33	knuckles
+		100	light
+		111	medium
+		122	heavy
+	134-66	claws
+		134	finger
+		144	knuckle
+		155	knifehand
+	167-99	gloves
+		167	wrap
+		177	boxing
+		188	normal
+200-99	dagger
+	200-32	1-sided
+	233-65	2-sided
+	266-99	misc
+300-99	sword
+	300-32	1-sided curved
+	333-65	2-sided straight
+	366-99	raiper
+400-99	axe
+	400-32	1-head
+	433-65	2-heads
+500-99	polearm
+	500-32	staff
+	533-65	spear
+	566-99	misc
+600-99	shooting Weapon
+	600-32	sling
+	633-65	bow
+	666-99	crossbow
+700-99	throwing weapon
+	700-32	blunt
+	733-65	blade
+		33	star
+		44	knife
+		55	dart
+	766-99	misc
+
+DEFENSIVE GEAR = 1000 - 1999
+0-99	armgear
+	0-32	round shield
+		0	small
+		11	medium
+		22	full body
+	33-65	square shield
+		33	small
+		44	medium
+		55	full body
+	66-99	braces
+100-99	headgear
+200-99	chestgear
+300-99	leg-gear
+
+MISC = 2000 - 2999
