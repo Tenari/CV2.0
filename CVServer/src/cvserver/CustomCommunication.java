@@ -142,7 +142,7 @@ public class CustomCommunication {
         }
     }
     
-        /**
+    /**
      * Takes a name, and a tableName, and does the query:
      *      "SELECT `uid` FROM table WHERE table.`name` = name".
      * 
@@ -219,7 +219,7 @@ public class CustomCommunication {
         }
     }
     
-     /**
+    /**
      * Takes a columnName, a tableName, a x, and a y, and does "SELECT colName 
      *      FROM table WHERE table.`x` = x AND table.`y` = y".
      * 
@@ -235,6 +235,30 @@ public class CustomCommunication {
                 " FROM "+table+
                 " WHERE "+table+".x = "+x+
                 "   AND "+table+".y = "+y;   
+                
+        // Do the query.
+        try {
+            Statement dbStmt = dbConnection.createStatement();
+            ResultSet dbResultSet = dbStmt.executeQuery(stmt);
+            // If there are actually results to handle, we'll just return the int
+            while (dbResultSet.next()) {
+                dbResultSet.last();
+                return dbResultSet.getInt(1);
+            } 
+            // Otherwise, return the failure value.
+            return -1;
+        }
+        catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return -1;
+        }
+    }
+    
+    public int selectIntByCustomQuery(String query){
+        // Make the statement.
+        String stmt = query;   
                 
         // Do the query.
         try {
@@ -312,6 +336,27 @@ public class CustomCommunication {
         }
     }
     
+    public boolean updateSingleIntByUIDAndOther(String table, String intName, int newValue, int uid, String otherName, String otherValue) {
+        // Make the statement string.
+        String stmt =   "UPDATE `"+table+
+                        "` SET "+intName+"="+newValue+
+                        " WHERE uid="+uid+
+                        " AND "+otherName+"="+otherValue;
+        
+        // Do the statement.
+        try {
+            Statement dbStmt = dbConnection.createStatement();
+            dbStmt.execute(stmt);
+            return true;
+        }
+        catch (SQLException ex) {   // Report errors.
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return false;
+        }
+    }
+    
     /**
      * Does the SQL to set string to a new value, based on a given uid key.
      * @param table
@@ -325,6 +370,47 @@ public class CustomCommunication {
         String stmt =   "UPDATE `"+table+
                         "` SET "+stringName+"='"+newValue+"'"+
                         " WHERE uid="+uid;
+        
+        // Do the statement.
+        try {
+            Statement dbStmt = dbConnection.createStatement();
+            dbStmt.execute(stmt);
+            return true;
+        }
+        catch (SQLException ex) {   // Report errors.
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return false;
+        }
+    }
+    
+    public boolean deleteFromWhereUIDAnd(String table, int uid, String andName, String andValue){
+        // Make the statement string.
+        String stmt =   "DELETE FROM `"+table+
+                        "` WHERE uid="+uid+
+                        "  AND "+andName+"="+andValue;
+        
+        // Do the statement.
+        try {
+            Statement dbStmt = dbConnection.createStatement();
+            dbStmt.execute(stmt);
+            return true;
+        }
+        catch (SQLException ex) {   // Report errors.
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return false;
+        }
+    }
+    
+    public boolean deleteFromWhereUIDAndAnd(String table, int uid, String and1Name, String and1Value, String and2Name, String and2Value){
+        // Make the statement string.
+        String stmt =   "DELETE FROM `"+table+
+                        "` WHERE uid="+uid+
+                        "  AND "+and1Name+"="+and1Value+
+                        "  AND "+and2Name+"="+and2Value;
         
         // Do the statement.
         try {

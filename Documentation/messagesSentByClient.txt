@@ -1,0 +1,19 @@
+Name alert:
+  indicates to the server the name of the character being controlled by this client.
+  "N [name]"
+
+Move North:
+  indicates that the player wants to move 'up' or 'north' one square.
+  "W"
+
+Move South:
+  indicates that the player wants to move 'down' or 'south' one square.
+  "S"
+
+Move East:
+  indicates that the player wants to move 'right' or 'east' one square.
+  "D"
+
+Move West:
+  indicates that the player wants to move 'left' or 'west' one square.
+  "A"

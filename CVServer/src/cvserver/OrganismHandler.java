@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package cvserver;
 
 /**
@@ -30,9 +26,9 @@ public class OrganismHandler {
     private final double defSkillStart  =   3.0;	//the initialized defending Skill of this character
     
     // Initial detailed stats
-    private final double handToHandStart=   10.0;
+    private final double handToHandStart=   0.0;
     private final int moneyStart        =   10;
-    private final double enduranceStart =   10.0;
+    private final double enduranceStart =   0.0;
     
     // Maximum values
     private final int maxEnergy         =   10000;
@@ -45,8 +41,7 @@ public class OrganismHandler {
     String combatTableName = "combatstats";
     String statsTableName = "detailedstats";
     
-    public OrganismHandler(CustomCommunication c) 
-    {
+    public OrganismHandler(CustomCommunication c) {
         // Create the communication
         communicate = c;
     }
@@ -66,7 +61,8 @@ public class OrganismHandler {
                                         "'"+startWorldName+"'",
                                         "'"+startWorldName+"'",
                                         ""+maxEnergy,
-                                        ""+classCode};
+                                        ""+classCode,
+                                        ""+2};          // 1= North. this is DirectionCode for the way the organism is facing.
             worked = communicate.insert(movementTableName, initialMoveValues);  // true if the insert worked.
             if (!worked) {return worked;}
 
@@ -81,7 +77,7 @@ public class OrganismHandler {
                                         ""+armsHealthStart,
                                         ""+torsoHealthStart,
                                         ""+legsHealthStart,
-                                        ""+myUID };
+                                        ""+myUID };//opponent
             worked = communicate.insert(combatTableName, initialFightValues);
             if (!worked) {return worked;}
 
@@ -225,15 +221,20 @@ public class OrganismHandler {
     public void setDefStrBase(double newSkillValue, int orgUID) {
     	communicate.updateSingleDoubleByUID(statsTableName, "defStrBase", newSkillValue, orgUID);
     }
+    
+    public double getEndurance(int orgUID) {
+    	return communicate.selectSingleDoubleByUID("endurance", statsTableName, orgUID);
+    }
+    public void setEndurance(double newSkillValue, int orgUID) {
+        communicate.updateSingleDoubleByUID(statsTableName, "endurance", newSkillValue, orgUID);
+    }
 //---------------------END SKILL UPDATE/ACCESSOR METHODS------------------------
 
 //--------------------LOCATION ACCESSOR METHODS---------------------------------
-    public int getX(int orgUID)
-    {
+    public int getX(int orgUID) {
         return communicate.selectSingleIntByUID("x", movementTableName, orgUID);
     }
-    public int getY(int orgUID)
-    {
+    public int getY(int orgUID) {
     	return communicate.selectSingleIntByUID("y", movementTableName, orgUID);
     }
     public int getOldX(int orgUID) {
@@ -269,16 +270,26 @@ public class OrganismHandler {
     public String getWorld(int orgUID) {
         return communicate.selectSingleStringByUID("world", movementTableName, orgUID);
     }
+    public void setWorld(String newWorldName, int orgUID) {
+    	communicate.updateSingleStringByUID(movementTableName, "world", newWorldName, orgUID);
+    }
+    public String getOldWorld(int orgUID) {
+    	return communicate.selectSingleStringByUID("oldworld", movementTableName, orgUID);
+    }
+    public void setOldWorld(String newWorldName, int orgUID) {
+    	communicate.updateSingleStringByUID(movementTableName, "oldworld", newWorldName, orgUID);
+    }
+    
+    public int getDirection(int orgUID) {
+        return communicate.selectSingleIntByUID("direction", movementTableName, orgUID);
+    }
+    public void setDirection(int newDirection, int orgUID){
+        communicate.updateSingleIntByUID(movementTableName, "direction", newDirection, orgUID);
+    }
 //--------------------------END LOCATION ACCESSORS------------------------------
-     public int getEnergy(int orgUID) {
+    public int getEnergy(int orgUID) {
         return communicate.selectSingleIntByUID("energy", movementTableName, orgUID);
     }
-     
-     /**
-     * Sets the energy stat in the database for a given organism, identified 
-     * by unique uid int to the listed parameter.
-     * @param e 
-     */
     public void setEnergy(int e, int orgUID) {
         int energy = e;
         if (e > maxEnergy)
@@ -286,5 +297,12 @@ public class OrganismHandler {
     		energy = maxEnergy;
     	}
         communicate.updateSingleIntByUID(movementTableName, "energy", energy, orgUID);
+    }
+    
+    public int getMoney(int orgUID) {
+        return communicate.selectSingleIntByUID("money", statsTableName, orgUID);
+    }
+    public void setMoney(int cash, int orgUID) {
+        communicate.updateSingleIntByUID(statsTableName, "money", cash, orgUID);
     }
 }

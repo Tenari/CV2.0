@@ -1,0 +1,2 @@
+1	roman
+2	japanese

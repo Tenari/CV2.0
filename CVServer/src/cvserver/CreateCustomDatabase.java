@@ -76,10 +76,13 @@ public class CreateCustomDatabase {
     }
     
     public void addTables(){
+        // Map tables
         String stmt = "CREATE TABLE bar(x int, y int, terrainType int, CONSTRAINT pairBar PRIMARY KEY (x,y))";
         doStatement(stmt);
         stmt = "CREATE TABLE smallcity(x int, y int, terrainType int, CONSTRAINT pairSmallCity PRIMARY KEY (x,y))";
         doStatement(stmt);
+        
+        // Organism tables
         stmt = "CREATE TABLE combatstats(uid int PRIMARY KEY,"
                 + " attStr double, attSkill double,"
                 + " defStr double, defSkill double,"
@@ -99,8 +102,28 @@ public class CreateCustomDatabase {
                 + " x int, y int,"
                 + " oldx int, oldy int,"
                 + " world varchar(9), oldworld varchar(9),"
-                + " energy int,"
-                + " class int)";
+                + " energy int, class int,"
+                + " direction int)";
+        doStatement(stmt);
+        
+        // Homosapien tables
+        stmt = "CREATE TABLE homosapiendata(uid int PRIMARY KEY,"
+                + " team int,"
+                + " smallblade double, largeblade double,"
+                + " axe double, polearm double,"
+                + " shooting double, throwing double,"
+                + " magic double, intimidate double,"
+                + " diplomacy double, hiding double)";
+        doStatement(stmt);
+        stmt = "CREATE TABLE hsitems(uid int PRIMARY KEY,"
+                + " name varchar(20),"
+                + " code int, weight int,"
+                + " equipped bit, slot int,"   //slot=> which inventory location it's in.
+                + " mod1type int, mod1value int,"
+                + " mod2type int, mod2value int,"
+                + " mod3type int, mod3value int)";
+        doStatement(stmt);
+        stmt = "CREATE TABLE hsresources(uid int PRIMARY KEY, type varchar(20), amount int)";
         doStatement(stmt);
     }
     
