@@ -13,13 +13,25 @@ class LookupConfig {
     int[] doorTileCodes     =   {10,11};
     
     // Map base move cost config
-    int moveNormalizationConstant=24;
+    int moveNormalizationConstant   =   24;
     int invalidMoveCost     =   100000;
     int baseGroundMoveCost  =   20;
     int baseRoadMoveCost    =   10;
     
     // Skill Growth constants
     double enduranceGrowthConstant  =   0.002;
+    
+    // The world dimension constants
+    int smallCityYLength    =   12;
+    int smallCityXLength    =   22;
+    int barYLength          =   8;
+    int barXLength          =   8;
+    
+    // Player view constants
+    int playerViewXSize     =   11;
+    int playerViewYSize     =   11;
+    int playerViewRow       =   5;
+    int playerViewCol       =   5;
     
     
     public LookupConfig(){
@@ -66,4 +78,28 @@ class LookupConfig {
         return false;
     }
 //---------------------------End TileType Lookup Methods------------------------
+    
+    // Set x true for X dimension of worldName. Returns int length of given dimension for world.
+    public int getWorldDimension(String worldName, boolean x){
+        if (x){
+            switch(worldName){
+                case "smallcity":
+                    return smallCityXLength;
+                case "bar":
+                    return barXLength;
+                default:
+                    return smallCityXLength;
+            }
+        } else {
+            switch(worldName){
+                case "smallcity":
+                    return smallCityYLength;
+                case "bar":
+                    return barYLength;
+                default:
+                    return smallCityYLength;
+            }
+        }
+        
+    }
 }

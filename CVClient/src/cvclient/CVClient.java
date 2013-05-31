@@ -20,6 +20,7 @@ import javax.swing.JApplet;
  */
 public class CVClient extends JApplet implements ActionListener {
     
+    // Server Connection Feilds
     private PrintWriter out;                    // The primary data stream along which messages are passed to the server.
     private Socket socket;                      // The primary connector which the PrintWriter writes to.
     private BufferedReader in;                  // The primary data stream along which messages are read from the server.
@@ -35,7 +36,7 @@ public class CVClient extends JApplet implements ActionListener {
         try {
             socket = new Socket(host, port);                                        // Construct a new socket with passed info from above.
             out = new PrintWriter(socket.getOutputStream(), true);                  // Construct a new PrintWriter data stream with the socket we just made.
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));// Finally, make the bufferedReader withe the socket we just made.
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));// Finally, make the bufferedReader with the the socket we just made.
         }
         catch(UnknownHostException e) {
             System.out.println("Unknown or unreachable host " + host + " on port " + port);

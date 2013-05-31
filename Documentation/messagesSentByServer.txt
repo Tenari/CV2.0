@@ -25,5 +25,5 @@ UpdateHealthStats()
   ex:  "hp 10 9 10 5"
 
 UpdateMistStats():
-  Form:
-  ex:
+  Form: "r [money] [energy]"
+  ex: "r 142 5367"

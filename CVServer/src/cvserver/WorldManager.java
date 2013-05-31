@@ -19,13 +19,7 @@ public class WorldManager extends Thread{
     String combatTableName = "combatstats";
     String statsTableName = "detailedstats";
     
-    // The world dimension constants
-    private int smallCityYLength = 12;
-    private int smallCityXLength = 22;
-    private int barYLength = 8;
-    private int barXLength = 8;
     
-    int playerViewSize = 11;
     
     int nextUID     =   0;
     /**
@@ -200,20 +194,20 @@ public class WorldManager extends Thread{
      */
     public String getPlayerMapView(int orgID){
         String dataAsString = "";
-        for(int i=0; i<playerViewSize; i++){    // The y length
-            for(int j=0; j<playerViewSize; j++){// The x length
-                int tempX = organism.getX(orgID)-5+j;      // -5 because the player is on row 5, and +j because we are iterating.
-                if (!(tempX <= 0 || tempX >=getWorldDimension(organism.getWorld(orgID), true))){   // If this tile is NOT off the map...
-                    int tempY = organism.getY(orgID) - 5 + i;// similar to above
-                    if (!(tempY <= 0 || tempY >=getWorldDimension(organism.getWorld(orgID), false))){   // If this tile is NOT off the map...
+        for(int i=0; i<lookup.playerViewYSize; i++){    // The y length
+            for(int j=0; j<lookup.playerViewXSize; j++){// The x length
+                int tempX = organism.getX(orgID) - lookup.playerViewCol + j;      
+                if (!(tempX <= 0 || tempX >=lookup.getWorldDimension(organism.getWorld(orgID), true))){   // If this tile is NOT off the map...
+                    int tempY = organism.getY(orgID) - lookup.playerViewRow + i;// similar to above
+                    if (!(tempY <= 0 || tempY >=lookup.getWorldDimension(organism.getWorld(orgID), false))){   // If this tile is NOT off the map...
                         dataAsString = dataAsString + getTileType(tempX, tempY, organism.getWorld(orgID)) + " ";
                     }
                     else {  // The case for an off-the-map tile.
-                        dataAsString = dataAsString + "0 "; // O represents "off the map"
+                        dataAsString = dataAsString + "0 "; // 0 represents "off the map"
                     }
                 }
                 else {  // The case for an off-the-map tile.
-                    dataAsString = dataAsString + "0 "; // O represents "off the map"
+                    dataAsString = dataAsString + "0 "; // 0 represents "off the map"
                 }
             }
         }
@@ -229,17 +223,17 @@ public class WorldManager extends Thread{
      */
     public String getPlayerOrganismsView(int orgID){
         String dataAsString = "";
-        for(int i=0; i<playerViewSize; i++){    // The y length
-            for(int j=0; j<playerViewSize; j++){// The x length
-                int tempX = organism.getX(orgID)-5+j;      // -5 because the player is on row 5, and +j because we are iterating.
-                if (!(tempX <= 0 || tempX >=getWorldDimension(organism.getWorld(orgID), true))){         // If this tile is NOT off the map...
-                    int tempY = organism.getY(orgID) - 5 + i;// similar to above
-                    if (!(tempY <= 0 || tempY >=getWorldDimension(organism.getWorld(orgID), false))){     // If this tile is NOT off the map...
+        for(int i=0; i<lookup.playerViewYSize; i++){    // The y length
+            for(int j=0; j<lookup.playerViewXSize; j++){// The x length
+                int tempX = organism.getX(orgID) - lookup.playerViewCol + j;      
+                if (!(tempX <= 0 || tempX >=lookup.getWorldDimension(organism.getWorld(orgID), true))){         // If this tile is NOT off the map...
+                    int tempY = organism.getY(orgID) - lookup.playerViewRow + i;// similar to above
+                    if (!(tempY <= 0 || tempY >=lookup.getWorldDimension(organism.getWorld(orgID), false))){     // If this tile is NOT off the map...
                         int organismClass = communicate.selectSingleIntByXAndY("class", "organismsmovementinfo", tempX, tempY);
                         if(!(organismClass == -1)){   // If the organismClass did NOT fail (did succeed) to get the clasCode 
                             dataAsString = dataAsString + organism.getDirection(orgID)
                                     + " " + organismClass 
-                                    + " " + tempX + " " +tempY + " ";
+                                    + " " + j + " " + i + " ";
                         }
                     }
                 }
@@ -248,28 +242,6 @@ public class WorldManager extends Thread{
         return dataAsString;
     }
     
-    // Set x true for X dimension of worldName. Returns int length of given dimension for world.
-    private int getWorldDimension(String worldName, boolean x){
-        if (x){
-            switch(worldName){
-                case "smallcity":
-                    return smallCityXLength;
-                case "bar":
-                    return barXLength;
-                default:
-                    return smallCityXLength;
-            }
-        } else {
-            switch(worldName){
-                case "smallcity":
-                    return smallCityYLength;
-                case "bar":
-                    return barYLength;
-                default:
-                    return smallCityYLength;
-            }
-        }
-        
-    }
+    
 //-----------------------END MESSAGE STUFF--------------------------------------
 }

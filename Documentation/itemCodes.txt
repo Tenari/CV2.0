@@ -23,19 +23,7 @@ modtype Codes:
 
 "code" Codes:
 WEAPONS = 100 - 999
-100-199	glove (unarmed combat weapon)
-	100-33	knuckles
-		100	light
-		111	medium
-		122	heavy
-	134-66	claws
-		134	finger
-		144	knuckle
-		155	knifehand
-	167-99	gloves
-		167	wrap
-		177	boxing
-		188	normal
+
 200-99	dagger
 	200-32	1-sided
 	233-65	2-sided
