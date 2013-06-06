@@ -111,7 +111,7 @@ public class CVServer {
     
     public void updateMoveScreensForWorld(String worldname){
         for (Object i : clientsMap.values()) {
-            if ( gameMaster.organism.getWorld(gameMaster.getID(((ClientHandler)i).getUsername())).equals(worldname) ){
+            if ( gameMaster.org.getWorld(gameMaster.getID(((ClientHandler)i).getUsername())).equals(worldname) ){
                 ((ClientHandler)i).updateMoveScreenOrgs();
             }
         }

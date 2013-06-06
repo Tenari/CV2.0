@@ -26,7 +26,7 @@ public class HomosapienHandler extends OrganismHandler{
     
    public HomosapienHandler(CustomCommunication c){
         super(c);       // Calls the OrganismHandler Constructor
-    }
+   }
     
     // Uses Default values for everything--including organism values.
     public boolean createNewHomosapien(String name, int myUID, int classCode){

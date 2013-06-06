@@ -144,7 +144,7 @@ class ClientHandler extends Thread{
         // If a move occured, we need to inform the other players.
         if (moved){
             updateWholeMoveScreen();
-            server.updateMoveScreensForWorld(gameMaster.organism.getWorld(uid));
+            server.updateMoveScreensForWorld(gameMaster.org.getWorld(uid));
         }
     }
     
@@ -171,10 +171,10 @@ class ClientHandler extends Thread{
     // Head, Arms, Torso, Legs
     public void updateHealthStats() {
         String updateInfo = healthMsgHeader 
-                + gameMaster.organism.getHead(uid) + " "
-                + gameMaster.organism.getArms(uid) + " "
-                + gameMaster.organism.getTorso(uid) + " "
-                + gameMaster.organism.getLegs(uid);
+                + gameMaster.org.getHead(uid) + " "
+                + gameMaster.org.getArms(uid) + " "
+                + gameMaster.org.getTorso(uid) + " "
+                + gameMaster.org.getLegs(uid);
         sendData(updateInfo);
     }
     /**
@@ -187,15 +187,15 @@ class ClientHandler extends Thread{
      */
     public void updateSkillStats() {
         String updateInfo = skillMsgHeader 
-                + gameMaster.organism.getAttStr(uid) + " "
-                + gameMaster.organism.getAttSkill(uid) + " "
-                + gameMaster.organism.getDefStr(uid) + " "
-                + gameMaster.organism.getDefSkill(uid) + " "
-                + gameMaster.organism.getAttStrBase(uid) + " "
-                + gameMaster.organism.getAttSkillBase(uid) + " "
-                + gameMaster.organism.getDefStrBase(uid) + " "
-                + gameMaster.organism.getDefSkillBase(uid) + " "
-                + gameMaster.organism.getEndurance(uid);
+                + gameMaster.org.getAttStr(uid) + " "
+                + gameMaster.org.getAttSkill(uid) + " "
+                + gameMaster.org.getDefStr(uid) + " "
+                + gameMaster.org.getDefSkill(uid) + " "
+                + gameMaster.org.getAttStrBase(uid) + " "
+                + gameMaster.org.getAttSkillBase(uid) + " "
+                + gameMaster.org.getDefStrBase(uid) + " "
+                + gameMaster.org.getDefSkillBase(uid) + " "
+                + gameMaster.org.getEndurance(uid);
         sendData(updateInfo);
     }
     /**
@@ -205,8 +205,8 @@ class ClientHandler extends Thread{
      */
     public void updateMiscStats() {
         String updateInfo = miscMsgHeader 
-                + gameMaster.organism.getMoney(uid) + " "
-                + gameMaster.organism.getEnergy(uid);
+                + gameMaster.org.getMoney(uid) + " "
+                + gameMaster.org.getEnergy(uid);
         sendData(updateInfo);
     }
 }

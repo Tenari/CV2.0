@@ -49,6 +49,12 @@ class LookupConfig {
     String hsitemsTableName         =   "hsitems";
     String hsresourcesTableName     =   "hsresources";
     
+    // Combat Codes
+    final String missCode   =   "miss";
+    
+    // Timing constants
+    int fightRoundLength    =   3000;   // In milliseconds
+    
     // Math/formulas constants and factors.
     final int enduranceWeightFactor   =   2;
     final int weightReductionFactor   =   5;

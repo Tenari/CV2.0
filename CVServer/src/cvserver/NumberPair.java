@@ -25,6 +25,14 @@ public class NumberPair
     	return num2;
     }
     
+    public int getOther(int num){
+        if (num == num1){
+            return num2;
+        } else {
+            return num1;
+        }
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj.getClass() != this.getClass()) {

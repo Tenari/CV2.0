@@ -4,16 +4,13 @@ package cvserver;
  * @author Tenari
  */
 
-import java.util.ArrayList;
-
 public class WorldManager extends Thread{
     
     CustomCommunication communicate;            // Used to access the database.
-    OrganismHandler organism;
+    OrganismHandler org;
     HomosapienHandler homosapien;
     LookupConfig lookup;
-    
-    ArrayList<NumberPair> fights = new ArrayList<>();
+    CombatHandler combat;
     
     int nextUID     =   0;
     /**
@@ -26,8 +23,11 @@ public class WorldManager extends Thread{
         // Load the configuration manager class.
         lookup = new LookupConfig();
         
-        // Initialize the organism handler.
-        organism = new OrganismHandler(communicate);
+        // Load the combat helper methods
+        combat = new CombatHandler(communicate);
+        
+        // Initialize the org handler.
+        org = new OrganismHandler(communicate);
         // Initialize the homosapien handler.
         homosapien = new HomosapienHandler(communicate);
         
@@ -45,14 +45,13 @@ public class WorldManager extends Thread{
     public void run(){
         System.out.println("World Threaded");
         
-        // 
         while(true){
-            
+            combat.updateAllFights();
         }
     }
 //----------------------ORGANISM CREATION COMMANDS------------------------------
     public int addOrganism(String name, int classCode) {
-        organism.createNewOrganism(name, nextUID, classCode);
+        org.createNewOrganism(name, nextUID, classCode);
         //Increment UID and return.
         nextUID++;
         return nextUID-1;
@@ -60,11 +59,11 @@ public class WorldManager extends Thread{
     
     /**
      * This method adds a Player to the game.
-     * Returns the uid of added organism.
-     * @param name the name of the organism
+     * Returns the uid of added org.
+     * @param name the name of the org
      */
     public int addPlayer(String name) {
-    	organism.createNewOrganism(name, nextUID, 20);      // 20 is temporary hard-coded class code. need to programmatically determine this.
+    	org.createNewOrganism(name, nextUID, 20);      // 20 is temporary hard-coded class code. need to programmatically determine this.
         homosapien.createNewHomosapien(name, nextUID, 20); // Ditto above
             homosapien.addDefaultItems(nextUID);
         // Code to add player functionality to the uid:
@@ -82,7 +81,7 @@ public class WorldManager extends Thread{
 
 //-----------------MOVEMENT COMMANDS--------------------------------------------
     /**
-     * Attempts to move the organism orgID one tile towards directionCode.
+     * Attempts to move the org orgID one tile towards directionCode.
      * Return true if the move happened, false otherwise.
      * @param orgID
      * @param directionCode 1=north, 2=south, 3=east, 4=west
@@ -91,20 +90,20 @@ public class WorldManager extends Thread{
         boolean moved = false;
         // North or south
         if(directionCode == 1 || directionCode == 2){
-            int y = organism.getY(orgID);
+            int y = org.getY(orgID);
             if (directionCode == 1){    // North
-                moved = moveLogic(orgID, organism.getX(orgID), y-1, false);
+                moved = moveLogic(orgID, org.getX(orgID), y-1, false);
             } else if (directionCode == 2){    // South
-                moved = moveLogic(orgID, organism.getX(orgID), y+1, false);
+                moved = moveLogic(orgID, org.getX(orgID), y+1, false);
             }
         }
         // East or west
         else if(directionCode == 3 || directionCode == 4){
-            int x = organism.getX(orgID);
+            int x = org.getX(orgID);
             if (directionCode == 3){    // East
-                moved = moveLogic(orgID, x-1, organism.getY(orgID), true);
+                moved = moveLogic(orgID, x-1, org.getY(orgID), true);
             } else if (directionCode == 4){    // West
-                moved = moveLogic(orgID, x+1, organism.getY(orgID), true);
+                moved = moveLogic(orgID, x+1, org.getY(orgID), true);
             }
         }
         return moved;
@@ -113,30 +112,30 @@ public class WorldManager extends Thread{
     // Moves an entity. Returns true if a move occurred, false otherwise.
     // Set horizontal true to move the x, and false to move the y.
     public boolean moveLogic(int orgID, int newX, int newY, boolean horizontal){
-        String orgWorld = organism.getWorld(orgID);         // Cache the world for efficiency.
+        String orgWorld = org.getWorld(orgID);         // Cache the world for efficiency.
         
         int nextTileType = getTileType(newX, newY, orgWorld);
-        int currentTileType = getTileType(organism.getX(orgID), organism.getY(orgID), orgWorld);
+        int currentTileType = getTileType(org.getX(orgID), org.getY(orgID), orgWorld);
         
         if (validMove(orgWorld, newX, newY, nextTileType, currentTileType, orgID) ){
             if (lookup.isDoor(nextTileType)) {
                 String newWorld = lookup.getWorldFromDoor(nextTileType);
                 
-                organism.setX(lookup.getEntranceX(newWorld, orgID), orgID);
-                organism.setY(lookup.getEntranceY(newWorld, orgID), orgID);
-                organism.setWorld(newWorld, orgID);
+                org.setX(lookup.getEntranceX(newWorld, orgID), orgID);
+                org.setY(lookup.getEntranceY(newWorld, orgID), orgID);
+                org.setWorld(newWorld, orgID);
                 return true;
             } else {
                 // Decrease energy for moving
-                organism.setEnergy(organism.getEnergy(orgID) - moveCost(currentTileType, orgID), orgID);
+                org.setEnergy(org.getEnergy(orgID) - moveCost(currentTileType, orgID), orgID);
                 // And change location.
                 if (horizontal){
-                    organism.setX(newX, orgID);
+                    org.setX(newX, orgID);
                 } else{
-                    organism.setY(newY, orgID);
+                    org.setY(newY, orgID);
                 }
                 // Update the Endurance skill for the guy who just moved.
-                organism.setEndurance(organism.getEndurance(orgID)+lookup.enduranceGrowthConstant, orgID);
+                org.setEndurance(org.getEndurance(orgID)+lookup.enduranceGrowthConstant, orgID);
                 return true;
             }
         }
@@ -147,12 +146,12 @@ public class WorldManager extends Thread{
         return communicate.selectSingleIntByXAndY("terrainType", worldname, x, y);
     }
     
-    // Returns t/f depending on whether the moveTileType is valid, and whether the organism can afford the moveCost
+    // Returns t/f depending on whether the moveTileType is valid, and whether the org can afford the moveCost
     public boolean validMove(String world, int x, int y, int moveTileType, int currentTileType, int orgUID){
         if ((lookup.invalidMoveCost != moveCost(moveTileType, orgUID)) &&       // If he has enough energy to move off current tile
-            (organism.getEnergy(orgUID)>=moveCost(currentTileType, orgUID)) &&  // and the moveCost of the next tile is not the invalidCode.
-            (-1 == communicate.selectUIDByXAndYAndWorld(lookup.movementTableName, x, y, world)) &&// and there is no organism at the location.
-            (!organism.isFighting(orgUID))){                                    // and he isn't fighting. You can't move when you're fighting.
+            (org.getEnergy(orgUID)>=moveCost(currentTileType, orgUID)) &&  // and the moveCost of the next tile is not the invalidCode.
+            (-1 == communicate.selectUIDByXAndYAndWorld(lookup.movementTableName, x, y, world)) &&// and there is no org at the location.
+            (!org.isFighting(orgUID))){                                    // and he isn't fighting. You can't move when you're fighting.
                 return true;
         }
         return false;
@@ -172,7 +171,7 @@ public class WorldManager extends Thread{
     }
     
     private int moveCostLogic(int baseTileMoveCost, int orgUID){
-        double endurance = organism.getEndurance(orgUID);
+        double endurance = org.getEndurance(orgUID);
         return lookup.getWeightModToCost(homosapien.getWeight(orgUID), endurance) + 
             (int)Math.round(baseTileMoveCost * 
                     (lookup.moveNormalizationConstant /
@@ -181,32 +180,6 @@ public class WorldManager extends Thread{
     }
     
 //-----------------------END MOVEMENT STUFF-------------------------------------
-    
-//-------------------------------COMBAT HANDLERS--------------------------------
-    public void startFight(int agressorUID, int opponentRelativeX, int opponentRelativeY){
-        int opponentUID = communicate.selectSingleIntByXAndY("uid", lookup.movementTableName, opponentRelativeX, opponentRelativeY);
-        fights.add(new NumberPair(agressorUID,opponentUID));
-    }
-    
-    public void endFight(int attackerUID, int defenderUID){
-        fights.remove(new NumberPair(attackerUID,defenderUID));
-    }
-    
-    public void fightOneRound(int fightIndex){
-        fightOneRound(fights.get(fightIndex).getNumOne(), fights.get(fightIndex).getNumTwo());
-    }
-    public void fightOneRound(int attackerUID, int defenderUID){
-        // Set the real Skills of both combatants, for accuracy of upcoming calculations
-        organism.setRealSkills(attackerUID);
-        organism.setRealSkills(defenderUID);
-        
-        // Determine where the attacker hit (or if he missed)
-        String hitSpot = getAttackSpot(attackerUID, organism.getDefSkill(defenderUID));
-    }
-    public String getAttackSpot(int attackerUID, double defenderDefSkill){
-        return "miss";
-    }
-//--------------------------END COMBAT STUFF------------------------------------
 
 //------------------------MESSAGE METHODS---------------------------------------
     
@@ -220,12 +193,12 @@ public class WorldManager extends Thread{
      */
     public String getPlayerMapView(int orgID){
         String dataAsString = "";
-        String orgWorld = organism.getWorld(orgID);
+        String orgWorld = org.getWorld(orgID);
         for(int i=0; i<lookup.playerViewYSize; i++){    // The y length
             for(int j=0; j<lookup.playerViewXSize; j++){// The x length
-                int tempX = organism.getX(orgID) - lookup.playerViewCol + j;      
+                int tempX = org.getX(orgID) - lookup.playerViewCol + j;      
                 if (!(tempX <= 0 || tempX >=lookup.getWorldDimension(orgWorld, true))){   // If this tile is NOT off the map...
-                    int tempY = organism.getY(orgID) - lookup.playerViewRow + i;// similar to above
+                    int tempY = org.getY(orgID) - lookup.playerViewRow + i;// similar to above
                     if (!(tempY <= 0 || tempY >=lookup.getWorldDimension(orgWorld, false))){   // If this tile is NOT off the map...
                         dataAsString = dataAsString + getTileType(tempX, tempY, orgWorld) + " ";
                     }
@@ -242,8 +215,8 @@ public class WorldManager extends Thread{
     }
     
     /**
-     * Returns the header-less message containing organism painting information for the given orgID.
-     * Form: "o [for each organism found: [classCode] [directionCode] [relativeX] [relativeY]]"
+     * Returns the header-less message containing org painting information for the given orgID.
+     * Form: "o [for each org found: [classCode] [directionCode] [relativeX] [relativeY]]"
      * ex: "o 101 2 4 4 1000 2 6 4"
      * @param orgID
      * @return 
@@ -251,9 +224,9 @@ public class WorldManager extends Thread{
     public String getPlayerOrganismsView(int orgID){
         String dataAsString = "";                       // The string to return.
         // Some efficiency data caching
-        String orgWorld = organism.getWorld(orgID);
-        int orgX = organism.getX(orgID);
-        int orgY = organism.getY(orgID);
+        String orgWorld = org.getWorld(orgID);
+        int orgX = org.getX(orgID);
+        int orgY = org.getY(orgID);
         
         // The logic.
         for(int i=0; i<lookup.playerViewYSize; i++){    // The y length
@@ -264,8 +237,8 @@ public class WorldManager extends Thread{
                     if (!(tempY <= 0 || tempY >=lookup.getWorldDimension(orgWorld, false))){     // If this tile is NOT off the map...
                         int organismUID = communicate.selectUIDByXAndYAndWorld(lookup.movementTableName, tempX, tempY, orgWorld);   // Makes sure to only select orgs who are on same world
                         if(organismUID != -1 ){                                                  // If the select worked 
-                            dataAsString = dataAsString + organism.getDirection(organismUID)     // Append the message info.
-                                    + " " + organism.getClass(organismUID) 
+                            dataAsString = dataAsString + org.getDirection(organismUID)     // Append the message info.
+                                    + " " + org.getClass(organismUID) 
                                     + " " + j + " " + i + " ";
                         }
                     }

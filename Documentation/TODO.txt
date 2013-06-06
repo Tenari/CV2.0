@@ -10,27 +10,17 @@ WorldManager.
 	addPlayer
 	run
 
-	validMove
-	moveCost
-WorldManager.movement stuff doesn't check for other organisms blocking path.
-
 ClientHandler.
 	interpretData
 	updateAllStats
 	updateMiscStats
 
-----------------------------------------
+---------------------------------------------
 Unfinished Classes:
 ClientHandler	needs all updateXXX() and full interpretData
 
-
 =============================================
 Unfinished Functionality:
-
-Movement
-	-world switching.
-	-move Cost
-	-organism Blocking
 
 Combat
 	-infinite loop round enaction
