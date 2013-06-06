@@ -33,6 +33,18 @@ class LookupConfig {
     int playerViewRow       =   5;
     int playerViewCol       =   5;
     
+    // Table names
+    String movementTableName        =   "organismsmovementinfo";
+    String combatTableName          =   "combatstats";
+    String statsTableName           =   "detailedstats";
+    String homosapienTableName      =   "homosapiendata";
+    String hsitemsTableName         =   "hsitems";
+    String hsresourcesTableName     =   "hsresources";
+    
+    // Math/formulas constants and factors.
+    final int enduranceWeightFactor   =   2;
+    final int weightReductionFactor   =   5;
+    
     
     public LookupConfig(){
         
@@ -79,7 +91,14 @@ class LookupConfig {
     }
 //---------------------------End TileType Lookup Methods------------------------
     
-    // Set x true for X dimension of worldName. Returns int length of given dimension for world.
+    // Add the return value to the already calculated moveCost to get true moveCost
+    public int getWeightModToCost(int weightCarried, double endurance){
+        
+        return (int)( (weightCarried/weightReductionFactor) / (1 + (endurance/enduranceWeightFactor)) );
+    }
+    
+    /** Set x true for X dimension of worldName. 
+     *   Returns int length of given dimension for world.*/
     public int getWorldDimension(String worldName, boolean x){
         if (x){
             switch(worldName){

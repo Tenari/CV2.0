@@ -22,9 +22,7 @@ public class HomosapienHandler extends OrganismHandler{
     private final double diplomacyDefault =   0.0;
     private final double hidingDefault    =   0.0;
     
-    String homosapienTableName            =   "homosapiendata";
-    String hsitemsTableName               =   "hsitems";
-    String hsresourcesTableName           =   "hsresources";
+    
     
    public HomosapienHandler(CustomCommunication c){
         super(c);       // Calls the OrganismHandler Constructor
@@ -48,7 +46,7 @@ public class HomosapienHandler extends OrganismHandler{
                                     ""+intimidateDefault,
                                     ""+diplomacyDefault,
                                     ""+hidingDefault}; 
-        organismWorked = organismWorked && communicate.insert(homosapienTableName, initialValues);  // true if the insert worked.
+        organismWorked = organismWorked && communicate.insert(lookup.homosapienTableName, initialValues);  // true if the insert worked.
         
         return organismWorked;
     }
@@ -76,7 +74,7 @@ public class HomosapienHandler extends OrganismHandler{
                                     ""+mod2value,
                                     ""+mod3type,
                                     ""+mod3value}; 
-       return communicate.insert(hsitemsTableName, values);
+       return communicate.insert(lookup.hsitemsTableName, values);
     }
     // Convinient overloads.
     public boolean addItem(int hsUID, String name, int code, int weight, boolean equipped, int slot, int mod1type, int mod1value, int mod2type, int mod2value){
@@ -95,7 +93,7 @@ public class HomosapienHandler extends OrganismHandler{
     }
     
     public boolean removeItem(int hsUID, String name, int slot){
-        return communicate.deleteFromWhereUIDAndAnd(hsresourcesTableName, hsUID, "name", "'"+name+"'", "slot", ""+slot);
+        return communicate.deleteFromWhereUIDAndAnd(lookup.hsresourcesTableName, hsUID, "name", "'"+name+"'", "slot", ""+slot);
     }
 //----------------------END ITEMS HANDLERS--------------------------------------
     
@@ -106,25 +104,38 @@ public class HomosapienHandler extends OrganismHandler{
         String[] values = {         ""+hsUID,
                                     "'"+type+"'",
                                     ""+amount}; 
-       return communicate.insert(hsresourcesTableName, values);
+       return communicate.insert(lookup.hsresourcesTableName, values);
     }
     
     /** Removes the passed amount of resources from the type, and deletes the row if the amount becomes 0.
      * If the amount is more than exists, returns false.
      * Returns true iff successfully removes resources.*/
     public boolean removeResource(int hsUID, String type, int amount){
-        int currentAmt = communicate.selectIntByCustomQuery("SELECT `amount` FROM `"+hsresourcesTableName
-                                        +"` WHERE `"+hsresourcesTableName+"`.`uid` = "+hsUID
-                                        +" AND `"+hsresourcesTableName+"`.`type` = "+"'"+type+"'");
+        int currentAmt = communicate.selectIntByCustomQuery("SELECT `amount` FROM `"+lookup.hsresourcesTableName
+                                        +"` WHERE `"+lookup.hsresourcesTableName+"`.`uid` = "+hsUID
+                                        +" AND `"+lookup.hsresourcesTableName+"`.`type` = "+"'"+type+"'");
         int newAmt =(currentAmt - amount);
         if( newAmt < 0){     // There isn't enough resources.
             return false;
         } else if(newAmt == 0){
             // remove the row.
-            return communicate.deleteFromWhereUIDAnd(hsresourcesTableName, hsUID, "type", type);
+            return communicate.deleteFromWhereUIDAnd(lookup.hsresourcesTableName, hsUID, "type", type);
         } else {
-            return communicate.updateSingleIntByUIDAndOther(hsresourcesTableName, "amount", newAmt, hsUID, "type", "'"+type+"'");
+            return communicate.updateSingleIntByUIDAndOther(lookup.hsresourcesTableName, "amount", newAmt, hsUID, "type", "'"+type+"'");
         }
     }
 //----------------------END RESOURCES HANDLERS----------------------------------
+    
+    
+    // MISSING RESOURCE APP LOGIC
+    /**
+     * Should return 0 if the ID passed is not a homosapien
+     * @param hsUID
+     * @return 
+     */
+    public int getWeight(int hsUID){
+        int itemWeight = communicate.selectIntSumByUID("weight", lookup.hsitemsTableName, hsUID);
+        int resourceWeight = 0;
+        return itemWeight + resourceWeight;
+    }
 }

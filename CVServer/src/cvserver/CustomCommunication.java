@@ -256,6 +256,35 @@ public class CustomCommunication {
         }
     }
     
+    public int selectUIDByXAndYAndWorld(String table, int x, int y, String world){
+        // Make the statement.
+        String stmt = 
+                "SELECT uid"+
+                " FROM "+table+
+                " WHERE "+table+".x = "+x+
+                "   AND "+table+".y = "+y+
+                "   AND "+table+".world = "+world;   
+                
+        // Do the query.
+        try {
+            Statement dbStmt = dbConnection.createStatement();
+            ResultSet dbResultSet = dbStmt.executeQuery(stmt);
+            // If there are actually results to handle, we'll just return the int
+            while (dbResultSet.next()) {
+                dbResultSet.last();
+                return dbResultSet.getInt(1);
+            } 
+            // Otherwise, return the failure value.
+            return -1;
+        }
+        catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return -1;
+        }
+    }
+    
     public int selectIntByCustomQuery(String query){
         // Make the statement.
         String stmt = query;   
@@ -423,6 +452,38 @@ public class CustomCommunication {
             System.out.println("SQLState: " + ex.getSQLState()); 
             System.out.println("VendorError: " + ex.getErrorCode()); 
             return false;
+        }
+    }
+    
+    public int selectIntSumByUID(String colName, String table, int uid) {
+        // Make the statement.
+        String stmt = 
+                "SELECT `"+colName+
+                "` FROM `"+table+
+                "` WHERE `"+table+"`.`uid` = "+uid+";";
+                
+        // Do the query.
+        try {
+            int currentSum = 0;
+            Statement dbStmt = dbConnection.createStatement();
+            if (dbStmt.execute(stmt)) {  
+                ResultSet dbResultSet = dbStmt.getResultSet();
+                while (dbResultSet.next()){
+                    currentSum += dbResultSet.getInt(1);
+                }
+                return currentSum;
+            } 
+            else {
+                System.err.println("CustomCommunication.selectSingleByUID failed");
+            }
+            
+            return -1;
+        }
+        catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return -1;
         }
     }
 }

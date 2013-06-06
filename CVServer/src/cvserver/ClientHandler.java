@@ -29,6 +29,7 @@ class ClientHandler extends Thread{
     final String eastKey     =    "A";
     final String westKey     =    "D";
     final String nameKey     =    "N";
+    final String moveKey     =    "m";
     
     int northCode   =   1;
     int southCode   =   2;
@@ -120,17 +121,8 @@ class ClientHandler extends Thread{
             }
             setUsername(name);   
             break;
-        case northKey:
-            movePlayer(northCode);
-            break;
-        case southKey:
-            movePlayer(southCode);
-            break;
-        case eastKey:
-            movePlayer(eastCode);
-            break;
-        case westKey:
-            movePlayer(westCode);
+        case moveKey:
+            movePlayer(scan.nextInt());     // due to "m [directionCode]" form, scan.nextInt() is the direction code to pass.
             break;
        }
     }

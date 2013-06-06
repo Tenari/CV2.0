@@ -15,12 +15,6 @@ public class WorldManager extends Thread{
     
     ArrayList<NumberPair> fights = new ArrayList<>();
     
-    String movementTableName = "organismsmovementinfo";
-    String combatTableName = "combatstats";
-    String statsTableName = "detailedstats";
-    
-    
-    
     int nextUID     =   0;
     /**
      * Initialize the world and its details.
@@ -39,17 +33,21 @@ public class WorldManager extends Thread{
         
     }
     
+    /**
+     * The game's main infinite loop.
+     *  Update fights.
+     *  Act NPCs
+     *  Spawn NPCs
+     *  Regenerate resources
+     *  Regenerate energy
+     */
     @Override
     public void run(){
         System.out.println("World Threaded");
         
-        // The game's main infinite loop.
+        // 
         while(true){
-            // Update fights.
-            // Act NPCs
-            // Spawn NPCs
-            // Regenerate resources
-            // Regenerate energy
+            
         }
     }
 //----------------------ORGANISM CREATION COMMANDS------------------------------
@@ -70,11 +68,11 @@ public class WorldManager extends Thread{
     }
     
     public int getID(String name){
-        return communicate.selectUIDByName(name, movementTableName);
+        return communicate.selectUIDByName(name, lookup.movementTableName);
     }
     
 //------------------------END ORGANISM CREATION---------------------------------
-    
+
 //-----------------MOVEMENT COMMANDS--------------------------------------------
     /**
      * Attempts to move the organism orgID one tile towards directionCode.
@@ -108,9 +106,12 @@ public class WorldManager extends Thread{
     // Moves an entity. Returns true if a move occurred, false otherwise.
     // Set horizontal true to move the x, and false to move the y.
     public boolean moveLogic(int orgID, int newX, int newY, boolean horizontal){
-        int nextTileType = getTileType(newX, newY, organism.getWorld(orgID));
-        int currentTileType = getTileType(organism.getX(orgID), organism.getY(orgID), organism.getWorld(orgID));
-        if (validMove(nextTileType, currentTileType, orgID)){
+        String orgWorld = organism.getWorld(orgID);         // Cache the world for efficiency.
+        
+        int nextTileType = getTileType(newX, newY, orgWorld);
+        int currentTileType = getTileType(organism.getX(orgID), organism.getY(orgID), orgWorld);
+        
+        if (validMove(orgWorld, newX, newY, nextTileType, currentTileType, orgID)){
             // Decrease energy for moving
             organism.setEnergy(organism.getEnergy(orgID) - moveCost(currentTileType, orgID), orgID);
             // And change location.
@@ -131,34 +132,43 @@ public class WorldManager extends Thread{
     }
     
     // Returns t/f depending on whether the moveTileType is valid, and whether the organism can afford the moveCost
-    public boolean validMove(int moveTileType, int currentTileType, int orgUID){
-        // If guy has enough energy to move off current tile, and the moveCost of the next tile is not the invalidCode.
-        if ((lookup.invalidMoveCost != moveCost(moveTileType, orgUID)) &&
-            (organism.getEnergy(orgUID)>=moveCost(currentTileType, orgUID))){
+    public boolean validMove(String world, int x, int y, int moveTileType, int currentTileType, int orgUID){
+        if ((lookup.invalidMoveCost != moveCost(moveTileType, orgUID)) &&       // If he has enough energy to move off current tile
+            (organism.getEnergy(orgUID)>=moveCost(currentTileType, orgUID)) &&  // and the moveCost of the next tile is not the invalidCode.
+            (-1 == communicate.selectUIDByXAndYAndWorld(lookup.movementTableName, x, y, world))){ // and there is no organism at the location.
             // CHECK FOR BLOCKING ORGANISM && COMBAT ISSUES
             return true;
         }
         return false;
     }
     
-    // NEED TO ADD ENDURANCE APPLICATION LOGIC HERE. CURRENTLY IS FIXED MOVECOST
+    
     public int moveCost(int tileType, int orgUID) {
         if (lookup.isOffMap(tileType) || lookup.isWall(tileType)){
             return lookup.invalidMoveCost;      // Return 10 times more than the maximum possible energy as an added safety measure to prevent movement from occuring there.
         } else if(lookup.isRoad(tileType)) {
-            return (int)Math.round(lookup.baseRoadMoveCost*(lookup.moveNormalizationConstant/(lookup.moveNormalizationConstant+organism.getEndurance(orgUID))));
+            return moveCostLogic(lookup.baseRoadMoveCost, orgUID);
         } else if (lookup.isGround(tileType)) {
-            return (int)Math.round(lookup.baseGroundMoveCost*(lookup.moveNormalizationConstant/(lookup.moveNormalizationConstant+organism.getEndurance(orgUID))));
+            return moveCostLogic(lookup.baseGroundMoveCost, orgUID);
         }
         
         return 5;
+    }
+    
+    private int moveCostLogic(int baseTileMoveCost, int orgUID){
+        double endurance = organism.getEndurance(orgUID);
+        return lookup.getWeightModToCost(homosapien.getWeight(orgUID), endurance) + 
+            (int)Math.round(baseTileMoveCost * 
+                    (lookup.moveNormalizationConstant /
+                        (lookup.moveNormalizationConstant + 
+                           endurance )));
     }
     
 //-----------------------END MOVEMENT STUFF-------------------------------------
     
 //-------------------------------COMBAT HANDLERS--------------------------------
     public void startFight(int agressorUID, int opponentRelativeX, int opponentRelativeY){
-        int opponentUID = communicate.selectSingleIntByXAndY("uid", movementTableName, opponentRelativeX, opponentRelativeY);
+        int opponentUID = communicate.selectSingleIntByXAndY("uid", lookup.movementTableName, opponentRelativeX, opponentRelativeY);
         fights.add(new NumberPair(agressorUID,opponentUID));
     }
     
@@ -194,13 +204,14 @@ public class WorldManager extends Thread{
      */
     public String getPlayerMapView(int orgID){
         String dataAsString = "";
+        String orgWorld = organism.getWorld(orgID);
         for(int i=0; i<lookup.playerViewYSize; i++){    // The y length
             for(int j=0; j<lookup.playerViewXSize; j++){// The x length
                 int tempX = organism.getX(orgID) - lookup.playerViewCol + j;      
-                if (!(tempX <= 0 || tempX >=lookup.getWorldDimension(organism.getWorld(orgID), true))){   // If this tile is NOT off the map...
+                if (!(tempX <= 0 || tempX >=lookup.getWorldDimension(orgWorld, true))){   // If this tile is NOT off the map...
                     int tempY = organism.getY(orgID) - lookup.playerViewRow + i;// similar to above
-                    if (!(tempY <= 0 || tempY >=lookup.getWorldDimension(organism.getWorld(orgID), false))){   // If this tile is NOT off the map...
-                        dataAsString = dataAsString + getTileType(tempX, tempY, organism.getWorld(orgID)) + " ";
+                    if (!(tempY <= 0 || tempY >=lookup.getWorldDimension(orgWorld, false))){   // If this tile is NOT off the map...
+                        dataAsString = dataAsString + getTileType(tempX, tempY, orgWorld) + " ";
                     }
                     else {  // The case for an off-the-map tile.
                         dataAsString = dataAsString + "0 "; // 0 represents "off the map"
@@ -222,17 +233,23 @@ public class WorldManager extends Thread{
      * @return 
      */
     public String getPlayerOrganismsView(int orgID){
-        String dataAsString = "";
+        String dataAsString = "";                       // The string to return.
+        // Some efficiency data caching
+        String orgWorld = organism.getWorld(orgID);
+        int orgX = organism.getX(orgID);
+        int orgY = organism.getY(orgID);
+        
+        // The logic.
         for(int i=0; i<lookup.playerViewYSize; i++){    // The y length
             for(int j=0; j<lookup.playerViewXSize; j++){// The x length
-                int tempX = organism.getX(orgID) - lookup.playerViewCol + j;      
-                if (!(tempX <= 0 || tempX >=lookup.getWorldDimension(organism.getWorld(orgID), true))){         // If this tile is NOT off the map...
-                    int tempY = organism.getY(orgID) - lookup.playerViewRow + i;// similar to above
-                    if (!(tempY <= 0 || tempY >=lookup.getWorldDimension(organism.getWorld(orgID), false))){     // If this tile is NOT off the map...
-                        int organismClass = communicate.selectSingleIntByXAndY("class", "organismsmovementinfo", tempX, tempY);
-                        if(!(organismClass == -1)){   // If the organismClass did NOT fail (did succeed) to get the clasCode 
-                            dataAsString = dataAsString + organism.getDirection(orgID)
-                                    + " " + organismClass 
+                int tempX = orgX - lookup.playerViewCol + j;      
+                if (!(tempX <= 0 || tempX >=lookup.getWorldDimension(orgWorld, true))){         // If this tile is NOT off the map...
+                    int tempY = orgY - lookup.playerViewRow + i;// similar to above
+                    if (!(tempY <= 0 || tempY >=lookup.getWorldDimension(orgWorld, false))){     // If this tile is NOT off the map...
+                        int organismUID = communicate.selectUIDByXAndYAndWorld(lookup.movementTableName, tempX, tempY, orgWorld);   // Makes sure to only select orgs who are on same world
+                        if(organismUID != -1 ){                                                  // If the select worked 
+                            dataAsString = dataAsString + organism.getDirection(organismUID)     // Append the message info.
+                                    + " " + organism.getClass(organismUID) 
                                     + " " + j + " " + i + " ";
                         }
                     }
