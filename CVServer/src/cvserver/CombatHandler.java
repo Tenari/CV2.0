@@ -40,33 +40,23 @@ public class CombatHandler {
     public void updateAllFights(){
       if((System.currentTimeMillis()-startTimeFight) >= lookup.fightRoundLength) {
         for(NumberPair i : fights) {
+            // Prep the fighters
+            org.setRealSkills(i.getNumOne());
+            org.setRealSkills(i.getNumTwo());
+            
+            // Determine combat order
             int fasterGuyUID = getFastestAttackSpeed(i);
             int slowerGuyUID = i.getOther(fasterGuyUID);
             
+            // Resolve the first guy's attack
             String hitSpot1 = rollToHit(fasterGuyUID);
-            if (!hitSpot1.equals(lookup.missCode)){
-                if (blocked(hitSpot1,i.getOther(fasterGuyUID))) {
-                    // do blocking things
-                } else if (countered(hitSpot1, slowerGuyUID)) {
-                    // do counter things
-                } else {
-                    dealDamage(determineDamage(i), hitSpot1, slowerGuyUID);
-                    applyHitNerf(slowerGuyUID);
-                }
-            }
+            fightOneRound(hitSpot1, fasterGuyUID, slowerGuyUID);
             
-            applyMissBuff(slowerGuyUID);
-            
+            // Reslove the second guy's attack
             String hitSpot2 = rollToHit(slowerGuyUID);
-            if (!hitSpot2.equals(lookup.missCode)){
-                if (blocked(hitSpot2, fasterGuyUID)) {
-                    // do blocking things
-                } else if (countered(hitSpot2, fasterGuyUID)) {
-                    // do counter things
-                } else {
-                    dealDamage(determineDamage(i), hitSpot1, fasterGuyUID);
-                }
-            }
+            fightOneRound(hitSpot2, slowerGuyUID, fasterGuyUID);
+            
+            // send these two their update info.
         }
         startTimeFight=System.currentTimeMillis();
       }
@@ -81,23 +71,38 @@ public class CombatHandler {
         fights.remove(new NumberPair(attackerUID,defenderUID));
     }
     
-    public void fightOneRound(int fightIndex){
-        fightOneRound(fights.get(fightIndex).getNumOne(), fights.get(fightIndex).getNumTwo());
-    }
-    public void fightOneRound(int attackerUID, int defenderUID){
-        // Set the real Skills of both combatants, for accuracy of upcoming calculations
-        org.setRealSkills(attackerUID);
-        org.setRealSkills(defenderUID);
-        
-        // Determine where the attacker hit (or if he missed)
-        String hitSpot = getAttackSpot(attackerUID, org.getDefSkill(defenderUID));
-    }
-    public String getAttackSpot(int attackerUID, double defenderDefSkill){
-        return "miss";
+    private void fightOneRound(String hitSpot, int attackerUID, int defenderUID){
+        if (!hitSpot.equals(lookup.missCode)){      // If he didn't miss. (blocks => auto-miss)
+            if (blocked(hitSpot, defenderUID)) {
+                stun(attackerUID);
+            } else if (countered(hitSpot, defenderUID)) {
+                applyCounterBuff(defenderUID);
+                // Do we need to change attacker.hitStatus to "miss"?
+            } else {
+                dealDamage(determineDamage(attackerUID, defenderUID), hitSpot, defenderUID);
+                applyHitNerf(defenderUID);
+            }
+        } else {
+            applyMissBuff(defenderUID);
+        }
     }
 
-    private int getFastestAttackSpeed(NumberPair i) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    /**
+     * Given a NumberPair of a fight, returns the int UID of the combatant with
+     * the fastest attack speed.
+     * @param fight - The NumberPair containing the UIDs of two combatants
+     * @return the UID of the fastest combatant.
+     */
+    private int getFastestAttackSpeed(NumberPair fight) {
+        // depends on attack style, weapon class&proficiency, specific weapon
+        int firstSpeed = org.getAttackSpeed(fight.getNumOne());
+        int secondSpeed = org.getAttackSpeed(fight.getNumTwo());
+        
+        if (firstSpeed > secondSpeed) {
+            return fight.getNumOne();
+        } else {
+            return fight.getNumTwo();
+        }
     }
 
     private String rollToHit(int orgUID) {
@@ -112,7 +117,7 @@ public class CombatHandler {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    private int determineDamage(NumberPair i) {
+    private int determineDamage(int attackerUID, int defenderUID) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -125,6 +130,14 @@ public class CombatHandler {
     }
 
     private void applyMissBuff(int orgID) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private void stun(int orgID) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private void applyCounterBuff(int defenderUID) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 }

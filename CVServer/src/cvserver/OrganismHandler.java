@@ -22,6 +22,7 @@ public class OrganismHandler {
     private final double attSkillStart  =   3.0;	//the initialized attacking Skill of this character
     private final double defStrStart    =   3.0;	//the initialized defending Strength of this character
     private final double defSkillStart  =   3.0;	//the initialized defending Skill of this character
+    private final int attackStyleStart  =   1;
     
     // Initial detailed stats
     private final double handToHandStart=   0.0;
@@ -72,7 +73,8 @@ public class OrganismHandler {
                                         ""+armsHealthStart,
                                         ""+torsoHealthStart,
                                         ""+legsHealthStart,
-                                        ""+myUID };//opponent
+                                        ""+myUID,
+                                        ""+attackStyleStart};//opponent
             worked = communicate.insert(lookup.combatTableName, initialFightValues);
             if (!worked) {return worked;}
 
@@ -279,6 +281,16 @@ public class OrganismHandler {
     public boolean setOpponentUID(int opponentUID, int orgUID){
         return communicate.updateSingleIntByUID(lookup.combatTableName, "opponentUID", opponentUID, orgUID);
     }
+    
+    public int getAttackSpeed(int orgUID) {
+        // depends on attack style, weapon class&proficiency, specific weapon
+        
+    }
+    
+    
+    public boolean setAttackStyle(int styleCode, int orgUID){
+        return communicate.updateSingleIntByUID(lookup.combatTableName, "attackstyle", styleCode, orgUID);
+    }
 //---------------------------END COMBAT HELPERS-------------------------------//
 
 //--------------------------MISC ACCESSORS------------------------------------\\
@@ -307,4 +319,6 @@ public class OrganismHandler {
     public void setClass(int classCode, int orgUID) {
         communicate.updateSingleIntByUID(lookup.movementTableName, "class", classCode, orgUID);
     }
+
+    
 }

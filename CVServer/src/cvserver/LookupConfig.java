@@ -52,6 +52,11 @@ class LookupConfig {
     // Combat Codes
     final String missCode   =   "miss";
     
+    final int blockCode         =   1;
+    final int lightAttackCode   =   2;
+    final int medAttackCode     =   3;
+    final int heavyAttackCode   =   4;
+    
     // Timing constants
     int fightRoundLength    =   3000;   // In milliseconds
     
