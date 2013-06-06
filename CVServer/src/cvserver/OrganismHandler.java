@@ -9,8 +9,6 @@ public class OrganismHandler {
     // The initial values for the movement parameters.
     private final int startX    =   5;
     private final int startY    =   5;
-    private final int startOldX =   5;
-    private final int startOldY =   5;
     private final String startWorldName = "smallcity";
     
     // Initial HP values
@@ -56,9 +54,6 @@ public class OrganismHandler {
                                         "'"+name+"'",   // name requires "'" around it because it's a varchar
                                         ""+startX,
                                         ""+startY,
-                                        ""+startOldX,
-                                        ""+startOldY,
-                                        "'"+startWorldName+"'",
                                         "'"+startWorldName+"'",
                                         ""+maxEnergy,
                                         ""+classCode,
@@ -106,7 +101,7 @@ public class OrganismHandler {
         
     }
     
-    //---------------------HP ACCESSOR METHODS--------------------------------------
+//---------------------HP ACCESSOR METHODS------------------------------------\\
     public int getHead(int orgUID) {
         return communicate.selectSingleIntByUID("headHP", lookup.combatTableName, orgUID);
     }
@@ -152,9 +147,9 @@ public class OrganismHandler {
             communicate.updateSingleIntByUID(lookup.combatTableName, "legsHP", newHP, orgUID);
         }
     }
-//---------------------END HP ACCESSOR METHODS----------------------------------
+//---------------------END HP ACCESSOR METHODS--------------------------------//
     
-//---------------------SKILL UPDATE/ACCESSOR METHODS----------------------------
+//---------------------SKILL UPDATE/ACCESSOR METHODS--------------------------\\
      
     public void setRealSkills(int orgUID) {
         // Set the current stat to the base stat times the normalized relevant HP stat.
@@ -228,20 +223,14 @@ public class OrganismHandler {
     public void setEndurance(double newSkillValue, int orgUID) {
         communicate.updateSingleDoubleByUID(lookup.statsTableName, "endurance", newSkillValue, orgUID);
     }
-//---------------------END SKILL UPDATE/ACCESSOR METHODS------------------------
+//---------------------END SKILL UPDATE/ACCESSOR METHODS----------------------//
 
-//--------------------LOCATION ACCESSOR METHODS---------------------------------
+//--------------------LOCATION ACCESSOR METHODS-------------------------------\\
     public int getX(int orgUID) {
         return communicate.selectSingleIntByUID("x", lookup.movementTableName, orgUID);
     }
     public int getY(int orgUID) {
     	return communicate.selectSingleIntByUID("y", lookup.movementTableName, orgUID);
-    }
-    public int getOldX(int orgUID) {
-        return communicate.selectSingleIntByUID("oldx", lookup.movementTableName, orgUID);
-    }
-    public int getOldY(int orgUID) {
-        return communicate.selectSingleIntByUID("oldy", lookup.movementTableName, orgUID);
     }
     
     /**
@@ -260,24 +249,12 @@ public class OrganismHandler {
     public void setY(int newY, int orgUID) {
     	communicate.updateSingleIntByUID(lookup.movementTableName, "y", newY, orgUID);
     }
-    public void setOldX(int newOldX, int orgUID) {
-    	communicate.updateSingleIntByUID(lookup.movementTableName, "oldx", newOldX, orgUID);
-    }
-    public void setOldY(int newOldY, int orgUID) {
-    	communicate.updateSingleIntByUID(lookup.movementTableName, "oldy", newOldY, orgUID);
-    }
     
     public String getWorld(int orgUID) {
         return communicate.selectSingleStringByUID("world", lookup.movementTableName, orgUID);
     }
     public void setWorld(String newWorldName, int orgUID) {
     	communicate.updateSingleStringByUID(lookup.movementTableName, "world", newWorldName, orgUID);
-    }
-    public String getOldWorld(int orgUID) {
-    	return communicate.selectSingleStringByUID("oldworld", lookup.movementTableName, orgUID);
-    }
-    public void setOldWorld(String newWorldName, int orgUID) {
-    	communicate.updateSingleStringByUID(lookup.movementTableName, "oldworld", newWorldName, orgUID);
     }
     
     public int getDirection(int orgUID) {
@@ -286,7 +263,25 @@ public class OrganismHandler {
     public void setDirection(int newDirection, int orgUID){
         communicate.updateSingleIntByUID(lookup.movementTableName, "direction", newDirection, orgUID);
     }
-//--------------------------END LOCATION ACCESSORS------------------------------
+//--------------------------END LOCATION ACCESSORS----------------------------//
+    
+//----------------------------COMBAT HELPERS----------------------------------\\
+    public boolean isFighting(int orgUID){
+        if (getOpponentUID(orgUID) == orgUID) {
+            return false;
+        }
+        return true;
+    }
+    
+    public int getOpponentUID(int orgUID){
+        return communicate.selectSingleIntByUID("opponentUID", lookup.combatTableName, orgUID);
+    }
+    public boolean setOpponentUID(int opponentUID, int orgUID){
+        return communicate.updateSingleIntByUID(lookup.combatTableName, "opponentUID", opponentUID, orgUID);
+    }
+//---------------------------END COMBAT HELPERS-------------------------------//
+
+//--------------------------MISC ACCESSORS------------------------------------\\
     public int getEnergy(int orgUID) {
         return communicate.selectSingleIntByUID("energy", lookup.movementTableName, orgUID);
     }

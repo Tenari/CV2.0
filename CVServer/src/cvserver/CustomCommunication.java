@@ -51,17 +51,7 @@ public class CustomCommunication {
         stmt = stmt + ")";                                  // Add the last parenthase for syntax.
                 
         // Do the statement.
-        try {
-            Statement dbStmt = dbConnection.createStatement();
-            dbStmt.execute(stmt);
-            return true;        
-        }
-        catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-            return false;
-        }
+        return doNonSelect(stmt);
     }
     
     /**
@@ -158,26 +148,7 @@ public class CustomCommunication {
                 "` WHERE `"+table+"`.`name` = "+name+";";
                 
         // Do the query.
-        try {
-            Statement dbStmt = dbConnection.createStatement();
-            ResultSet dbResultSet = null;
-            if (dbStmt.execute(stmt)) {  
-                dbResultSet = dbStmt.getResultSet();
-                dbResultSet.last();
-                return dbResultSet.getInt(1);
-            } 
-            else {
-                System.err.println("CustomCommunication.selectUIDByName failed");
-            }
-            
-            return -1;
-        }
-        catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-            return -1;
-        }
+        return doSelectInt(stmt);
     }
     
     /**
@@ -197,26 +168,7 @@ public class CustomCommunication {
                 "` WHERE `"+table+"`.`uid` = "+uid+";";   
                 
         // Do the query.
-        try {
-            Statement dbStmt = dbConnection.createStatement();
-            ResultSet dbResultSet = null;
-            if (dbStmt.execute(stmt)) {  
-                dbResultSet = dbStmt.getResultSet();
-                dbResultSet.last();
-                return dbResultSet.getInt(1);
-            } 
-            else {
-                System.err.println("CustomCommunication.selectSingleByUID failed");
-            }
-            
-            return -1;
-        }
-        catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-            return -1;
-        }
+        return doSelectInt(stmt);
     }
     
     /**
@@ -237,23 +189,7 @@ public class CustomCommunication {
                 "   AND "+table+".y = "+y;   
                 
         // Do the query.
-        try {
-            Statement dbStmt = dbConnection.createStatement();
-            ResultSet dbResultSet = dbStmt.executeQuery(stmt);
-            // If there are actually results to handle, we'll just return the int
-            while (dbResultSet.next()) {
-                dbResultSet.last();
-                return dbResultSet.getInt(1);
-            } 
-            // Otherwise, return the failure value.
-            return -1;
-        }
-        catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-            return -1;
-        }
+        return doSelectInt(stmt);
     }
     
     public int selectUIDByXAndYAndWorld(String table, int x, int y, String world){
@@ -266,23 +202,7 @@ public class CustomCommunication {
                 "   AND "+table+".world = "+world;   
                 
         // Do the query.
-        try {
-            Statement dbStmt = dbConnection.createStatement();
-            ResultSet dbResultSet = dbStmt.executeQuery(stmt);
-            // If there are actually results to handle, we'll just return the int
-            while (dbResultSet.next()) {
-                dbResultSet.last();
-                return dbResultSet.getInt(1);
-            } 
-            // Otherwise, return the failure value.
-            return -1;
-        }
-        catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-            return -1;
-        }
+        return doSelectInt(stmt);
     }
     
     public int selectIntByCustomQuery(String query){
@@ -290,15 +210,31 @@ public class CustomCommunication {
         String stmt = query;   
                 
         // Do the query.
+        return doSelectInt(stmt);
+    }
+    
+    public int selectIntSumByUID(String colName, String table, int uid) {
+        // Make the statement.
+        String stmt = 
+                "SELECT `"+colName+
+                "` FROM `"+table+
+                "` WHERE `"+table+"`.`uid` = "+uid+";";
+                
+        // Do the query.
         try {
+            int currentSum = 0;
             Statement dbStmt = dbConnection.createStatement();
-            ResultSet dbResultSet = dbStmt.executeQuery(stmt);
-            // If there are actually results to handle, we'll just return the int
-            while (dbResultSet.next()) {
-                dbResultSet.last();
-                return dbResultSet.getInt(1);
+            if (dbStmt.execute(stmt)) {  
+                ResultSet dbResultSet = dbStmt.getResultSet();
+                while (dbResultSet.next()){
+                    currentSum += dbResultSet.getInt(1);
+                }
+                return currentSum;
             } 
-            // Otherwise, return the failure value.
+            else {
+                System.err.println("CustomCommunication.selectSingleByUID failed");
+            }
+            
             return -1;
         }
         catch (SQLException ex) {
@@ -324,17 +260,7 @@ public class CustomCommunication {
                         " WHERE uid="+uid;
         
         // Do the statement.
-        try {
-            Statement dbStmt = dbConnection.createStatement();
-            dbStmt.execute(stmt);
-            return true;
-        }
-        catch (SQLException ex) {   // Report errors.
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-            return false;
-        }
+        return doNonSelect(stmt);
     }
     
     /**
@@ -352,17 +278,7 @@ public class CustomCommunication {
                         " WHERE uid="+uid;
         
         // Do the statement.
-        try {
-            Statement dbStmt = dbConnection.createStatement();
-            dbStmt.execute(stmt);
-            return true;
-        }
-        catch (SQLException ex) {   // Report errors.
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-            return false;
-        }
+        return doNonSelect(stmt);
     }
     
     public boolean updateSingleIntByUIDAndOther(String table, String intName, int newValue, int uid, String otherName, String otherValue) {
@@ -373,17 +289,7 @@ public class CustomCommunication {
                         " AND "+otherName+"="+otherValue;
         
         // Do the statement.
-        try {
-            Statement dbStmt = dbConnection.createStatement();
-            dbStmt.execute(stmt);
-            return true;
-        }
-        catch (SQLException ex) {   // Report errors.
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-            return false;
-        }
+        return doNonSelect(stmt);
     }
     
     /**
@@ -401,17 +307,7 @@ public class CustomCommunication {
                         " WHERE uid="+uid;
         
         // Do the statement.
-        try {
-            Statement dbStmt = dbConnection.createStatement();
-            dbStmt.execute(stmt);
-            return true;
-        }
-        catch (SQLException ex) {   // Report errors.
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-            return false;
-        }
+        return doNonSelect(stmt);
     }
     
     public boolean deleteFromWhereUIDAnd(String table, int uid, String andName, String andValue){
@@ -421,17 +317,7 @@ public class CustomCommunication {
                         "  AND "+andName+"="+andValue;
         
         // Do the statement.
-        try {
-            Statement dbStmt = dbConnection.createStatement();
-            dbStmt.execute(stmt);
-            return true;
-        }
-        catch (SQLException ex) {   // Report errors.
-            System.out.println("SQLException: " + ex.getMessage()); 
-            System.out.println("SQLState: " + ex.getSQLState()); 
-            System.out.println("VendorError: " + ex.getErrorCode()); 
-            return false;
-        }
+        return doNonSelect(stmt);
     }
     
     public boolean deleteFromWhereUIDAndAnd(String table, int uid, String and1Name, String and1Value, String and2Name, String and2Value){
@@ -442,12 +328,17 @@ public class CustomCommunication {
                         "  AND "+and2Name+"="+and2Value;
         
         // Do the statement.
+        return doNonSelect(stmt);
+    }
+    
+//-------------------------Private Helpers------------------------------------\\
+    private boolean doNonSelect(String stmt){
         try {
             Statement dbStmt = dbConnection.createStatement();
             dbStmt.execute(stmt);
-            return true;
+            return true;        
         }
-        catch (SQLException ex) {   // Report errors.
+        catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage()); 
             System.out.println("SQLState: " + ex.getSQLState()); 
             System.out.println("VendorError: " + ex.getErrorCode()); 
@@ -455,28 +346,16 @@ public class CustomCommunication {
         }
     }
     
-    public int selectIntSumByUID(String colName, String table, int uid) {
-        // Make the statement.
-        String stmt = 
-                "SELECT `"+colName+
-                "` FROM `"+table+
-                "` WHERE `"+table+"`.`uid` = "+uid+";";
-                
-        // Do the query.
+    private int doSelectInt(String stmt){
         try {
-            int currentSum = 0;
             Statement dbStmt = dbConnection.createStatement();
-            if (dbStmt.execute(stmt)) {  
-                ResultSet dbResultSet = dbStmt.getResultSet();
-                while (dbResultSet.next()){
-                    currentSum += dbResultSet.getInt(1);
-                }
-                return currentSum;
+            ResultSet dbResultSet = dbStmt.executeQuery(stmt);
+            // If there are actually results to handle, we'll just return the int
+            while (dbResultSet.next()) {
+                dbResultSet.last();
+                return dbResultSet.getInt(1);
             } 
-            else {
-                System.err.println("CustomCommunication.selectSingleByUID failed");
-            }
-            
+            // Otherwise, return the failure value.
             return -1;
         }
         catch (SQLException ex) {

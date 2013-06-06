@@ -51,6 +51,13 @@ public class WorldManager extends Thread{
         }
     }
 //----------------------ORGANISM CREATION COMMANDS------------------------------
+    public int addOrganism(String name, int classCode) {
+        organism.createNewOrganism(name, nextUID, classCode);
+        //Increment UID and return.
+        nextUID++;
+        return nextUID-1;
+    }
+    
     /**
      * This method adds a Player to the game.
      * Returns the uid of added organism.
@@ -111,18 +118,27 @@ public class WorldManager extends Thread{
         int nextTileType = getTileType(newX, newY, orgWorld);
         int currentTileType = getTileType(organism.getX(orgID), organism.getY(orgID), orgWorld);
         
-        if (validMove(orgWorld, newX, newY, nextTileType, currentTileType, orgID)){
-            // Decrease energy for moving
-            organism.setEnergy(organism.getEnergy(orgID) - moveCost(currentTileType, orgID), orgID);
-            // And change location.
-            if (horizontal){
-                organism.setX(newX, orgID);
-            } else{
-                organism.setY(newY, orgID);
+        if (validMove(orgWorld, newX, newY, nextTileType, currentTileType, orgID) ){
+            if (lookup.isDoor(nextTileType)) {
+                String newWorld = lookup.getWorldFromDoor(nextTileType);
+                
+                organism.setX(lookup.getEntranceX(newWorld, orgID), orgID);
+                organism.setY(lookup.getEntranceY(newWorld, orgID), orgID);
+                organism.setWorld(newWorld, orgID);
+                return true;
+            } else {
+                // Decrease energy for moving
+                organism.setEnergy(organism.getEnergy(orgID) - moveCost(currentTileType, orgID), orgID);
+                // And change location.
+                if (horizontal){
+                    organism.setX(newX, orgID);
+                } else{
+                    organism.setY(newY, orgID);
+                }
+                // Update the Endurance skill for the guy who just moved.
+                organism.setEndurance(organism.getEndurance(orgID)+lookup.enduranceGrowthConstant, orgID);
+                return true;
             }
-            // Update the Endurance skill for the guy who just moved.
-            organism.setEndurance(organism.getEndurance(orgID)+lookup.enduranceGrowthConstant, orgID);
-            return true;
         }
         return false;
     }
@@ -135,9 +151,9 @@ public class WorldManager extends Thread{
     public boolean validMove(String world, int x, int y, int moveTileType, int currentTileType, int orgUID){
         if ((lookup.invalidMoveCost != moveCost(moveTileType, orgUID)) &&       // If he has enough energy to move off current tile
             (organism.getEnergy(orgUID)>=moveCost(currentTileType, orgUID)) &&  // and the moveCost of the next tile is not the invalidCode.
-            (-1 == communicate.selectUIDByXAndYAndWorld(lookup.movementTableName, x, y, world))){ // and there is no organism at the location.
-            // CHECK FOR BLOCKING ORGANISM && COMBAT ISSUES
-            return true;
+            (-1 == communicate.selectUIDByXAndYAndWorld(lookup.movementTableName, x, y, world)) &&// and there is no organism at the location.
+            (!organism.isFighting(orgUID))){                                    // and he isn't fighting. You can't move when you're fighting.
+                return true;
         }
         return false;
     }
@@ -152,7 +168,7 @@ public class WorldManager extends Thread{
             return moveCostLogic(lookup.baseGroundMoveCost, orgUID);
         }
         
-        return 5;
+        return 5;   // default
     }
     
     private int moveCostLogic(int baseTileMoveCost, int orgUID){

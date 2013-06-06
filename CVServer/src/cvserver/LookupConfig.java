@@ -1,5 +1,7 @@
 package cvserver;
 
+import java.util.HashMap;
+
 /**
  *
  * @author Tenari
@@ -10,7 +12,7 @@ class LookupConfig {
     int[] wallTileCodes     =   {1,2};
     int[] roadTileCodes     =   {3};
     int[] groundTileCodes   =   {4};        // Essentially grass or dirt. => passable ground
-    int[] doorTileCodes     =   {10,11};
+    int[] doorTileCodes     =   {5,10,11};
     
     // Map base move cost config
     int moveNormalizationConstant   =   24;
@@ -26,6 +28,12 @@ class LookupConfig {
     int smallCityXLength    =   22;
     int barYLength          =   8;
     int barXLength          =   8;
+    
+    // Worldnames
+    final String smallcity  =   "smallcity";
+    final String bar10      =   "bar 10";
+    final String bar11      =   "bar 11";
+    
     
     // Player view constants
     int playerViewXSize     =   11;
@@ -45,9 +53,12 @@ class LookupConfig {
     final int enduranceWeightFactor   =   2;
     final int weightReductionFactor   =   5;
     
+    HashMap<Integer, String> doorToWorldMap;
+    
     
     public LookupConfig(){
-        
+        doorToWorldMap = new HashMap();
+        mapDoorsToWorld();
     }
     
 //-----------------------------TileType Lookup Methods--------------------------
@@ -89,6 +100,11 @@ class LookupConfig {
         }
         return false;
     }
+    
+    public String getWorldFromDoor(int doorNumber){
+        
+        return doorToWorldMap.get(new Integer(doorNumber));
+    }
 //---------------------------End TileType Lookup Methods------------------------
     
     // Add the return value to the already calculated moveCost to get true moveCost
@@ -102,23 +118,53 @@ class LookupConfig {
     public int getWorldDimension(String worldName, boolean x){
         if (x){
             switch(worldName){
-                case "smallcity":
+                case smallcity:
                     return smallCityXLength;
-                case "bar":
+                case bar10:
+                case bar11:
                     return barXLength;
                 default:
                     return smallCityXLength;
             }
         } else {
             switch(worldName){
-                case "smallcity":
+                case smallcity:
                     return smallCityYLength;
-                case "bar":
+                case bar10:
+                case bar11:
                     return barYLength;
                 default:
                     return smallCityYLength;
             }
         }
         
+    }
+    
+    private void mapDoorsToWorld(){
+        doorToWorldMap.put(new Integer(5),smallcity);
+        doorToWorldMap.put(new Integer(10),bar10);
+        doorToWorldMap.put(new Integer(11),bar11);
+    }
+
+    public int getEntranceX(String worldName, int orgID) {
+        switch(worldName){
+            case bar10:
+            case bar11:
+                return 3;
+            case smallcity:     // WRONG!!! ONLY WORKS FOR ONE BAR
+            default:
+                return 2;
+        }
+    }
+
+    public int getEntranceY(String worldName, int orgID) {
+        switch(worldName){
+            case bar10:
+            case bar11:
+                return 6;
+            case smallcity:     // WRONG!!! ONLY WORKS FOR ONE BAR
+            default:
+                return 5;
+        }
     }
 }

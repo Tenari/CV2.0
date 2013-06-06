@@ -100,8 +100,7 @@ public class CreateCustomDatabase {
         stmt = "CREATE TABLE organismsmovementinfo(uid int PRIMARY KEY,"
                 + " name varchar(35),"
                 + " x int, y int,"
-                + " oldx int, oldy int,"
-                + " world varchar(9), oldworld varchar(9),"
+                + " world varchar(9),"
                 + " energy int, class int,"
                 + " direction int)";
         doStatement(stmt);

@@ -24,10 +24,6 @@ class ClientHandler extends Thread{
     private WorldManager gameMaster;
     private int uid     =   -1;
     
-    final String northKey    =    "W";
-    final String southKey    =    "S";
-    final String eastKey     =    "A";
-    final String westKey     =    "D";
     final String nameKey     =    "N";
     final String moveKey     =    "m";
     
