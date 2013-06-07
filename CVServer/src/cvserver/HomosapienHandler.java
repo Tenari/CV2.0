@@ -156,21 +156,26 @@ public class HomosapienHandler extends OrganismHandler{
             int wepClass = getWeaponClassSpeed(uid);
             // get proficiency
             double prof = getCurrentProficiency(wepClass, uid);
-            // handToHand implies that no weapon is used.
-            // non-homosapiens can't equip other types of weapons.
-            // So just calculate and return the attackSpeed
+            // Calculate and return the attackSpeed
             return lookup.maxAttackSpeed /
-                    (attStyle * (wepClass /
-                                (1 + prof))); // normally weapon buff would go in here at end.
+                    ((attStyle * (wepClass /
+                                 (1 + prof))) + getItemAttackSpeedBuffs(uid));  // getItemAttSpeedBuffs includes all buffs/debuff from items.
         } else {
             return super.getAttackSpeed(uid);
         }
     }
 
     private int getWeaponClassSpeed(int uid) {
-        // find the weapon equipped
-        // determine it's class
-        // use lookup
+        int[] equipped = getEquippedItemIDs(uid);
+        for (int i : equipped){
+            int code = getItemDetail("code", equipped[i]);
+            if (lookup.isWeapon(code)){
+                return lookup.getWeaponClassSpeed(code);
+            }
+        }
+        // If no weapon class speed was returned so far, they must not have a weapon on
+        // So we return handToHand
+        return lookup.handsSpeed;
     }
 
     private double getCurrentProficiency(int uid){
@@ -187,5 +192,37 @@ public class HomosapienHandler extends OrganismHandler{
         } else {  // wepClassSpeed == lookup.handsSpeed
             return getDoubleFromStatsTable("handToHand", uid);
         }
+    }
+
+    private int getItemAttackSpeedBuffs(int uid) {
+        int buff = 0;
+        int[] equipped = getEquippedItemIDs(uid);
+        for (int i : equipped){
+            buff += attackSpeedMod(i);
+        }
+        return buff;
+    }
+
+    private int[] getEquippedItemIDs(int uid) {
+        return communicate.selectIntArrayByUIDAnd("id", lookup.hsitemsTableName, "equipped", "1", uid); // 1=> true
+    }
+
+    private int attackSpeedMod(int itemID) {
+        if (lookup.isAttackSpeedMod(getItemDetail("mod1type", itemID))){
+            return getItemDetail("mod1value",itemID);
+        } else if (lookup.isAttackSpeedMod(getItemDetail("mod2type", itemID))){
+            return getItemDetail("mod2value",itemID);
+        } else if (lookup.isAttackSpeedMod(getItemDetail("mod3type", itemID))){
+            return getItemDetail("mod3value",itemID);
+        } else {
+            return 0;
+        }
+    }
+    
+    private int getItemDetail(String detailName, int itemID){
+        return communicate.selectIntByCustomQuery(
+                "SELECT "+detailName
+                +" FROM "+lookup.hsitemsTableName
+                +" WHERE id = "+itemID);
     }
 }

@@ -185,4 +185,41 @@ class LookupConfig {
                 return 5;
         }
     }
+
+    public boolean isWeapon(int itemCode) {
+        return ((itemCode >= 100) && (itemCode <= 999));
+    }
+    private boolean isSmallBlade(int code) {
+        return ((code >= 200) && (code <= 299));
+    }
+    private boolean isLargeBlade(int code) {
+        return ((code >= 300) && (code <= 399));
+    }
+    private boolean isAxe(int code) {
+        return ((code >= 400) && (code <= 499));
+    }
+    /**
+     * Takes an itemCode and returns the attack speed of it's weapon class.
+     * @param code The itemCode.
+     * @return 0 if code is not a weapon.
+     */
+    public int getWeaponClassSpeed(int code) {
+        if (isSmallBlade(code)) {
+            return smallBladeSpeed;
+        } else if (isLargeBlade(code)) {
+            return largeBladeSpeed;
+        } else if (isAxe(code)) {
+            return axeSpeed;
+        } else {
+            return 0;
+        }
+    }
+
+    boolean isAttackSpeedMod(int modType) {
+        return modType == 12;
+    }
+
+    
+
+    
 }

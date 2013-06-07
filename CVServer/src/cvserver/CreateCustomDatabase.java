@@ -114,7 +114,7 @@ public class CreateCustomDatabase {
                 + " magic double, intimidate double,"
                 + " diplomacy double, hiding double)";
         doStatement(stmt);
-        stmt = "CREATE TABLE hsitems(uid int PRIMARY KEY,"
+        stmt = "CREATE TABLE hsitems(id int PRIMARY KEY AUTO_INCREMENT, uid int"
                 + " name varchar(20),"
                 + " code int, weight int,"
                 + " equipped bit, slot int,"   //slot=> which inventory location it's in.

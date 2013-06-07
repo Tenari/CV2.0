@@ -365,4 +365,46 @@ public class CustomCommunication {
             return -1;
         }
     }
+
+    /**
+     * Has 16 item limit.
+     * @param colName
+     * @param table
+     * @param uid
+     * @return new int[16] on failure.
+     */
+    int[] selectIntArrayByUIDAnd(String colName, String table, String andName, String andVal, int uid) {
+        // Make the statement.
+        String stmt = 
+                "SELECT `"+colName+
+                "` FROM `"+table+
+                "` WHERE `"+table+"`.`uid` = "+uid+
+                "  AND "+andName+"="+andVal;
+                
+        // Do the query.
+        try {
+            int[] list = new int[16];
+            Statement dbStmt = dbConnection.createStatement();
+            if (dbStmt.execute(stmt)) {  
+                ResultSet dbResultSet = dbStmt.getResultSet();
+                int i = 0;
+                while (dbResultSet.next()){
+                    list[i] = dbResultSet.getInt(1);
+                    i++;
+                }
+                return list;
+            } 
+            else {
+                System.err.println("CustomCommunication.selectSingleByUID failed");
+            }
+            
+            return new int[16];
+        }
+        catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage()); 
+            System.out.println("SQLState: " + ex.getSQLState()); 
+            System.out.println("VendorError: " + ex.getErrorCode()); 
+            return new int[16];
+        }
+    }
 }
