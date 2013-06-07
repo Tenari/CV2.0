@@ -73,8 +73,9 @@ public class OrganismHandler {
                                         ""+armsHealthStart,
                                         ""+torsoHealthStart,
                                         ""+legsHealthStart,
-                                        ""+myUID,
-                                        ""+attackStyleStart};//opponent
+                                        ""+myUID,               //opponent
+                                        ""+attackStyleStart,
+                                        ""+lookup.headCode};   //attackTarget
             worked = communicate.insert(lookup.combatTableName, initialFightValues);
             if (!worked) {return worked;}
 
@@ -302,6 +303,13 @@ public class OrganismHandler {
     }
     public boolean setAttackStyle(int styleCode, int orgUID){
         return communicate.updateSingleIntByUID(lookup.combatTableName, "attackStyle", styleCode, orgUID);
+    }
+    
+    public int getAttackTarget(int orgUID){
+        return communicate.selectSingleIntByUID("attackTarget", lookup.combatTableName, orgUID);
+    }
+    public boolean setAttackTarget(int targetCode, int orgUID){
+        return communicate.updateSingleIntByUID(lookup.combatTableName, "attackTarget", targetCode, orgUID);
     }
 //---------------------------END COMBAT HELPERS-------------------------------//
 

@@ -50,7 +50,11 @@ class LookupConfig {
     String hsresourcesTableName     =   "hsresources";
     
     // Combat Codes
-    final String missCode   =   "miss";
+    final int missCode          =   0;
+    final int headCode          =   1;
+    final int armsCode          =   2;
+    final int torsoCode         =   3;
+    final int legsCode          =   4;
     
     final int blockCode         =   1;
     final int lightAttackCode   =   2;
@@ -59,10 +63,26 @@ class LookupConfig {
     
     final int maxAttackSpeed    =   9001;   // get it?
     
+    // Weapon Class Codes. Double as attackSpeed for class.
     final int handsSpeed        =   100;
     final int smallBladeSpeed   =   200;
     final int axeSpeed          =   300;
     final int largeBladeSpeed   =   400;
+    
+    // Item constants
+    final int noEffectMod       =   0;
+    final int attStrMod         =   1;
+    final int attSkillMod       =   2;
+    final int defStrMod         =   3;
+    final int defSkillMod       =   4;
+    final int handsMod          =   5;
+    final int smallBladeMod     =   6;
+    final int largeBladeMod     =   7;
+    final int axeMod            =   8;
+    final int polearmMod        =   9;
+    final int shootingMod       =   10;
+    final int throwingMod       =   11;
+    final int attackSpeedMod    =   12;
     
     // Timing constants
     int fightRoundLength    =   3000;   // In milliseconds
@@ -214,12 +234,23 @@ class LookupConfig {
             return 0;
         }
     }
-
-    boolean isAttackSpeedMod(int modType) {
-        return modType == 12;
+    /**
+     * Takes the wepClass (actually is attackspeed#) and returns the item 
+     * ModCode for the corresponding weapon proficiency.
+     * @param wepClass
+     * @return itemModCode for relevant proficiency buff.
+     */
+    int getModCode(int wepClass) {
+        switch (wepClass) {
+            case smallBladeSpeed:
+                return smallBladeMod;
+            case largeBladeSpeed:
+                return largeBladeMod;
+            case axeSpeed:
+                return axeMod;
+            case handsSpeed:
+            default:
+                return handsMod;
+        }
     }
-
-    
-
-    
 }

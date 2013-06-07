@@ -52,11 +52,11 @@ public class CombatHandler {
             int slowerGuyUID = i.getOther(fasterGuyUID);
             
             // Resolve the first guy's attack
-            String hitSpot1 = rollToHit(fasterGuyUID);
+            int hitSpot1 = rollToHit(fasterGuyUID);
             fightOneRound(hitSpot1, fasterGuyUID, slowerGuyUID);
             
             // Reslove the second guy's attack
-            String hitSpot2 = rollToHit(slowerGuyUID);
+            int hitSpot2 = rollToHit(slowerGuyUID);
             fightOneRound(hitSpot2, slowerGuyUID, fasterGuyUID);
             
             // send these two their update info.
@@ -74,8 +74,8 @@ public class CombatHandler {
         fights.remove(new NumberPair(attackerUID,defenderUID));
     }
     
-    private void fightOneRound(String hitSpot, int attackerUID, int defenderUID){
-        if (!hitSpot.equals(lookup.missCode)){      // If he didn't miss. (blocks => auto-miss)
+    private void fightOneRound(int hitSpot, int attackerUID, int defenderUID){
+        if (hitSpot != lookup.missCode){      // If he didn't miss. (blocks => auto-miss)
             if (blocked(hitSpot, defenderUID)) {
                 stun(attackerUID);
             } else if (countered(hitSpot, defenderUID)) {
@@ -108,39 +108,65 @@ public class CombatHandler {
         }
     }
 
-    private String rollToHit(int orgUID) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    /**
+     * Given an orgUID, uses probability/math to determine where the attack lands.
+     *  Just because an org aims at the head, does not exclude the possibility 
+     *  that it will hit arms instead.
+     * @param attackerUID
+     * @param defenderUID
+     * @return "miss": block, miss "head":hit on head...
+     */
+    private int rollToHit(int attackerUID, int defenderUID) {
+    // affected by:
+        // attSkill of attacker + (equipped)itemBuffs.
+        double attSkill = org.getAttSkill(attackerUID) + hs.getItemMODTYPEBuffs(lookup.attSkillMod, attackerUID);
+        // aim location
+        int aim = org.getAttackTarget(attackerUID);
+        // usedWeaponClass
+        int wepClass = hs.getWeaponClassSpeed(attackerUID); 
+        // Raw weapon proficiency + proficiency buffs from items.
+        double prof = hs.getCurrentProficiency(wepClass, attackerUID) + hs.getItemMODTYPEBuffs(lookup.getModCode(wepClass), attackerUID);
+        // enemy defSkill
+        double defSkill = org.getDefSkill(defenderUID);
+        // Other miscellaneous item bonuses
+        int itemBuff = 0;
+        
+        if () {
+            
+        } else {
+            return lookup.missCode;
+        }
     }
 
-    private boolean blocked(String hitSpot, int defenderUID) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    private boolean blocked(int hitSpot, int defenderUID) {
+        
     }
 
-    private boolean countered(String hitSpot, int defenderUID) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    private boolean countered(int hitSpot, int defenderUID) {
+        
     }
 
     private int determineDamage(int attackerUID, int defenderUID) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        
     }
 
-    private void dealDamage(int damageAmount, String hitSpot, int defenderUID) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    private void dealDamage(int damageAmount, int hitSpot, int defenderUID) {
+        ()
     }
 
     private void applyHitNerf(int orgID) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        ()
     }
 
     private void applyMissBuff(int orgID) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        ()
     }
 
     private void stun(int orgID) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        ()
     }
 
     private void applyCounterBuff(int defenderUID) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        ()
     }
 }

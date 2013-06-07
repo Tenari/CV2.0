@@ -159,30 +159,35 @@ public class HomosapienHandler extends OrganismHandler{
             // Calculate and return the attackSpeed
             return lookup.maxAttackSpeed /
                     ((attStyle * (wepClass /
-                                 (1 + prof))) + getItemAttackSpeedBuffs(uid));  // getItemAttSpeedBuffs includes all buffs/debuff from items.
+                                 (1 + prof))) + getItemMODTYPEBuffs(lookup.attackSpeedMod, uid));  // getItemAttSpeedBuffs includes all buffs/debuff from items.
         } else {
             return super.getAttackSpeed(uid);
         }
     }
 
-    private int getWeaponClassSpeed(int uid) {
+    public int getWeaponClassSpeed(int uid) {
         int[] equipped = getEquippedItemIDs(uid);
-        for (int i : equipped){
-            int code = getItemDetail("code", equipped[i]);
-            if (lookup.isWeapon(code)){
-                return lookup.getWeaponClassSpeed(code);
+        if (equipped[0] == 0){      // there are no equipped items.
+            // Default return handToHand
+            return lookup.handsSpeed;
+        } else {
+            for (int i : equipped){
+                int code = getItemDetail("code", equipped[i]);
+                if (lookup.isWeapon(code)){
+                    return lookup.getWeaponClassSpeed(code);
+                }
             }
+            // If no weapon class speed was returned so far, they must not have a weapon on
+            // So we return handToHand
+            return lookup.handsSpeed;
         }
-        // If no weapon class speed was returned so far, they must not have a weapon on
-        // So we return handToHand
-        return lookup.handsSpeed;
     }
 
-    private double getCurrentProficiency(int uid){
+    public double getCurrentProficiency(int uid){
         return getCurrentProficiency(getWeaponClassSpeed(uid), uid);
     }
     
-    private double getCurrentProficiency(int wepClassSpeed, int uid) {
+    public double getCurrentProficiency(int wepClassSpeed, int uid) {
         if (wepClassSpeed == lookup.smallBladeSpeed) {
             return communicate.selectSingleDoubleByUID("smallblade", lookup.homosapienTableName, uid);
         } else if (wepClassSpeed == lookup.largeBladeSpeed) {
@@ -193,12 +198,17 @@ public class HomosapienHandler extends OrganismHandler{
             return getDoubleFromStatsTable("handToHand", uid);
         }
     }
-
-    private int getItemAttackSpeedBuffs(int uid) {
+    
+    int getItemMODTYPEBuffs(int modType, int uid) {
         int buff = 0;
         int[] equipped = getEquippedItemIDs(uid);
         for (int i : equipped){
-            buff += attackSpeedMod(i);
+            if (lookup.attackSpeedMod == modType){
+                buff += attackSpeedModVal(i);
+            } else if (lookup.attSkillMod == modType) {
+                buff += attackSkillModVal(i);
+            }
+            
         }
         return buff;
     }
@@ -207,12 +217,23 @@ public class HomosapienHandler extends OrganismHandler{
         return communicate.selectIntArrayByUIDAnd("id", lookup.hsitemsTableName, "equipped", "1", uid); // 1=> true
     }
 
-    private int attackSpeedMod(int itemID) {
-        if (lookup.isAttackSpeedMod(getItemDetail("mod1type", itemID))){
+    private int attackSpeedModVal(int itemID) {
+        if (lookup.attackSpeedMod == getItemDetail("mod1type", itemID)){
             return getItemDetail("mod1value",itemID);
-        } else if (lookup.isAttackSpeedMod(getItemDetail("mod2type", itemID))){
+        } else if (lookup.attackSpeedMod == getItemDetail("mod2type", itemID)){
             return getItemDetail("mod2value",itemID);
-        } else if (lookup.isAttackSpeedMod(getItemDetail("mod3type", itemID))){
+        } else if (lookup.attackSpeedMod == getItemDetail("mod3type", itemID)){
+            return getItemDetail("mod3value",itemID);
+        } else {
+            return 0;
+        }
+    }
+    private int attackSkillModVal(int itemID) {
+        if (lookup.attSkillMod == getItemDetail("mod1type", itemID)){
+            return getItemDetail("mod1value",itemID);
+        } else if (lookup.attSkillMod == getItemDetail("mod2type", itemID)){
+            return getItemDetail("mod2value",itemID);
+        } else if (lookup.attSkillMod == getItemDetail("mod3type", itemID)){
             return getItemDetail("mod3value",itemID);
         } else {
             return 0;
