@@ -10,6 +10,7 @@ public class CombatHandler {
     
     CustomCommunication communicate;
     OrganismHandler org;
+    HomosapienHandler hs;
     LookupConfig lookup;
     
     ArrayList<NumberPair> fights = new ArrayList<>();
@@ -23,6 +24,8 @@ public class CombatHandler {
         
         // Initialize the org handler.
         org = new OrganismHandler(communicate);
+        // Initialize the hs handler.
+        hs = new HomosapienHandler(communicate);
     }
     
     /**
@@ -45,7 +48,7 @@ public class CombatHandler {
             org.setRealSkills(i.getNumTwo());
             
             // Determine combat order
-            int fasterGuyUID = getFastestAttackSpeed(i);
+            int fasterGuyUID = getFastestAttacker(i);
             int slowerGuyUID = i.getOther(fasterGuyUID);
             
             // Resolve the first guy's attack
@@ -93,10 +96,10 @@ public class CombatHandler {
      * @param fight - The NumberPair containing the UIDs of two combatants
      * @return the UID of the fastest combatant.
      */
-    private int getFastestAttackSpeed(NumberPair fight) {
-        // depends on attack style, weapon class&proficiency, specific weapon
-        int firstSpeed = org.getAttackSpeed(fight.getNumOne());
-        int secondSpeed = org.getAttackSpeed(fight.getNumTwo());
+    private int getFastestAttacker(NumberPair fight) {
+        // Use hs, b/c it will work on both org and hs UIDs
+        double firstSpeed = hs.getAttackSpeed(fight.getNumOne());
+        double secondSpeed = hs.getAttackSpeed(fight.getNumTwo());         
         
         if (firstSpeed > secondSpeed) {
             return fight.getNumOne();

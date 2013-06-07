@@ -138,4 +138,54 @@ public class HomosapienHandler extends OrganismHandler{
         int resourceWeight = 0;
         return itemWeight + resourceWeight;
     }
+
+    public boolean isHomosapien(int uid) {
+        return (-1 != communicate.selectSingleIntByUID("team", lookup.homosapienTableName, uid));
+    }
+    /**
+     * Returns the attack speed of any uid, including those that are just organisms.
+     * @param uid
+     * @return 
+     */
+    @Override
+    public double getAttackSpeed(int uid) {
+        if (isHomosapien(uid)) {
+            // depends on attack style, weapon class&proficiency, specific weapon
+            int attStyle = getAttackStyle(uid);
+            // Returns the speed of the weaponClass from lookup
+            int wepClass = getWeaponClassSpeed(uid);
+            // get proficiency
+            double prof = getCurrentProficiency(wepClass, uid);
+            // handToHand implies that no weapon is used.
+            // non-homosapiens can't equip other types of weapons.
+            // So just calculate and return the attackSpeed
+            return lookup.maxAttackSpeed /
+                    (attStyle * (wepClass /
+                                (1 + prof))); // normally weapon buff would go in here at end.
+        } else {
+            return super.getAttackSpeed(uid);
+        }
+    }
+
+    private int getWeaponClassSpeed(int uid) {
+        // find the weapon equipped
+        // determine it's class
+        // use lookup
+    }
+
+    private double getCurrentProficiency(int uid){
+        return getCurrentProficiency(getWeaponClassSpeed(uid), uid);
+    }
+    
+    private double getCurrentProficiency(int wepClassSpeed, int uid) {
+        if (wepClassSpeed == lookup.smallBladeSpeed) {
+            return communicate.selectSingleDoubleByUID("smallblade", lookup.homosapienTableName, uid);
+        } else if (wepClassSpeed == lookup.largeBladeSpeed) {
+            return communicate.selectSingleDoubleByUID("largeblade", lookup.homosapienTableName, uid);
+        } else if (wepClassSpeed == lookup.axeSpeed) {
+            return communicate.selectSingleDoubleByUID("axe", lookup.homosapienTableName, uid);
+        } else {  // wepClassSpeed == lookup.handsSpeed
+            return getDoubleFromStatsTable("handToHand", uid);
+        }
+    }
 }

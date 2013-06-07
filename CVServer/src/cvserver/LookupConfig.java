@@ -57,6 +57,13 @@ class LookupConfig {
     final int medAttackCode     =   3;
     final int heavyAttackCode   =   4;
     
+    final int maxAttackSpeed    =   9001;   // get it?
+    
+    final int handsSpeed        =   100;
+    final int smallBladeSpeed   =   200;
+    final int axeSpeed          =   300;
+    final int largeBladeSpeed   =   400;
+    
     // Timing constants
     int fightRoundLength    =   3000;   // In milliseconds
     

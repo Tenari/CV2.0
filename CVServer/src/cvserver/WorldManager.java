@@ -8,7 +8,7 @@ public class WorldManager extends Thread{
     
     CustomCommunication communicate;            // Used to access the database.
     OrganismHandler org;
-    HomosapienHandler homosapien;
+    HomosapienHandler hs;
     LookupConfig lookup;
     CombatHandler combat;
     
@@ -28,8 +28,8 @@ public class WorldManager extends Thread{
         
         // Initialize the org handler.
         org = new OrganismHandler(communicate);
-        // Initialize the homosapien handler.
-        homosapien = new HomosapienHandler(communicate);
+        // Initialize the hs handler.
+        hs = new HomosapienHandler(communicate);
         
     }
     
@@ -64,8 +64,8 @@ public class WorldManager extends Thread{
      */
     public int addPlayer(String name) {
     	org.createNewOrganism(name, nextUID, 20);      // 20 is temporary hard-coded class code. need to programmatically determine this.
-        homosapien.createNewHomosapien(name, nextUID, 20); // Ditto above
-            homosapien.addDefaultItems(nextUID);
+        hs.createNewHomosapien(name, nextUID, 20); // Ditto above
+            hs.addDefaultItems(nextUID);
         // Code to add player functionality to the uid:
         // player.createNewPlayer(STUFF);
         //Increment UID and return.
@@ -172,7 +172,7 @@ public class WorldManager extends Thread{
     
     private int moveCostLogic(int baseTileMoveCost, int orgUID){
         double endurance = org.getEndurance(orgUID);
-        return lookup.getWeightModToCost(homosapien.getWeight(orgUID), endurance) + 
+        return lookup.getWeightModToCost(hs.getWeight(orgUID), endurance) + 
             (int)Math.round(baseTileMoveCost * 
                     (lookup.moveNormalizationConstant /
                         (lookup.moveNormalizationConstant + 

@@ -87,7 +87,7 @@ public class CreateCustomDatabase {
                 + " attStr double, attSkill double,"
                 + " defStr double, defSkill double,"
                 + " headHP int, armsHP int, torsoHP int, legsHP int,"
-                + " opponentUID int, attackstyle int)";
+                + " opponentUID int, attackStyle int)";
         doStatement(stmt);
         stmt = "CREATE TABLE detailedstats(uid int PRIMARY KEY,"
                 + " attStrBase double, attSkillBase double,"

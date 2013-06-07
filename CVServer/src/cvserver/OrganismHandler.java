@@ -282,14 +282,26 @@ public class OrganismHandler {
         return communicate.updateSingleIntByUID(lookup.combatTableName, "opponentUID", opponentUID, orgUID);
     }
     
-    public int getAttackSpeed(int orgUID) {
+    public double getAttackSpeed(int orgUID) {
         // depends on attack style, weapon class&proficiency, specific weapon
-        
+        int attStyle = getAttackStyle(orgUID);
+        // it is implied that weapon class is handToHand, because they are an organism.
+        int wepClass = lookup.handsSpeed;
+        // get proficiency
+        double prof = getDoubleFromStatsTable("handToHand", orgUID);
+        // handToHand implies that no weapon is used.
+        // non-homosapiens can't equip other types of weapons.
+        // So just calculate and return the attackSpeed
+        return lookup.maxAttackSpeed /
+                (attStyle * (wepClass /
+                            (1 + prof))); // normally weapon buff would go in here at end.
     }
     
-    
+    public int getAttackStyle(int orgUID){
+        return communicate.selectSingleIntByUID("attackStyle", lookup.combatTableName, orgUID);
+    }
     public boolean setAttackStyle(int styleCode, int orgUID){
-        return communicate.updateSingleIntByUID(lookup.combatTableName, "attackstyle", styleCode, orgUID);
+        return communicate.updateSingleIntByUID(lookup.combatTableName, "attackStyle", styleCode, orgUID);
     }
 //---------------------------END COMBAT HELPERS-------------------------------//
 
@@ -320,5 +332,12 @@ public class OrganismHandler {
         communicate.updateSingleIntByUID(lookup.movementTableName, "class", classCode, orgUID);
     }
 
-    
+//-----------------------------GENERIC ACCESSORS------------------------------\\
+    public int getIntFromCombatTable(String colName, int orgUID){
+        return communicate.selectSingleIntByUID(colName, lookup.combatTableName, orgUID);
+    }
+    public double getDoubleFromStatsTable(String colName, int orgUID){
+        return communicate.selectSingleDoubleByUID(colName, lookup.statsTableName, orgUID);
+    }
+//------------------------------END GENERIC ACCESSORS-------------------------//
 }
