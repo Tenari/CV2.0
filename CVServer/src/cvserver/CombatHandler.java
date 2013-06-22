@@ -117,6 +117,10 @@ public class CombatHandler {
      * @return lookpu.missCode: block, miss; "lookup.headCode:hit on head...
      */
     private int rollToHit(int attackerUID, int defenderUID) {
+        if (org.getAttackTarget(attackerUID) == lookup.missCode) {  // then he was stunned
+            org.setAttackTarget(lookup.headCode, attackerUID);      // un-stun him
+            return lookup.missCode;                                 // do the actual stunning. 
+        }
     // affected by:
         // attSkill of attacker + (equipped)itemBuffs.
         double attSkill = org.getAttSkill(attackerUID) + hs.getItemMODTYPEBuffs(lookup.attSkillMod, attackerUID);
@@ -170,7 +174,7 @@ public class CombatHandler {
 
     private boolean countered(int hitSpot, int attackerUID, int defenderUID) {
         // Checks for correct combo of attack targets. (hitSpot is the attacker's target)
-        if (hitSpot == ((org.getIntFromCombatTable("attackTarget", defenderUID) + 1) % 4)){
+        if (hitSpot == ((org.getAttackTarget(defenderUID) + 1) % 4)){
             int attackerStyle = org.getIntFromCombatTable("attackStyle", attackerUID);
             int defenderStyle = org.getIntFromCombatTable("attackStyle", defenderUID);
             
@@ -208,18 +212,19 @@ public class CombatHandler {
     }
 
     private void applyHitNerf(int orgID) {
-        ()
+        org.setAttSkill(org.getAttSkill(orgID)*0.6, orgID);
     }
 
     private void applyMissBuff(int orgID) {
-        ()
+        org.setAttSkill(org.getAttSkill(orgID)*1.2, orgID);
     }
 
     private void stun(int orgID) {
-        ()
+        org.setAttackTarget(lookup.missCode, orgID);
     }
 
-    private void applyCounterBuff(int defenderUID) {
-        ()
+    private void applyCounterBuff(int orgID) {
+        org.setAttSkill(org.getAttSkill(orgID)*1.2, orgID);
+        org.setAttStr(org.getAttStr(orgID)*1.2, orgID);
     }
 }

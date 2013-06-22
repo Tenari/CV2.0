@@ -50,7 +50,7 @@ class LookupConfig {
     String hsresourcesTableName     =   "hsresources";
     
     // Combat Codes
-    final int missCode          =   0;
+    final int missCode          =   0;      // Doubles as stun-code for attackTargets.
     final int headCode          =   1;
     final int armsCode          =   2;
     final int torsoCode         =   3;
