@@ -52,11 +52,11 @@ public class CombatHandler {
             int slowerGuyUID = i.getOther(fasterGuyUID);
             
             // Resolve the first guy's attack
-            int hitSpot1 = rollToHit(fasterGuyUID);
+            int hitSpot1 = rollToHit(fasterGuyUID, slowerGuyUID);
             fightOneRound(hitSpot1, fasterGuyUID, slowerGuyUID);
             
             // Reslove the second guy's attack
-            int hitSpot2 = rollToHit(slowerGuyUID);
+            int hitSpot2 = rollToHit(slowerGuyUID, fasterGuyUID);
             fightOneRound(hitSpot2, slowerGuyUID, fasterGuyUID);
             
             // send these two their update info.
@@ -78,7 +78,7 @@ public class CombatHandler {
         if (hitSpot != lookup.missCode){      // If he didn't miss. (blocks => auto-miss)
             if (blocked(hitSpot, defenderUID)) {
                 stun(attackerUID);
-            } else if (countered(hitSpot, defenderUID)) {
+            } else if (countered(hitSpot, attackerUID, defenderUID)) {
                 applyCounterBuff(defenderUID);
                 // Do we need to change attacker.hitStatus to "miss"?
             } else {
@@ -109,12 +109,12 @@ public class CombatHandler {
     }
 
     /**
-     * Given an orgUID, uses probability/math to determine where the attack lands.
+     * Given an attackerUID, uses probability/math to determine where the attack lands.
      *  Just because an org aims at the head, does not exclude the possibility 
      *  that it will hit arms instead.
      * @param attackerUID
      * @param defenderUID
-     * @return "miss": block, miss "head":hit on head...
+     * @return lookpu.missCode: block, miss; "lookup.headCode:hit on head...
      */
     private int rollToHit(int attackerUID, int defenderUID) {
     // affected by:
@@ -127,31 +127,84 @@ public class CombatHandler {
         // Raw weapon proficiency + proficiency buffs from items.
         double prof = hs.getCurrentProficiency(wepClass, attackerUID) + hs.getItemMODTYPEBuffs(lookup.getModCode(wepClass), attackerUID);
         // enemy defSkill
-        double defSkill = org.getDefSkill(defenderUID);
+        double defSkill = org.getDefSkill(defenderUID) + hs.getItemMODTYPEBuffs(lookup.defSkillMod, attackerUID);
         // Other miscellaneous item bonuses
         int itemBuff = 0;
-        
-        if () {
-            
+        double roll = Math.random() * 100;
+        roll = ((roll * (defSkill/attSkill)) - (2*(Math.log((1+prof)/wepClass))));
+        if (lookup.headCode == aim) {
+            return littleHitOddsHelper(roll, 10, 20, 25, 30);
+        } else if (lookup.armsCode == aim) {
+            return littleHitOddsHelper(roll, 8, 22, 28, 32);
+        } else if (lookup.torsoCode == aim) {
+            return littleHitOddsHelper(roll, 8, 16, 28, 35);
+        } else if (lookup.legsCode == aim) {
+            return littleHitOddsHelper(roll, 2, 8, 15, 33);
+        } else {
+            return lookup.missCode;
+        }
+    }
+    
+    private int littleHitOddsHelper(double roll, int head, int arms, int torso, int legs){
+        if (roll < head) {
+            return lookup.headCode;
+        } else if (roll < arms){
+            return lookup.armsCode;
+        } else if (roll < torso){
+            return lookup.torsoCode;
+        } else if (roll < legs){
+            return lookup.legsCode;
         } else {
             return lookup.missCode;
         }
     }
 
     private boolean blocked(int hitSpot, int defenderUID) {
-        
+        if (hitSpot == org.getIntFromCombatTable("attackTarget", defenderUID)){
+            if (lookup.blockCode == org.getIntFromCombatTable("attackStyle", defenderUID)){
+                return true;
+            }
+        }
+        return false;
     }
 
-    private boolean countered(int hitSpot, int defenderUID) {
-        
+    private boolean countered(int hitSpot, int attackerUID, int defenderUID) {
+        // Checks for correct combo of attack targets. (hitSpot is the attacker's target)
+        if (hitSpot == ((org.getIntFromCombatTable("attackTarget", defenderUID) + 1) % 4)){
+            int attackerStyle = org.getIntFromCombatTable("attackStyle", attackerUID);
+            int defenderStyle = org.getIntFromCombatTable("attackStyle", defenderUID);
+            
+            // Checks for correct combo of light/med/heavy attacks.
+            if ((attackerStyle == (defenderStyle - 1)) ||
+                ((attackerStyle == lookup.lightAttackCode) &&
+                 (defenderStyle == lookup.heavyAttackCode)) &&
+                (attackerStyle != lookup.blockCode) ){
+                return true;
+            }
+        }
+        return false;
     }
 
     private int determineDamage(int attackerUID, int defenderUID) {
-        
+        int attackerStyle = org.getIntFromCombatTable("attackStyle", attackerUID);
+        double attStr = org.getAttStr(attackerUID) + hs.getItemMODTYPEBuffs(lookup.attStrMod, attackerUID);
+        double defStr = org.getDefStr(defenderUID) + hs.getItemMODTYPEBuffs(lookup.defStrMod, defenderUID);
+        return (int)((Math.random() * attStr * attackerStyle)
+                      - defStr
+                      + hs.getItemMODTYPEBuffs(lookup.damageBonusMod, attackerUID)
+                      - hs.getItemMODTYPEBuffs(lookup.damageResistMod, defenderUID));
     }
 
     private void dealDamage(int damageAmount, int hitSpot, int defenderUID) {
-        ()
+        if (hitSpot == lookup.headCode){
+            org.setHead((org.getHead(defenderUID)-damageAmount), defenderUID);
+        } else if(hitSpot == lookup.armsCode) {
+            org.setArms((org.getArms(defenderUID)-damageAmount), defenderUID);
+        } else if(hitSpot == lookup.torsoCode) {
+            org.setTorso((org.getTorso(defenderUID)-damageAmount), defenderUID);
+        } else if(hitSpot == lookup.legsCode) {
+            org.setLegs((org.getLegs(defenderUID)-damageAmount), defenderUID);
+        }
     }
 
     private void applyHitNerf(int orgID) {

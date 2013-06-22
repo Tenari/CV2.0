@@ -83,6 +83,8 @@ class LookupConfig {
     final int shootingMod       =   10;
     final int throwingMod       =   11;
     final int attackSpeedMod    =   12;
+    final int damageBonusMod    =   13;
+    final int damageResistMod   =   14;
     
     // Timing constants
     int fightRoundLength    =   3000;   // In milliseconds

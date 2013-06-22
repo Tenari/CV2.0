@@ -1,7 +1,7 @@
-"CREATE TABLE hsitems(uid int PRIMARY KEY,"
+"CREATE TABLE hsitems(id int PRIMARY KEY AUTO_INCREMENT, uid int"
                 + " name varchar(20),"
                 + " code int, weight int,"
-                + " equipped bit, slot int,"   //slot=> which inventory location it's in.
+                + " equipped bit, slot int,"   //slot=> inventory location it's in.
                 + " mod1type int, mod1value int,"
                 + " mod2type int, mod2value int,"
                 + " mod3type int, mod3value int)";
@@ -18,7 +18,7 @@ modtype Codes:
 9	polearm
 10	shooting
 11	throwing
-
+12	attackSpeed
 
 
 "code" Codes:
