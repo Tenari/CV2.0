@@ -65,9 +65,22 @@ public class CombatHandler {
       }
     }
     
-    public void startFight(int agressorUID, int opponentRelativeX, int opponentRelativeY){
-        int opponentUID = communicate.selectSingleIntByXAndY("uid", lookup.movementTableName, opponentRelativeX, opponentRelativeY);
-        fights.add(new NumberPair(agressorUID,opponentUID));
+    /**
+     * Attempts to start a fight between UID and the opponent at x,y
+     * @param agressorUID
+     * @param opponentRelativeX
+     * @param opponentRelativeY
+     * @return boolean success of start. true = fight started.
+     */
+    public boolean startFight(int agressorUID, int opponentRelativeX, int opponentRelativeY){
+        int opponentUID = communicate.selectUIDByXAndYAndWorld(lookup.movementTableName, opponentRelativeX, opponentRelativeY, org.getWorld(agressorUID));
+        if (opponentUID == -1) {
+            // do nothing, because the fight failed to start.
+            return false;
+        } else {
+            fights.add(new NumberPair(agressorUID,opponentUID));
+            return true;
+        }
     }
     
     public void endFight(int attackerUID, int defenderUID){
@@ -226,5 +239,14 @@ public class CombatHandler {
     private void applyCounterBuff(int orgID) {
         org.setAttSkill(org.getAttSkill(orgID)*1.2, orgID);
         org.setAttStr(org.getAttStr(orgID)*1.2, orgID);
+    }
+    
+    public boolean isFighting(int orgUID){
+        for(NumberPair i : fights) {
+            if ((i.getNumOne() == orgUID) || (i.getNumTwo() == orgUID)){
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -27,3 +27,5 @@ UpdateHealthStats()
 UpdateMistStats():
   Form: "r [money] [energy]"
   ex: "r 142 5367"
+
+"makeNew" - code for the applet needs to make a new character and send it's info with "cp [name] [class]"

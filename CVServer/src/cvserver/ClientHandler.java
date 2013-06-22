@@ -26,6 +26,8 @@ class ClientHandler extends Thread{
     
     final String nameKey     =    "N";
     final String moveKey     =    "m";
+    final String combatKey   =    "c";
+    final String createPlayerKey= "cp";
     
     int northCode   =   1;
     int southCode   =   2;
@@ -113,12 +115,22 @@ class ClientHandler extends Thread{
         case nameKey:                   // Client is alerting server to the name of the character connecting.
             String name = scan.next();  // Msg of form: "N [name]" so scan.next is username.
             if(gameMaster.getID(name) == -1){
-                gameMaster.addPlayer(name);
+                sendData("makeNew");    // code for the applet needs to make a character.
             }
             setUsername(name);   
             break;
+        case createPlayerKey:
+            String newName = scan.next();
+            int classCode = scan.nextInt();
+            uid = gameMaster.addPlayer(newName, classCode);
+            break;
         case moveKey:
             movePlayer(scan.nextInt());     // due to "m [directionCode]" form, scan.nextInt() is the direction code to pass.
+            break;
+        case combatKey:     // could be any of a large number of combat-related commands.
+            //figure out which command and do it.
+            // note, that if it's to set the attackTarget, need to make sure that attackTarget is not already at lookup.missCode.
+            // use gameMaster.combat.METHOD() to do things. that way it remains only one instance of the combatHandler.
             break;
        }
     }

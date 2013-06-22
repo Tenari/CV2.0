@@ -44,9 +44,8 @@ public class WorldManager extends Thread{
     @Override
     public void run(){
         System.out.println("World Threaded");
-        
         while(true){
-            combat.updateAllFights();
+            combat.updateAllFights();   // includes timing constraints
         }
     }
 //----------------------ORGANISM CREATION COMMANDS------------------------------
@@ -62,15 +61,18 @@ public class WorldManager extends Thread{
      * Returns the uid of added org.
      * @param name the name of the org
      */
-    public int addPlayer(String name) {
-    	org.createNewOrganism(name, nextUID, 20);      // 20 is temporary hard-coded class code. need to programmatically determine this.
-        hs.createNewHomosapien(name, nextUID, 20); // Ditto above
+    public int addPlayer(String name, int classCode) {
+    	org.createNewOrganism(name, nextUID, classCode);
+        hs.createNewHomosapien(name, nextUID, classCode);
             hs.addDefaultItems(nextUID);
         // Code to add player functionality to the uid:
         // player.createNewPlayer(STUFF);
         //Increment UID and return.
         nextUID++;
         return nextUID-1;
+    }
+    public int addPlayer(String name) {
+    	return addPlayer(name, 20);
     }
     
     public int getID(String name){
@@ -149,14 +151,14 @@ public class WorldManager extends Thread{
     // Returns t/f depending on whether the moveTileType is valid, and whether the org can afford the moveCost
     public boolean validMove(String world, int x, int y, int moveTileType, int currentTileType, int orgUID){
         if ((lookup.invalidMoveCost != moveCost(moveTileType, orgUID)) &&       // If he has enough energy to move off current tile
-            (org.getEnergy(orgUID)>=moveCost(currentTileType, orgUID)) &&  // and the moveCost of the next tile is not the invalidCode.
+            (org.getEnergy(orgUID)>=moveCost(currentTileType, orgUID)) &&       // and the moveCost of the next tile is not the invalidCode.
             (-1 == communicate.selectUIDByXAndYAndWorld(lookup.movementTableName, x, y, world)) &&// and there is no org at the location.
-            (!org.isFighting(orgUID))){                                    // and he isn't fighting. You can't move when you're fighting.
+            (!combat.isFighting(orgUID) &&                                      // and he isn't fighting. You can't move when you're fighting.
+            (!org.isLame(orgUID)))){                                            // and he isn't lame from leg HP ==0.
                 return true;
         }
         return false;
     }
-    
     
     public int moveCost(int tileType, int orgUID) {
         if (lookup.isOffMap(tileType) || lookup.isWall(tileType)){

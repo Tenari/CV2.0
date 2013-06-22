@@ -269,11 +269,20 @@ public class OrganismHandler {
 //--------------------------END LOCATION ACCESSORS----------------------------//
     
 //----------------------------COMBAT HELPERS----------------------------------\\
-    public boolean isFighting(int orgUID){
+   /* public boolean isFighting(int orgUID){
         if (getOpponentUID(orgUID) == orgUID) {
             return false;
         }
         return true;
+    }*/
+    public boolean isDead(int orgUID){
+        return getTorso(orgUID) == 0;
+    }
+    public boolean isConcious(int orgUID){
+        return getHead(orgUID) == 0;
+    }
+    public boolean isLame(int orgUID){
+        return getLegs(orgUID) == 0;
     }
     
     public int getOpponentUID(int orgUID){
