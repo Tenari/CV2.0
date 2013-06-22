@@ -52,12 +52,10 @@ public class CombatHandler {
             int slowerGuyUID = i.getOther(fasterGuyUID);
             
             // Resolve the first guy's attack
-            int hitSpot1 = rollToHit(fasterGuyUID, slowerGuyUID);
-            fightOneRound(hitSpot1, fasterGuyUID, slowerGuyUID);
+            fightOneRound(fasterGuyUID, slowerGuyUID);    // includes skill increases due to hit/dmg for 4 main + profs
             
             // Reslove the second guy's attack
-            int hitSpot2 = rollToHit(slowerGuyUID, fasterGuyUID);
-            fightOneRound(hitSpot2, slowerGuyUID, fasterGuyUID);
+            fightOneRound(slowerGuyUID, fasterGuyUID);
             
             // send these two their update info.
         }
@@ -87,7 +85,24 @@ public class CombatHandler {
         fights.remove(new NumberPair(attackerUID,defenderUID));
     }
     
-    private void fightOneRound(int hitSpot, int attackerUID, int defenderUID){
+    /**
+     * Uses rollToHit determined hitSpot to attempt to deal damage.
+     * Handles:
+     * - Proficiencies, 4 main skills updating
+     * - rollingToHit
+     * - miss, counter, hit, buffs
+     * - stuns on blocked
+     * @param hitSpot
+     * @param attackerUID
+     * @param defenderUID 
+     */
+    private void fightOneRound( int attackerUID, int defenderUID){
+        // get rollToHit hitSpot
+        int hitSpot = rollToHit(attackerUID, defenderUID);
+        
+        //update attSkill, defSkill due to attack round occuring
+        updateSKILLSkills(attackerUID, defenderUID);
+        
         if (hitSpot != lookup.missCode){      // If he didn't miss. (blocks => auto-miss)
             if (blocked(hitSpot, defenderUID)) {
                 stun(attackerUID);
@@ -95,7 +110,16 @@ public class CombatHandler {
                 applyCounterBuff(defenderUID);
                 // Do we need to change attacker.hitStatus to "miss"?
             } else {
-                dealDamage(determineDamage(attackerUID, defenderUID), hitSpot, defenderUID);
+                // update proficiency due to hit
+                updateProficiency(attackerUID);
+
+                int dmg = determineDamage(attackerUID, defenderUID);
+                
+                // update attStr, defStr based on dmg
+                updateStrSkills(attackerUID, defenderUID);
+                
+                // Do the actual combat damage and effects.
+                dealDamage(dmg, hitSpot, defenderUID);
                 applyHitNerf(defenderUID);
             }
         } else {
@@ -142,7 +166,7 @@ public class CombatHandler {
         // usedWeaponClass
         int wepClass = hs.getWeaponClassSpeed(attackerUID); 
         // Raw weapon proficiency + proficiency buffs from items.
-        double prof = hs.getCurrentProficiency(wepClass, attackerUID) + hs.getItemMODTYPEBuffs(lookup.getModCode(wepClass), attackerUID);
+        double prof = hs.getProficiency(wepClass, attackerUID) + hs.getItemMODTYPEBuffs(lookup.getModCode(wepClass), attackerUID);
         // enemy defSkill
         double defSkill = org.getDefSkill(defenderUID) + hs.getItemMODTYPEBuffs(lookup.defSkillMod, attackerUID);
         // Other miscellaneous item bonuses
@@ -248,5 +272,38 @@ public class CombatHandler {
             }
         }
         return false;
+    }
+
+    /**
+     * Increases the attSkillBase of attackerUID and the defSkillBase of defenderUID. 
+     *  Formula is: newBase = oldBase +(0.01 * (opponent/self))
+     * @param attackerUID
+     * @param defenderUID 
+     */
+    private void updateSKILLSkills(int attackerUID, int defenderUID) {
+        double attSkill = org.getAttSkillBase(attackerUID);
+        double defSkill = org.getDefSkillBase(defenderUID);
+        org.setAttSkillBase(attSkill + (0.01 * (defSkill/attSkill)), attackerUID);
+        org.setDefSkillBase(defSkill + (0.01 * (attSkill/defSkill)), defenderUID);
+    }
+
+    /**
+     * Adds a small amount to the proficiency of the equipped weaponType.
+     * Formula is : amtToAdd = 0.02 * sin(pi*(oldprof-150)/80)+0.02
+     * @param uid 
+     */
+    private void updateProficiency(int uid) {
+        int spd = hs.getWeaponClassSpeed(uid);
+        double oldProf = hs.getProficiency(spd, uid);
+        double amtToAdd = 0.02 * Math.sin(Math.PI*(oldProf-150)/80)+0.02;
+        double newProf = oldProf + amtToAdd;
+        hs.setProficiency(newProf, spd, uid);
+    }
+
+    private void updateStrSkills(int attackerUID, int defenderUID) {
+        double attStr = org.getAttStrBase(attackerUID);
+        double defStr = org.getDefSkillBase(defenderUID);
+        org.setAttStrBase(attStr + (0.02 * (defStr/attStr)), attackerUID);
+        org.setDefStrBase(defStr + (0.02 * (attStr/defStr)), defenderUID);
     }
 }

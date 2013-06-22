@@ -388,7 +388,7 @@ public class CustomCommunication {
             if (dbStmt.execute(stmt)) {  
                 ResultSet dbResultSet = dbStmt.getResultSet();
                 int i = 0;
-                while (dbResultSet.next()){
+                while (dbResultSet.next() && i<16){
                     list[i] = dbResultSet.getInt(1);
                     i++;
                 }

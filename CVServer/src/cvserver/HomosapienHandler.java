@@ -155,7 +155,7 @@ public class HomosapienHandler extends OrganismHandler{
             // Returns the speed of the weaponClass from lookup
             int wepClass = getWeaponClassSpeed(uid);
             // get proficiency
-            double prof = getCurrentProficiency(wepClass, uid);
+            double prof = getProficiency(wepClass, uid);
             // Calculate and return the attackSpeed
             return lookup.maxAttackSpeed /
                     ((attStyle * (wepClass /
@@ -165,6 +165,11 @@ public class HomosapienHandler extends OrganismHandler{
         }
     }
 
+    /**
+     * Returns the lookup.weaponClass Speed value of the equipped item.
+     * @param uid
+     * @return defaults to lookup.handsSpeed if no equipped weapon found.
+     */
     public int getWeaponClassSpeed(int uid) {
         int[] equipped = getEquippedItemIDs(uid);
         if (equipped[0] == 0){      // there are no equipped items.
@@ -182,12 +187,18 @@ public class HomosapienHandler extends OrganismHandler{
             return lookup.handsSpeed;
         }
     }
-
+    
+//----------------------------Proficiency Handlers----------------------------\\
+    /**
+     * Uses equipped weapon to determine which proficiency to return.
+     * @param uid
+     * @return double proficiency value
+     */
     public double getCurrentProficiency(int uid){
-        return getCurrentProficiency(getWeaponClassSpeed(uid), uid);
+        return getProficiency(getWeaponClassSpeed(uid), uid);
     }
     
-    public double getCurrentProficiency(int wepClassSpeed, int uid) {
+    public double getProficiency(int wepClassSpeed, int uid) {
         if (wepClassSpeed == lookup.smallBladeSpeed) {
             return communicate.selectSingleDoubleByUID("smallblade", lookup.homosapienTableName, uid);
         } else if (wepClassSpeed == lookup.largeBladeSpeed) {
@@ -198,6 +209,19 @@ public class HomosapienHandler extends OrganismHandler{
             return getDoubleFromStatsTable("handToHand", uid);
         }
     }
+    
+    public boolean setProficiency(double newValue, int wepClassSpeed, int uid){
+        if (wepClassSpeed == lookup.smallBladeSpeed) {
+            return communicate.updateSingleDoubleByUID(lookup.homosapienTableName, "smallblade", newValue, uid);
+        } else if (wepClassSpeed == lookup.largeBladeSpeed) {
+            return communicate.updateSingleDoubleByUID(lookup.homosapienTableName, "largeblade", newValue, uid);
+        } else if (wepClassSpeed == lookup.axeSpeed) {
+            return communicate.updateSingleDoubleByUID(lookup.homosapienTableName, "axe", newValue, uid);
+        } else {  // wepClassSpeed == lookup.handsSpeed
+            return communicate.updateSingleDoubleByUID(lookup.statsTableName, "handToHand", newValue, uid);
+        }
+    }
+//\\----------------------End Proficiency Handlers----------------------------//
     
     int getItemMODTYPEBuffs(int modType, int uid) {
         int buff = 0;
